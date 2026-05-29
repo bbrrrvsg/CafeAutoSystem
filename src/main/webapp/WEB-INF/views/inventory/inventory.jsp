@@ -2,7 +2,7 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <c:set var="pageTitle" value="재고 관리" scope="request" />
 <c:set var="menu" value="inventory" scope="request" />
-<jsp:include page="layout/header.jsp" />
+<jsp:include page="../layout/header.jsp" />
 
 <!-- Hero -->
 <section class="hero">
@@ -212,4 +212,4 @@
     </div>
 </div>
 
-<jsp:include page="layout/footer.jsp" />
+<jsp:include page="../layout/footer.jsp" />

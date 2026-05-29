@@ -2,7 +2,7 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <c:set var="pageTitle" value="AI 오발주 검사" scope="request" />
 <c:set var="menu" value="ai-check" scope="request" />
-<jsp:include page="layout/header.jsp" />
+<jsp:include page="../layout/header.jsp" />
 
 <section class="hero">
     <div class="hero-text">
@@ -81,4 +81,4 @@
     </div>
 </div>
 
-<jsp:include page="layout/footer.jsp" />
+<jsp:include page="../layout/footer.jsp" />

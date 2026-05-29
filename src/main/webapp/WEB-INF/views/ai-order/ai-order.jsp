@@ -2,7 +2,7 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <c:set var="pageTitle" value="AI 발주 관리" scope="request" />
 <c:set var="menu" value="ai-order" scope="request" />
-<jsp:include page="layout/header.jsp" />
+<jsp:include page="../layout/header.jsp" />
 
 <section class="hero">
     <div class="hero-text">
@@ -128,4 +128,4 @@
     <button class="btn btn-primary">승인 요청</button>
 </div>
 
-<jsp:include page="layout/footer.jsp" />
+<jsp:include page="../layout/footer.jsp" />

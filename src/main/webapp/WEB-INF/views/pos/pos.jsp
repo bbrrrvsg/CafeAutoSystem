@@ -2,7 +2,7 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <c:set var="pageTitle" value="POS 주문" scope="request" />
 <c:set var="menu" value="pos" scope="request" />
-<jsp:include page="layout/header.jsp" />
+<jsp:include page="../layout/header.jsp" />
 
 <section class="hero" style="padding-bottom: 18px;">
     <div class="hero-text">
@@ -131,4 +131,4 @@
     });
 </script>
 
-<jsp:include page="layout/footer.jsp" />
+<jsp:include page="../layout/footer.jsp" />

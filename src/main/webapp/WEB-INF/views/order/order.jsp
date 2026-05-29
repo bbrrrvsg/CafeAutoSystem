@@ -2,7 +2,7 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <c:set var="pageTitle" value="발주 작성" scope="request" />
 <c:set var="menu" value="order" scope="request" />
-<jsp:include page="layout/header.jsp" />
+<jsp:include page="../layout/header.jsp" />
 
 <section class="hero">
     <div class="hero-text">
@@ -207,4 +207,4 @@
 
 </div>
 
-<jsp:include page="layout/footer.jsp" />
+<jsp:include page="../layout/footer.jsp" />

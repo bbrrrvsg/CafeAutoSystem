@@ -2,7 +2,7 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <c:set var="pageTitle" value="거래처 등록" scope="request" />
 <c:set var="menu" value="vendor" scope="request" />
-<jsp:include page="layout/header.jsp" />
+<jsp:include page="../layout/header.jsp" />
 
 <section class="hero">
     <div class="hero-text">
@@ -129,4 +129,4 @@
     <button class="btn btn-primary">등록하기</button>
 </div>
 
-<jsp:include page="layout/footer.jsp" />
+<jsp:include page="../layout/footer.jsp" />
