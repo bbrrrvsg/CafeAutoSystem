@@ -1,5 +1,6 @@
 package com.example.CafeAutoSystem.jms_ai_rpa.controller;
 
+import com.example.CafeAutoSystem.jms_ai_rpa.service.RpaExcelService;
 import com.example.CafeAutoSystem.jms_ai_rpa.service.RpaMailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,18 +15,23 @@ import org.springframework.web.bind.annotation.RestController;
 public class RpaMailController {
 
     private final RpaMailService rpaMailService;
+    private final RpaExcelService rpaExcelService;
 
     // 이메일 즉시 전송 테스트 API
     // URL: GET http://localhost:8080/api/jms-rpa/send-test?to=본인수신메일주소
     @GetMapping("/send-test")
-    public ResponseEntity<String> sendTestEmail(@RequestParam("to") String toEmail) {
+    public String sendTestEmail(@RequestParam("to") String toEmail) {
         try {
-            // 4번 우유 자재 15팩을 가정하고 테스트 발송
-            rpaMailService.sendDefaultOrderEmail(toEmail, "서울우유 1000ml", 15);
-            return ResponseEntity.ok("이메일이 성공적으로 발송되었습니다! (Recipient: " + toEmail + ")");
+            // 1. [RPA 엑셀 가동] 메일 쏘기 전에 진짜로 바탕화면에 엑셀 서류를 먼저 빌드합니다!
+            // 테스트용 데이터 전달 (거래처: 서울원두유통, 품목: 에스프레소 원두, 수량: 18개)
+            rpaExcelService.createOrderExcelSheet("서울원두유통", "에스프레소 원두(1kg)", 18);
+
+            // 2. [RPA 메일 발송] 기존 메일 엔진 가동
+            rpaMailService.sendDefaultOrderEmail(toEmail, "에스프레소 원두(1kg)", 18);
+
+            return "Excel 생성 및 Mail 발송 성공!";
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body("이메일 발송 중 장애 발생: " + e.getMessage());
+            return "장애 발생: " + e.getMessage();
         }
     }
 
@@ -35,4 +41,5 @@ public class RpaMailController {
         // src/main/webapp/WEB-INF/views/approval/approval.jsp
         return "approval/approval";
     }
+
 }

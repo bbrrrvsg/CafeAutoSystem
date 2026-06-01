@@ -22,7 +22,8 @@ public class AiSchedulerService {
      * @Scheduled(cron = "0 0 23 * * *")
      * *  - 현재는 5초마다 돌면서 로직을 검증
      */
-    @Scheduled(initialDelay = 2000, fixedRate = 5000) // 5초마다 가동
+    //@Scheduled(initialDelay = 2000, fixedRate = 5000) // 5초마다 가동
+    @Scheduled(cron = "0 0 23 * * *")
     public void runDailyAiStockAnalysis() {
         log.info("==================================================================");
         log.info("🤖 [AI 통계 예측 엔진] 요일별 소모량 분석 알고리즘 가동");
