@@ -44,7 +44,7 @@ public class AiPredictService {
         logEntity.setAmount(amount);
         logEntity.setMessage(message);
         logEntity.setReason(reason);
-        logEntity.setUserId("admin");
+        logEntity.setUserId("SYSTEM");
 
         historicalStockLogRepository.save(logEntity);
     }
