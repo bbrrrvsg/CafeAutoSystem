@@ -55,19 +55,37 @@ INSERT INTO HISTORICAL_STOCK_LOG (ingredient_id, order_item_id, log_type, messag
                                                                                                                                         (4, NULL, 'STOCK_OUT', '수요일 라떼 판매 소모', -3300, '평일 기본 소모', 'SYSTEM', '2026-05-20 23:00:00', '2026-05-20 23:00:00'),
                                                                                                                                         (4, NULL, 'STOCK_OUT', '목요일 라떼 판매 소모', -3600, '평일 기본 소모', 'SYSTEM', '2026-05-21 23:00:00', '2026-05-21 23:00:00');
 
--- [1주 전: 5월 22일 ~ 5월 28일] 정상 범주 AI 검증 완료 기록 및 폐기 복합 기록
-INSERT INTO HISTORICAL_STOCK_LOG (ingredient_id, order_item_id, log_type, message, amount, reason, user_id, created_at, updated_at) VALUES
-                                                                                                                                        (4, NULL, 'STOCK_OUT', '금요일 라떼 판매 소모', -4200, '금요 피크 소모', 'SYSTEM', '2026-05-22 23:00:00', '2026-05-22 23:00:00'),
-                                                                                                                                        (4, NULL, 'STOCK_OUT', '토요일 라떼 판매 소모', -5600, '주말 매출 상승', 'SYSTEM', '2026-05-23 23:00:00', '2026-05-23 23:00:00'),
-                                                                                                                                        (4, NULL, 'STOCK_OUT', '일요일 라떼 판매 소모', -5000, '주말 매출 상승', 'SYSTEM', '2026-05-24 23:00:00', '2026-05-24 23:00:00'),
-                                                                                                                                        (4, NULL, 'STOCK_OUT', '월요일 라떼 판매 소모', -3100, '평일 기본 소모', 'SYSTEM', '2026-05-25 23:00:00', '2026-05-25 23:00:00'),
-                                                                                                                                        (4, NULL, 'STOCK_OUT', '화요일 라떼 판매 소모', -2900, '평일 기본 소모', 'SYSTEM', '2026-05-26 23:00:00', '2026-05-26 23:00:00'),
-                                                                                                                                        (4, NULL, 'STOCK_OUT', '수요일 라떼 판매 소모', -3400, '평일 기본 소모', 'SYSTEM', '2026-05-27 23:00:00', '2026-05-27 23:00:00'),
--- 5월 28일 야간 마감: 유통기한 만료 원두 500g 강제 폐기
-                                                                                                                                        (1, NULL, 'STOCK_DISCARD', '[자동폐기] 산패 및 유통기한 경과 원두 500g 폐기', -500, ' 유통기한 초과 마감 배치', 'SYSTEM', '2026-05-28 23:05:00', '2026-05-28 23:05:00'),
-                                                                                                                                        (4, NULL, 'AI_VALIDATION', '[AI검사] 금일 우유 발주 권장량 15팩 산출 완료 (이상치 없음)', 0, '적정 발주량 예측 성공', 'SYSTEM', '2026-05-28 23:01:00', '2026-05-28 23:01:00'),
-                                                                                                                                        (4, NULL, 'STOCK_OUT', '목요일 라떼 판매 소모', -3550, '평일 기본 소모', 'SYSTEM', '2026-05-28 23:00:00', '2026-05-28 23:00:00');
+-- ===================================================================================
+-- 🥛 4번 자재(서울우유 1000ml)에 대한 최근 4주간 요일별(월요일 타겟) 소모/폐기 통계 데이터
+-- ===================================================================================
 
+-- [1주 전 월요일] 2026-05-25 : 소모 18개, 폐기 2개 (총 20개 소모)
+INSERT INTO historical_stock_log (ingredient_id, log_type, amount, reason, message, user_id, created_at, updated_at)
+VALUES (4, 'STOCK_CONSUME', 18, 'DAILY_REGULAR', '정상 영업 소모', 'admin', '2026-05-25 22:00:00', '2026-05-25 22:00:00');
+
+INSERT INTO historical_stock_log (ingredient_id, log_type, amount, reason, message, user_id, created_at, updated_at)
+VALUES (4, 'STOCK_DISCARD', 2, 'EXPIRED', '유통기한 임박 폐기', 'admin', '2026-05-25 22:30:00', '2026-05-25 22:30:00');
+
+
+-- [2주 전 월요일] 2026-05-18 : 소모 22개, 폐기 1개 (총 23개 소모)
+INSERT INTO historical_stock_log (ingredient_id, log_type, amount, reason, message, user_id, created_at, updated_at)
+VALUES (4, 'STOCK_CONSUME', 22, 'DAILY_REGULAR', '정상 영업 소모', 'admin', '2026-05-18 22:00:00', '2026-05-18 22:00:00');
+
+INSERT INTO historical_stock_log (ingredient_id, log_type, amount, reason, message, user_id, created_at, updated_at)
+VALUES (4, 'STOCK_DISCARD', 1, 'DAMAGED', '용기 파손으로 인한 폐기', 'admin', '2026-05-18 22:30:00', '2026-05-18 22:30:00');
+
+
+-- [3주 전 월요일] 2026-05-11 : 소모 15개, 폐기 0개 (총 15개 소모)
+INSERT INTO historical_stock_log (ingredient_id, log_type, amount, reason, message, user_id, created_at, updated_at)
+VALUES (4, 'STOCK_CONSUME', 15, 'DAILY_REGULAR', '정상 영업 소모', 'admin', '2026-05-11 22:00:00', '2026-05-11 22:00:00');
+
+
+-- [4주 전 월요일] 2026-05-04 : 소모 25개, 폐기 3개 (총 28개 소모)
+INSERT INTO historical_stock_log (ingredient_id, log_type, amount, reason, message, user_id, created_at, updated_at)
+VALUES (4, 'STOCK_CONSUME', 25, 'DAILY_REGULAR', '비오는 날 단체 주문 소모', 'admin', '2026-05-04 22:00:00', '2026-05-04 22:00:00');
+
+INSERT INTO historical_stock_log (ingredient_id, log_type, amount, reason, message, user_id, created_at, updated_at)
+VALUES (4, 'STOCK_DISCARD', 3, 'EXPIRED', '복귀 주말 재고 남음 폐기', 'admin', '2026-05-04 22:30:00', '2026-05-04 22:30:00');
 
 -- ========================================================
 -- 3. PURCHASE_ORDER (1차 점검용 오늘자 AI 발주 제안 초안)
