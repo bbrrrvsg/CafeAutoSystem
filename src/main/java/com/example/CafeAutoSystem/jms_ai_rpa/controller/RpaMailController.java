@@ -1,5 +1,6 @@
 package com.example.CafeAutoSystem.jms_ai_rpa.controller;
 
+import com.example.CafeAutoSystem.jms_ai_rpa.dto.OrderItemDto;
 import com.example.CafeAutoSystem.jms_ai_rpa.service.RpaExcelService;
 import com.example.CafeAutoSystem.jms_ai_rpa.service.RpaMailService;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/jms-rpa")
@@ -22,16 +25,23 @@ public class RpaMailController {
     @GetMapping("/send-test")
     public String sendTestEmail(@RequestParam("to") String toEmail) {
         try {
-            // 1. [RPA 엑셀 가동] 메일 쏘기 전에 진짜로 바탕화면에 엑셀 서류를 먼저 빌드합니다!
-            // 테스트용 데이터 전달 (거래처: 서울원두유통, 품목: 에스프레소 원두, 수량: 18개)
-            rpaExcelService.createOrderExcelSheet("서울원두유통", "에스프레소 원두(1kg)", 18);
+            String vendor = "매일유통 대리점";
 
-            // 2. [RPA 메일 발송] 기존 메일 엔진 가동
-            rpaMailService.sendDefaultOrderEmail(toEmail, "에스프레소 원두(1kg)", 18);
+            // 🌟 테스트용 다중 품목 데이터 리스트 주입
+            List<OrderItemDto> orderList = new java.util.ArrayList<>();
+            orderList.add(new com.example.CafeAutoSystem.jms_ai_rpa.dto.OrderItemDto("서울우유 1000ml", 15));
+            orderList.add(new com.example.CafeAutoSystem.jms_ai_rpa.dto.OrderItemDto("매일 멸균우유", 10));
+            orderList.add(new com.example.CafeAutoSystem.jms_ai_rpa.dto.OrderItemDto("휘핑크림 500ml", 5));
 
-            return "Excel 생성 및 Mail 발송 성공!";
+            // 1. 다중 품목 엑셀 생성
+            String createdExcelFile = rpaExcelService.createOrderExcelSheet(vendor, orderList);
+
+            // 2. 다중 품목 엑셀 첨부 메일 발송
+            rpaMailService.sendOrderEmailWithAttachment(toEmail, orderList, createdExcelFile);
+
+            return "다중 품목 대량 발주 명세서 생성 및 RPA 이메일 발송 완벽 성공!";
         } catch (Exception e) {
-            return "장애 발생: " + e.getMessage();
+            return "RPA 장애 발생: " + e.getMessage();
         }
     }
 
