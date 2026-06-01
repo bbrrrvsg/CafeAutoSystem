@@ -131,7 +131,7 @@
         <div class="modal-footer">
             <button class="btn btn-secondary" onclick="closeOrderModal()">닫기</button>
             <button class="btn btn-danger">반려</button>
-            <button class="btn btn-success">승인</button>
+            <button class="btn btn-success btn-sm" onclick="sendRpaMail('alstj5220@naver.com')">승인</button>
         </div>
     </div>
 </div>
@@ -151,5 +151,5 @@
         });
     });
 </script>
-
+<script src="/js/jms-rpa.js"></script>
 <jsp:include page="../layout/footer.jsp" />
