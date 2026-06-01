@@ -45,7 +45,7 @@
                 <td><span class="badge badge-info">AI 검토</span></td>
                 <td class="text-right">
                     <button class="btn btn-secondary btn-sm" onclick="openOrderModal()">상세보기</button>
-                    <button class="btn btn-success btn-sm">승인</button>
+                    <button class="btn btn-success btn-sm" onclick="sendRpaMail('wkdalstj0522@gmail.com')">승인</button>
                     <button class="btn btn-danger btn-sm">반려</button>
                 </td>
             </tr>
@@ -58,7 +58,7 @@
                 <td><span class="badge badge-warning">수동 검토</span></td>
                 <td class="text-right">
                     <button class="btn btn-secondary btn-sm" onclick="openOrderModal()">상세보기</button>
-                    <button class="btn btn-success btn-sm">승인</button>
+                    <button class="btn btn-success btn-sm" onclick="sendRpaMail('wkdalstj0522@gmail.com')">승인</button>
                     <button class="btn btn-danger btn-sm">반려</button>
                 </td>
             </tr>
@@ -131,7 +131,7 @@
         <div class="modal-footer">
             <button class="btn btn-secondary" onclick="closeOrderModal()">닫기</button>
             <button class="btn btn-danger">반려</button>
-            <button class="btn btn-success btn-sm" onclick="sendRpaMail('alstj5220@naver.com')">승인</button>
+            <button class="btn btn-success btn-sm" onclick="sendRpaMail('wkdalstj0522@gmail.com')">승인</button>
         </div>
     </div>
 </div>
@@ -151,5 +151,5 @@
         });
     });
 </script>
-<script src="/js/jms-rpa.js"></script>
+<script src="/js/rpa.js"></script>
 <jsp:include page="../layout/footer.jsp" />
