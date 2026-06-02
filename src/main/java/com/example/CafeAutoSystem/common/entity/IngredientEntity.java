@@ -1,43 +1,38 @@
-package com.example.CafeAutoSystem.common.entity;
+package com.example.CafeAutoSystem.jms_ai_rpa.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
+import lombok.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "ingredient")
+@Table(name = "INGREDIENT")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 @Builder
 public class IngredientEntity {
 
-    // 식자재번호 (PK)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ingredient_id")
-    private Integer ingredientId;
+    private Long ingredientId;
 
-    // 식자재명
-    @Column(name = "ingredient_name", length = 100, nullable = false)
+    @Column(name = "ingredient_name", nullable = false, length = 100)
     private String ingredientName;
 
-    // 관리단위 (g, 개, pack, ml ...)
-    @Column(name = "unit", length = 20, nullable = false)
+    @Column(name = "unit", nullable = false, length = 20)
     private String unit;
 
-    // 안전재고 기준치
     @Column(name = "safety_stock", nullable = false)
     private Integer safetyStock;
 
-    // 물품 이미지 경로
-    @Column(name = "ingredient_image", length = 255, nullable = false)
+    @Column(name = "ingredient_image", length = 255)
     private String ingredientImage;
+
+    @JsonManagedReference
+    @OneToMany(mappedBy = "ingredient", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<MenuRecipeEntity> recipes = new ArrayList<>();
 }

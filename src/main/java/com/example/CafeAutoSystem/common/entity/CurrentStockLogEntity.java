@@ -1,64 +1,62 @@
-package com.example.CafeAutoSystem.common.entity;
+package com.example.CafeAutoSystem.jms_ai_rpa.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
+import com.example.CafeAutoSystem.global.config.BaseTime;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.*;
+import lombok.*;
 
-import java.time.LocalDateTime;
-
-// 당월 실시간 재고 임시 장부 (매월 1일 리셋)
 @Entity
-@Table(name = "current_stock_log")
+@Table(name = "CURRENT_STOCK_LOG")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 @Builder
-public class CurrentStockLogEntity {
+public class CurrentStockLogEntity extends BaseTime {
 
-    // 로그번호 (PK)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "log_id")
-    private Integer logId;
+    private Long logId;
 
-    // 식자재번호 (FK)
-    @Column(name = "ingredient_id", nullable = false)
-    private Integer ingredientId;
+    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ingredient_id", nullable = false)
+    private IngredientEntity ingredient;
 
-    // 발주품목번호 (FK, NULL 허용 - 판매/이월은 발주와 무관)
+    /**
+     * 발주품목번호 FK (nullable)
+     * STOCK_OUT(판매 차감) 시에는 null, STOCK_IN(입고) 시에는 order_item_id 입력
+     */
     @Column(name = "order_item_id")
     private Integer orderItemId;
 
-    // 로그 유형 (STOCK_IN / STOCK_OUT / STOCK_FORWARD / STOCK_DISCARD)
-    @Column(name = "log_type", length = 50, nullable = false)
+    /**
+     * 로그 유형
+     * STOCK_IN / STOCK_OUT / STOCK_FORWARD / STOCK_WARNING / AI_VALIDATION / USER_APPROVE / RPA_RETRY
+     */
+    @Column(name = "log_type", nullable = false, length = 50)
     private String logType;
 
-    // 로그 메시지
-    @Column(name = "message", columnDefinition = "TEXT", nullable = false)
+    /**
+     * 포맷된 로그 메시지
+     * 예: "[판매] 카페 라떼 1잔 판매", "[입고] 신선한 우유 10팩 입고"
+     */
+    @Column(name = "message", nullable = false, columnDefinition = "TEXT")
     private String message;
 
-    // 발생 수량 (입고 +, 출고/폐기 -)
+    /**
+     * 발생 수량
+     * STOCK_OUT은 음수(-200), STOCK_IN은 양수(10000), 이벤트성 로그는 0
+     */
     @Column(name = "amount", nullable = false)
     private Integer amount;
 
-    // 변동 사유
-    @Column(name = "reason", length = 255, nullable = false)
+    /** 변동 사유. 예: "레시피 자동 차감", "정기 발주 입고" */
+    @Column(name = "reason", nullable = false, length = 255)
     private String reason;
 
-    // 수행자 (기본 SYSTEM)
-    @Column(name = "user_id", length = 50, nullable = false)
-    private String userId;
-
-    // 등록일시 (insert 시 자동, 수정 불가)
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    /** 수행자. 시스템 자동 처리는 "SYSTEM", 관리자는 "admin" 등 */
+    @Column(name = "user_id", nullable = false, length = 50)
+    @Builder.Default
+    private String userId = "SYSTEM";
 }
