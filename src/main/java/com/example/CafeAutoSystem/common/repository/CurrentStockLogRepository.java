@@ -1,6 +1,6 @@
-package com.example.CafeAutoSystem.jms_ai_rpa.repository;
+package com.example.CafeAutoSystem.common.repository;
 
-import com.example.CafeAutoSystem.jms_ai_rpa.entity.CurrentStockLogEntity;
+import com.example.CafeAutoSystem.common.entity.CurrentStockLogEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 

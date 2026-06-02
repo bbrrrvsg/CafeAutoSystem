@@ -1,6 +1,6 @@
-package com.example.CafeAutoSystem.jms_ai_rpa.repository;
+package com.example.CafeAutoSystem.common.repository;
 
-import com.example.CafeAutoSystem.jms_ai_rpa.entity.MenuRecipeEntity;
+import com.example.CafeAutoSystem.common.entity.MenuRecipeEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

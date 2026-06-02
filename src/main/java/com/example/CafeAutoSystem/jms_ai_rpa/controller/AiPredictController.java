@@ -1,7 +1,10 @@
 package com.example.CafeAutoSystem.jms_ai_rpa.controller;
 
-import com.example.CafeAutoSystem.jms_ai_rpa.entity.HistoricalStockLogEntity;
-import com.example.CafeAutoSystem.jms_ai_rpa.entity.PurchaseOrderEntity;
+import com.example.CafeAutoSystem.common.entity.CurrentStockLogEntity;
+import com.example.CafeAutoSystem.common.entity.HistoricalStockLogEntity;
+import com.example.CafeAutoSystem.common.entity.PurchaseOrderEntity;
+import com.example.CafeAutoSystem.jms_ai_rpa.dto.OrderRequest;
+import com.example.CafeAutoSystem.jms_ai_rpa.dto.StockOutResult;
 import com.example.CafeAutoSystem.jms_ai_rpa.service.AiPredictService;
 import com.example.CafeAutoSystem.jms_ai_rpa.service.StockService;
 import lombok.RequiredArgsConstructor;
@@ -9,12 +12,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/jms-ai")
 @RequiredArgsConstructor
 public class AiPredictController {
     private final AiPredictService aiPredictService;
+    private final StockService stockService;
 
     // [Create] AI 발주 제안 초안 강제 생성 API
     @PostMapping("/draft")

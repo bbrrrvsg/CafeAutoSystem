@@ -1,4 +1,4 @@
-package com.example.CafeAutoSystem.jms_ai_rpa.entity;
+package com.example.CafeAutoSystem.common.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

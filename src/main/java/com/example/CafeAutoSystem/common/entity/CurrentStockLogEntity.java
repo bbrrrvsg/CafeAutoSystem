@@ -1,6 +1,6 @@
-package com.example.CafeAutoSystem.jms_ai_rpa.entity;
+package com.example.CafeAutoSystem.common.entity;
 
-import com.example.CafeAutoSystem.global.config.BaseTime;
+import com.example.CafeAutoSystem.common.entity.BaseTime;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;

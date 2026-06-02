@@ -1,9 +1,9 @@
 package com.example.CafeAutoSystem.jms_ai_rpa.service;
 
 import com.example.CafeAutoSystem.jms_ai_rpa.dto.InventoryResponse;
-import com.example.CafeAutoSystem.jms_ai_rpa.entity.IngredientEntity;
-import com.example.CafeAutoSystem.jms_ai_rpa.repository.CurrentStockLogRepository;
-import com.example.CafeAutoSystem.jms_ai_rpa.repository.IngredientRepository;
+import com.example.CafeAutoSystem.common.entity.IngredientEntity;
+import com.example.CafeAutoSystem.common.repository.CurrentStockLogRepository;
+import com.example.CafeAutoSystem.common.repository.IngredientRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
