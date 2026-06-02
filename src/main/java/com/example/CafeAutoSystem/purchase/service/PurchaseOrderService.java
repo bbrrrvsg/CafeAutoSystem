@@ -1,7 +1,9 @@
 package com.example.CafeAutoSystem.purchase.service;
 
-import com.example.CafeAutoSystem.common.entity.PurchaseOrder;
+import com.example.CafeAutoSystem.common.entity.PurchaseOrderEntity;
+import com.example.CafeAutoSystem.common.entity.VendorIngredientEntity;
 import com.example.CafeAutoSystem.common.repository.PurchaseOrderRepository;
+import com.example.CafeAutoSystem.common.repository.VendorIngredientRepository;
 import com.example.CafeAutoSystem.purchase.dto.PurchaseOrderDto;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import java.util.List;
 public class PurchaseOrderService {
 
     private final PurchaseOrderRepository purchaseOrderRepository;
+    private final VendorIngredientRepository vendorIngredientRepository;
 
     @Value("${cafe.manager.password}")
     private String managerPassword;
@@ -27,16 +30,22 @@ public class PurchaseOrderService {
 
     private List<PurchaseOrderDto> findByStatusAsDto(String status) {
         return purchaseOrderRepository.findByStatus(status).stream()
-                .map(PurchaseOrder::toDto)
+                .map(PurchaseOrderEntity::toDto)
                 .toList();
     }
 
-    // 수정 (수량 / vendor_ingredient_id)
+    // 수정 (수량 / 거래처매핑 변경)
     public PurchaseOrderDto updateOrder(Integer orderItemId, PurchaseOrderDto dto, String password) {
         verifyManagerPassword(password);
-        PurchaseOrder order = getPendingOrderOrThrow(orderItemId);
+        PurchaseOrderEntity order = getPendingOrderOrThrow(orderItemId);
 
-        order.setVendorIngredientId(dto.getVendorIngredientId());
+        // 거래처 매핑 변경 (1/2/3순위 우회 선택)
+        if (dto.getVendorIngredientId() != null) {
+            VendorIngredientEntity vi = vendorIngredientRepository.findById(dto.getVendorIngredientId())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "거래처 매핑을 찾을 수 없습니다. id=" + dto.getVendorIngredientId()));
+            order.setVendorIngredient(vi);
+        }
         order.setSuggestedQty(dto.getSuggestedQty());
         order.setFinalQty(dto.getFinalQty());
 
@@ -46,7 +55,7 @@ public class PurchaseOrderService {
     // 승인 (PENDING → COMPLETED)
     public PurchaseOrderDto approve(Integer orderItemId, String password) {
         verifyManagerPassword(password);
-        PurchaseOrder order = getPendingOrderOrThrow(orderItemId);
+        PurchaseOrderEntity order = getPendingOrderOrThrow(orderItemId);
         order.setStatus("COMPLETED");
         return order.toDto();
     }
@@ -54,14 +63,14 @@ public class PurchaseOrderService {
     // 반려 (PENDING → REJECTED, final_qty=0)
     public PurchaseOrderDto reject(Integer orderItemId, String password) {
         verifyManagerPassword(password);
-        PurchaseOrder order = getPendingOrderOrThrow(orderItemId);
+        PurchaseOrderEntity order = getPendingOrderOrThrow(orderItemId);
         order.setStatus("REJECTED");
         order.setFinalQty(0);
         return order.toDto();
     }
 
-    private PurchaseOrder getPendingOrderOrThrow(Integer orderItemId) {
-        PurchaseOrder order = purchaseOrderRepository.findById(orderItemId)
+    private PurchaseOrderEntity getPendingOrderOrThrow(Integer orderItemId) {
+        PurchaseOrderEntity order = purchaseOrderRepository.findById(orderItemId)
                 .orElseThrow(() -> new IllegalArgumentException("발주서를 찾을 수 없습니다. id=" + orderItemId));
         if (!"PENDING".equals(order.getStatus())) {
             throw new IllegalStateException("PENDING 상태의 발주서만 처리할 수 있습니다. 현재 상태=" + order.getStatus());

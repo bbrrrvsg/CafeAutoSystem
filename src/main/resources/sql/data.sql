@@ -18,6 +18,15 @@ INSERT INTO vendor (vendor_name, manager_email, manager_phone, created_at, updat
 ('행복디저트',     'happy_dessert@daum.net', '010-7777-8888', '2026-01-15 10:45:00', '2026-01-15 10:45:00');
 
 -- ---------------------------------------------------------
+-- INGREDIENT  식자재 마스터 (심준현 담당, PDF: 4개)
+-- ---------------------------------------------------------
+INSERT INTO ingredient (ingredient_name, unit, safety_stock, ingredient_image) VALUES
+('하우스 블렌드 원두',  'g',    5000, '/images/ingredients/house_blend.jpg'),
+('파우더 및 시럽',      '개',   10,   '/images/ingredients/powder_syrup.jpg'),
+('냉동 딸기 블렌드',    'pack', 5,    '/images/ingredients/frozen_strawberry.jpg'),
+('신선한 우유(1L)',     'ml',   5000, '/images/ingredients/fresh_milk_1l.jpg');
+
+-- ---------------------------------------------------------
 -- VENDOR_INGREDIENT  거래처별 식자재 매핑 (PDF 그대로 3개)
 --   PDF: vendor_id=1=매일유통 → 우리: vendor_id=2 (매일유통)
 --   PDF: vendor_id=2=대박마트 → 우리: vendor_id=3 (대박부자재)

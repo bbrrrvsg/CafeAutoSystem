@@ -1,6 +1,5 @@
 package com.example.CafeAutoSystem.purchase.dto;
 
-import com.example.CafeAutoSystem.common.entity.PurchaseOrder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,6 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 public class PurchaseOrderDto {
 
+    // ===== PURCHASE_ORDER 컬럼 =====
     private Integer orderItemId;
     private Integer vendorIngredientId;
     private String  orderDateKey;
@@ -25,15 +25,11 @@ public class PurchaseOrderDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public PurchaseOrder toEntity() {
-        return PurchaseOrder.builder()
-                .orderItemId(this.orderItemId)
-                .vendorIngredientId(this.vendorIngredientId)
-                .orderDateKey(this.orderDateKey)
-                .suggestedQty(this.suggestedQty)
-                .finalQty(this.finalQty)
-                .status(this.status)
-                .expirationDate(this.expirationDate)
-                .build();
-    }
+    // ===== 매핑 체인 보강 필드 (DB 컬럼 아님, toDto 가 채움) =====
+    private Integer vendorId;
+    private String  vendorName;       // vendor.vendor_name
+    private Integer ingredientId;
+    private String  ingredientName;   // ingredient.ingredient_name
+    private Integer unitPrice;        // vendor_ingredient.unit_price
+    private Integer priorityRank;     // vendor_ingredient.priority_rank
 }

@@ -27,7 +27,8 @@
             <tr>
                 <th>발주번호</th>
                 <th>발주일</th>
-                <th>거래처 매핑</th>
+                <th>거래처</th>
+                <th>식자재</th>
                 <th class="text-right">최종 수량</th>
                 <th>유통기한</th>
                 <th>상태</th>
@@ -35,7 +36,7 @@
             </tr>
         </thead>
         <tbody id="orderTbody">
-            <tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);">로딩 중...</td></tr>
+            <tr><td colspan="8" style="text-align:center; padding:30px; color:var(--text-muted);">로딩 중...</td></tr>
         </tbody>
     </table>
 </div>
@@ -50,6 +51,7 @@
             <div class="detail-list">
                 <div class="detail-row"><span class="key">발주번호</span><span class="val num" id="mOrderId">-</span></div>
                 <div class="detail-row"><span class="key">발주일</span><span class="val num" id="mCreateDate">-</span></div>
+                <div class="detail-row"><span class="key">식자재</span><span class="val" id="mIngredient">-</span></div>
                 <div class="detail-row"><span class="key">AI 제안 수량</span><span class="val num" id="mSuggested">-</span></div>
                 <div class="detail-row"><span class="key">유통기한</span><span class="val num" id="mExpiration">-</span></div>
             </div>
@@ -58,10 +60,9 @@
                 <span id="editSectionTitle">수정 가능 항목</span>
             </h5>
             <div class="form-row">
-                <div class="fr-label">거래처 매핑 ID</div>
+                <div class="fr-label">거래처 (우선순위)</div>
                 <div class="fr-control">
-                    <input type="number" id="mVendorIngredientId" min="1" style="width:160px; padding:8px; border:1px solid var(--border); border-radius:6px;">
-                    <span style="margin-left:8px; font-size:12px; color:var(--text-muted);">(vendor_ingredient_id)</span>
+                    <select id="mVendorSelect" style="width:100%; padding:8px; border:1px solid var(--border); border-radius:6px;"></select>
                 </div>
             </div>
             <div class="form-row">
@@ -176,15 +177,17 @@
         const list = getCurrentList();
         const tbody = document.getElementById('orderTbody');
         if (list.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);">해당 상태의 발주가 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:30px; color:var(--text-muted);">해당 상태의 발주가 없습니다.</td></tr>';
             return;
         }
         tbody.innerHTML = list.map(function(o) {
             const orderNo = o.orderDateKey + '-' + String(o.orderItemId).padStart(3, '0');
+            const vendorLabel = (o.vendorName || '-') + ' <span style="color:var(--text-muted); font-size:11px;">[' + o.priorityRank + '순위]</span>';
             return '<tr>'
                 + '<td><strong>' + orderNo + '</strong></td>'
                 + '<td class="num">' + fmtDate(o.createdAt) + '</td>'
-                + '<td>매핑 #' + o.vendorIngredientId + '</td>'
+                + '<td>' + vendorLabel + '</td>'
+                + '<td>' + (o.ingredientName || '-') + '</td>'
                 + '<td class="text-right num font-bold">' + o.finalQty + '</td>'
                 + '<td class="num">' + (fmtDate(o.expirationDate) || '-') + '</td>'
                 + '<td>' + statusBadge(o.status) + '</td>'
@@ -193,22 +196,36 @@
         }).join('');
     }
 
-    function openOrderModal(id) {
+    async function openOrderModal(id) {
         const order = getCurrentList().find(o => o.orderItemId === id);
         if (!order) return;
         currentOrderId = id;
 
         const orderNo = order.orderDateKey + '-' + String(order.orderItemId).padStart(3, '0');
-        document.getElementById('mOrderId').textContent          = orderNo;
-        document.getElementById('mCreateDate').textContent       = fmtDate(order.createdAt);
-        document.getElementById('mSuggested').textContent        = order.suggestedQty;
-        document.getElementById('mExpiration').textContent       = fmtDate(order.expirationDate) || '없음';
-        document.getElementById('mFinalQty').value               = order.finalQty;
-        document.getElementById('mVendorIngredientId').value     = order.vendorIngredientId;
+        document.getElementById('mOrderId').textContent     = orderNo;
+        document.getElementById('mCreateDate').textContent  = fmtDate(order.createdAt);
+        document.getElementById('mIngredient').textContent  = order.ingredientName || '-';
+        document.getElementById('mSuggested').textContent   = order.suggestedQty;
+        document.getElementById('mExpiration').textContent  = fmtDate(order.expirationDate) || '없음';
+        document.getElementById('mFinalQty').value          = order.finalQty;
+
+        // 같은 식자재의 거래처 1/2/3순위를 드롭다운에 채움
+        const sel = document.getElementById('mVendorSelect');
+        try {
+            const res = await fetch('/api/vendor-ingredient/by-ingredient/' + order.ingredientId);
+            const mappings = res.ok ? await res.json() : [];
+            sel.innerHTML = mappings.map(function(m) {
+                const selected = m.vendorIngredientId === order.vendorIngredientId ? ' selected' : '';
+                const label = '[' + m.priorityRank + '순위] ' + (m.vendorName || '-') + ' · ₩' + m.unitPrice.toLocaleString();
+                return '<option value="' + m.vendorIngredientId + '"' + selected + '>' + label + '</option>';
+            }).join('');
+        } catch (e) {
+            sel.innerHTML = '<option value="' + order.vendorIngredientId + '" selected>' + (order.vendorName || '매핑 #' + order.vendorIngredientId) + '</option>';
+        }
 
         const isPending = order.status === 'PENDING';
         document.getElementById('mFinalQty').disabled            = !isPending;
-        document.getElementById('mVendorIngredientId').disabled  = !isPending;
+        document.getElementById('mVendorSelect').disabled        = !isPending;
         document.getElementById('btnSave').style.display         = isPending ? '' : 'none';
         document.getElementById('btnApprove').style.display      = isPending ? '' : 'none';
         document.getElementById('btnReject').style.display       = isPending ? '' : 'none';
@@ -295,7 +312,7 @@
     async function updateOrder(id, password) {
         const order = pendingOrders.find(o => o.orderItemId === id);
         const body = Object.assign({}, order, {
-            vendorIngredientId: parseInt(document.getElementById('mVendorIngredientId').value),
+            vendorIngredientId: parseInt(document.getElementById('mVendorSelect').value),
             finalQty: parseInt(document.getElementById('mFinalQty').value)
         });
         const res = await fetch('/api/order/' + id + '?password=' + encodeURIComponent(password), {

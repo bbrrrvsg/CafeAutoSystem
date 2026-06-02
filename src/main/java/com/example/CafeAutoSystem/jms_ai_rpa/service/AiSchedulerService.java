@@ -1,6 +1,6 @@
 package com.example.CafeAutoSystem.jms_ai_rpa.service;
 
-import com.example.CafeAutoSystem.common.entity.HistoricalStockLog;
+import com.example.CafeAutoSystem.common.entity.HistoricalStockLogEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -37,12 +37,12 @@ public class AiSchedulerService {
             Integer targetIngredientId = 4;
             log.info("-> [AI 분석 대상] 자재 ID: 4 (서울우유 1000ml)");
 
-            List<HistoricalStockLog> allLogs = aiPredictService.getHistoricalLogsByIngredient(targetIngredientId);
+            List<HistoricalStockLogEntity> allLogs = aiPredictService.getHistoricalLogsByIngredient(targetIngredientId);
 
             int matchingDayCount = 0;
             double totalConsumedAmount = 0.0;
 
-            for (HistoricalStockLog logItem : allLogs) {
+            for (HistoricalStockLogEntity logItem : allLogs) {
                 LocalDate logDate = logItem.getCreatedAt().toLocalDate();
 
                 if (logDate.getDayOfWeek() == todayDayOfWeek) {

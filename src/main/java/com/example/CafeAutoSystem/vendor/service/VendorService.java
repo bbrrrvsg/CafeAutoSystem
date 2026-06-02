@@ -1,6 +1,6 @@
 package com.example.CafeAutoSystem.vendor.service;
 
-import com.example.CafeAutoSystem.common.entity.Vendor;
+import com.example.CafeAutoSystem.common.entity.VendorEntity;
 import com.example.CafeAutoSystem.common.repository.VendorRepository;
 import com.example.CafeAutoSystem.vendor.dto.VendorDto;
 import jakarta.transaction.Transactional;
@@ -18,7 +18,7 @@ public class VendorService {
 
     public List<VendorDto> getAll() {
         return vendorRepository.findAll().stream()
-                .map(Vendor::toDto)
+                .map(VendorEntity::toDto)
                 .toList();
     }
 }

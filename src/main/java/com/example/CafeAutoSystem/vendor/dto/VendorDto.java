@@ -1,6 +1,6 @@
 package com.example.CafeAutoSystem.vendor.dto;
 
-import com.example.CafeAutoSystem.common.entity.Vendor;
+import com.example.CafeAutoSystem.common.entity.VendorEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,8 +21,8 @@ public class VendorDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public Vendor toEntity() {
-        return Vendor.builder()
+    public VendorEntity toEntity() {
+        return VendorEntity.builder()
                 .vendorId(this.vendorId)
                 .vendorName(this.vendorName)
                 .managerEmail(this.managerEmail)
