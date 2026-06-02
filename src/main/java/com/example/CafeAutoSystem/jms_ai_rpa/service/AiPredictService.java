@@ -35,4 +35,16 @@ public class AiPredictService {
     public List<HistoricalStockLogEntity> getHistoricalLogsByIngredient(Integer ingredientId) {
         return historicalStockLogRepository.findByIngredientId(ingredientId);
     }
+
+    @Transactional
+    public void saveAiAnalysisLog(Integer ingredientId, String logType, Integer amount, String message, String reason) {
+        HistoricalStockLogEntity logEntity = new HistoricalStockLogEntity();
+        logEntity.setIngredientId(ingredientId);
+        logEntity.setLogType(logType);
+        logEntity.setAmount(amount);
+        logEntity.setMessage(message);
+        logEntity.setReason(reason);
+        logEntity.setUserId("SYSTEM");
+        historicalStockLogRepository.saveAndFlush(logEntity);
+    }
 }
