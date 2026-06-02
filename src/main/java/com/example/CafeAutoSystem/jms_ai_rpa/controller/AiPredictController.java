@@ -62,7 +62,7 @@ public class AiPredictController {
      */
     @GetMapping("/stock-log/ingredient/{ingredientId}")
     public ResponseEntity<List<CurrentStockLogEntity>> getLogsByIngredient(
-            @PathVariable Long ingredientId) {
+            @PathVariable Integer ingredientId) {
         return ResponseEntity.ok(stockService.getStockLogsByIngredient(ingredientId));
     }
 
