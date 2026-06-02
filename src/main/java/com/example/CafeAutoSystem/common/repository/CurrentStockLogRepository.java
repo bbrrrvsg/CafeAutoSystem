@@ -6,8 +6,8 @@ import java.util.List;
 
 public interface CurrentStockLogRepository extends JpaRepository<CurrentStockLogEntity, Long> {
 
-    List<CurrentStockLogEntity> findByIngredientId(Integer ingredientId);
+    List<CurrentStockLogEntity> findByIngredient_IngredientId(Long ingredientId);
 
     /** 재료별 로그 최신순 조회 */
-    List<CurrentStockLogEntity> findByIngredientIdOrderByCreatedAtDesc(Long ingredientId);
+    List<CurrentStockLogEntity> findByIngredient_IngredientIdOrderByCreatedAtDesc(Long ingredientId);
 }

@@ -65,7 +65,7 @@ INSERT INTO purchase_order
 --   order_item_id: 입고는 발주와 연결, 판매/이월은 NULL
 -- ---------------------------------------------------------
 INSERT INTO current_stock_log
-    (ingredient_id, order_item_id, log_type, message, amount, reason, user_id, created_at) VALUES
-(4, NULL, 'STOCK_FORWARD', '[이월] 5월 마감 잔여 재고 이월 데이터 생성', 4500,  '전월 재고 이월',   'SYSTEM', '2026-06-01 00:00:00'),
-(4, NULL, 'STOCK_OUT',     '[판매] 카페 라떼 1잔 판매',                  -200,  '레시피 자동 차감', 'SYSTEM', '2026-06-01 09:05:12'),
-(4, 2,    'STOCK_IN',      '[입고] 신선한 우유 10팩 정기 입고',          10000, '정기 발주 입고',   'admin',  '2026-06-01 10:00:00');
+    (ingredient_id, order_item_id, log_type, message, amount, reason, user_id, created_at, updated_at) VALUES
+(4, NULL, 'STOCK_FORWARD', '[이월] 5월 마감 잔여 재고 이월 데이터 생성', 4500,  '전월 재고 이월',   'SYSTEM', '2026-06-01 00:00:00', '2026-06-01 00:00:00'),
+(4, NULL, 'STOCK_OUT',     '[판매] 카페 라떼 1잔 판매',                  -200,  '레시피 자동 차감', 'SYSTEM', '2026-06-01 09:05:12', '2026-06-01 09:05:12'),
+(4, 2,    'STOCK_IN',      '[입고] 신선한 우유 10팩 정기 입고',          10000, '정기 발주 입고',   'admin',  '2026-06-01 10:00:00', '2026-06-01 10:00:00');
