@@ -1,8 +1,8 @@
 package com.example.CafeAutoSystem.purchase.service;
 
+import com.example.CafeAutoSystem.common.entity.PurchaseOrder;
+import com.example.CafeAutoSystem.common.repository.PurchaseOrderRepository;
 import com.example.CafeAutoSystem.purchase.dto.PurchaseOrderDto;
-import com.example.CafeAutoSystem.purchase.entity.PurchaseOrder;
-import com.example.CafeAutoSystem.purchase.repository.PurchaseOrderRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

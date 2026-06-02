@@ -1,6 +1,5 @@
-package com.example.CafeAutoSystem.purchase.entity;
+package com.example.CafeAutoSystem.common.entity;
 
-import com.example.CafeAutoSystem.common.entity.BaseTime;
 import com.example.CafeAutoSystem.purchase.dto.PurchaseOrderDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -55,8 +54,8 @@ public class PurchaseOrder extends BaseTime {
                 .finalQty(this.finalQty)
                 .status(this.status)
                 .expirationDate(this.expirationDate)
-                .createDate(getCreateDate())
-                .updateDate(getUpdateDate())
+                .createdAt(getCreatedAt())
+                .updatedAt(getUpdatedAt())
                 .build();
     }
 }

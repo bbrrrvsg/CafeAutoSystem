@@ -5,10 +5,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-@EnableJpaAuditing // BaseTime 의 @CreatedDate / @LastModifiedDate 자동 주입 활성화
 @SpringBootApplication
-@EnableJpaAuditing
-@EnableScheduling
+@EnableJpaAuditing      // BaseTime 자동 주입
+@EnableScheduling       // @Scheduled 스케줄러 활성화 (장민서 AI 스케줄러용)
 public class AppStart {
     public static void main(String[] args) {
         SpringApplication.run(AppStart.class);

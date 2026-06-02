@@ -1,6 +1,5 @@
-package com.example.CafeAutoSystem.vendoringredient.entity;
+package com.example.CafeAutoSystem.common.entity;
 
-import com.example.CafeAutoSystem.common.entity.BaseTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

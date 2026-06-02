@@ -1,6 +1,6 @@
 package com.example.CafeAutoSystem.purchase.dto;
 
-import com.example.CafeAutoSystem.purchase.entity.PurchaseOrder;
+import com.example.CafeAutoSystem.common.entity.PurchaseOrder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,8 +22,8 @@ public class PurchaseOrderDto {
     private Integer finalQty;
     private String  status;
     private LocalDate expirationDate;
-    private LocalDateTime createDate;
-    private LocalDateTime updateDate;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public PurchaseOrder toEntity() {
         return PurchaseOrder.builder()
