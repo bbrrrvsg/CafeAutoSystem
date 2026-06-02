@@ -158,7 +158,7 @@
     }
 
     function statusBadge(s) {
-        if (s === 'PENDING')   return '<span class="badge badge-warning">수동 검토</span>';
+        if (s === 'PENDING')   return '<span class="badge badge-warning">대기</span>';
         if (s === 'COMPLETED') return '<span class="badge badge-success">완료</span>';
         if (s === 'REJECTED')  return '<span class="badge badge-danger">반려</span>';
         return s;
