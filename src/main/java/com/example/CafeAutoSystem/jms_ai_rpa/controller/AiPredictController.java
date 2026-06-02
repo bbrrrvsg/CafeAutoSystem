@@ -1,8 +1,8 @@
 package com.example.CafeAutoSystem.jms_ai_rpa.controller;
 
+import com.example.CafeAutoSystem.common.entity.CurrentStockLogEntity;
 import com.example.CafeAutoSystem.jms_ai_rpa.dto.OrderRequest;
 import com.example.CafeAutoSystem.jms_ai_rpa.dto.StockOutResult;
-import com.example.CafeAutoSystem.jms_ai_rpa.entity.CurrentStockLogEntity;
 import com.example.CafeAutoSystem.common.entity.HistoricalStockLogEntity;
 import com.example.CafeAutoSystem.common.entity.PurchaseOrderEntity;
 import com.example.CafeAutoSystem.jms_ai_rpa.service.AiPredictService;
@@ -62,7 +62,7 @@ public class AiPredictController {
      */
     @GetMapping("/stock-log/ingredient/{ingredientId}")
     public ResponseEntity<List<CurrentStockLogEntity>> getLogsByIngredient(
-            @PathVariable Long ingredientId) {
+            @PathVariable Integer ingredientId) {
         return ResponseEntity.ok(stockService.getStockLogsByIngredient(ingredientId));
     }
 

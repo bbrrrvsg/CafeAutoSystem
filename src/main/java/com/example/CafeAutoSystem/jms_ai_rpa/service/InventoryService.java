@@ -1,9 +1,10 @@
 package com.example.CafeAutoSystem.jms_ai_rpa.service;
 
+import com.example.CafeAutoSystem.common.entity.CurrentStockLogEntity;
+import com.example.CafeAutoSystem.common.entity.IngredientEntity;
+import com.example.CafeAutoSystem.common.repository.CurrentStockLogRepository;
+import com.example.CafeAutoSystem.common.repository.IngredientRepository;
 import com.example.CafeAutoSystem.jms_ai_rpa.dto.InventoryResponse;
-import com.example.CafeAutoSystem.jms_ai_rpa.entity.IngredientEntity;
-import com.example.CafeAutoSystem.jms_ai_rpa.repository.CurrentStockLogRepository;
-import com.example.CafeAutoSystem.jms_ai_rpa.repository.IngredientRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,9 +31,9 @@ public class InventoryService {
         return ingredients.stream().map(ingredient -> {
             // CURRENT_STOCK_LOG SUM으로 현재 재고 계산
             int currentStock = currentStockLogRepository
-                    .findByIngredient_IngredientId(ingredient.getIngredientId())
+                    .findByIngredientId(ingredient.getIngredientId())
                     .stream()
-                    .mapToInt(log -> log.getAmount())
+                    .mapToInt(CurrentStockLogEntity::getAmount)
                     .sum();
 
             // 상태 계산

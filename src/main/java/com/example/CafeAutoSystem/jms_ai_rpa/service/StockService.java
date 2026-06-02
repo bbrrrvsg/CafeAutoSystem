@@ -1,12 +1,12 @@
 package com.example.CafeAutoSystem.jms_ai_rpa.service;
 
+import com.example.CafeAutoSystem.common.entity.CurrentStockLogEntity;
+import com.example.CafeAutoSystem.common.entity.IngredientEntity;
+import com.example.CafeAutoSystem.common.entity.MenuRecipeEntity;
+import com.example.CafeAutoSystem.common.repository.CurrentStockLogRepository;
+import com.example.CafeAutoSystem.common.repository.MenuRecipeRepository;
 import com.example.CafeAutoSystem.jms_ai_rpa.dto.OrderRequest;
 import com.example.CafeAutoSystem.jms_ai_rpa.dto.StockOutResult;
-import com.example.CafeAutoSystem.jms_ai_rpa.entity.CurrentStockLogEntity;
-import com.example.CafeAutoSystem.jms_ai_rpa.entity.IngredientEntity;
-import com.example.CafeAutoSystem.jms_ai_rpa.entity.MenuRecipeEntity;
-import com.example.CafeAutoSystem.jms_ai_rpa.repository.CurrentStockLogRepository;
-import com.example.CafeAutoSystem.jms_ai_rpa.repository.MenuRecipeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,7 @@ import java.util.List;
 public class StockService {
 
     private final MenuRecipeRepository menuRecipeRepository;
-    private final CurrentStockLogRepository stockLogRepository;
+    private final CurrentStockLogRepository currentStockLogRepository;
 
     /**
      * 주문 수신 → MENU_RECIPE 기반 소요량 계산 → CURRENT_STOCK_LOG STOCK_OUT 기록
@@ -32,7 +32,7 @@ public class StockService {
 
         // 1. 메뉴 레시피(재료 목록) 조회
         List<MenuRecipeEntity> recipes = menuRecipeRepository
-                .findByMenuNameWithIngredient(request.getMenuName());
+                .findByMenuName(request.getMenuName());
 
         if (recipes.isEmpty()) {
             throw new IllegalArgumentException("레시피를 찾을 수 없습니다: " + request.getMenuName());
@@ -52,26 +52,27 @@ public class StockService {
 
             // 3. CURRENT_STOCK_LOG INSERT (amount는 출고이므로 음수)
             CurrentStockLogEntity stockLog = CurrentStockLogEntity.builder()
-                    .ingredient(ingredient)
-                    .orderItemId(null)          // 판매 차감은 발주와 무관하므로 null
+                    .ingredientId(ingredient.getIngredientId())
+                    .orderItemId(null)
                     .logType("STOCK_OUT")
                     .message(message)
-                    .amount(-totalQty)          // 출고는 음수로 저장
+                    .amount(-totalQty)
                     .reason("레시피 자동 차감")
                     .userId("SYSTEM")
                     .build();
 
-            stockLogRepository.save(stockLog);
+            currentStockLogRepository.save(stockLog);
 
-            log.info("[STOCK_OUT] 재료={} 차감량={}{}", 
+            log.info("[STOCK_OUT] 재료={} 차감량={}{}",
                     ingredient.getIngredientName(), totalQty, ingredient.getUnit());
 
-            // 4. 현재 재고 합산 (CURRENT_STOCK_LOG SUM)으로 안전재고 이하 여부 확인
-            int currentStock = stockLogRepository
-                    .findByIngredient_IngredientId(ingredient.getIngredientId())
+            // 4. 현재 재고 합산으로 안전재고 이하 여부 확인
+            int currentStock = currentStockLogRepository
+                    .findByIngredientId(ingredient.getIngredientId())
                     .stream()
                     .mapToInt(CurrentStockLogEntity::getAmount)
                     .sum();
+
             boolean isLowStock = currentStock <= ingredient.getSafetyStock();
 
             if (isLowStock) {
@@ -81,7 +82,7 @@ public class StockService {
 
                 // STOCK_WARNING 로그 추가 기록
                 CurrentStockLogEntity warningLog = CurrentStockLogEntity.builder()
-                        .ingredient(ingredient)
+                        .ingredientId(ingredient.getIngredientId())
                         .orderItemId(null)
                         .logType("STOCK_WARNING")
                         .message(String.format("[재고부족] '%s'의 현재고가 안전재고 미만입니다.",
@@ -92,7 +93,7 @@ public class StockService {
                         .userId("SYSTEM")
                         .build();
 
-                stockLogRepository.save(warningLog);
+                currentStockLogRepository.save(warningLog);
             }
 
             details.add(StockOutResult.StockDetail.builder()
@@ -111,9 +112,9 @@ public class StockService {
                 .build();
     }
 
-    /** 특정 주문의 출고 내역 조회 */
+    /** 재료 ID로 출고 이력 조회 */
     @Transactional(readOnly = true)
-    public List<CurrentStockLogEntity> getStockLogsByIngredient(Long ingredientId) {
-        return stockLogRepository.findByIngredient_IngredientIdOrderByCreatedAtDesc(ingredientId);
+    public List<CurrentStockLogEntity> getStockLogsByIngredient(Integer ingredientId) {
+        return currentStockLogRepository.findByIngredientId(ingredientId);
     }
 }
