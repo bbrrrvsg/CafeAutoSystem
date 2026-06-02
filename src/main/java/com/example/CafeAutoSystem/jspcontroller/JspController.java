@@ -18,6 +18,10 @@ import org.springframework.web.bind.annotation.GetMapping;
  *   /WEB-INF/views/vendor/vendor.jsp
  *   /WEB-INF/views/vendor/vendor-register.jsp
  *   /WEB-INF/views/log/log.jsp
+ *   /WEB-INF/views/receipt/receipt.jsp
+ *   /WEB-INF/views/review/write.jsp
+ *   /WEB-INF/views/review/manage.jsp
+ *   /WEB-INF/views/review/insight.jsp
  */
 @Controller
 public class JspController {
@@ -40,4 +44,10 @@ public class JspController {
     @GetMapping("/vendor")          public String vendor()         { return "vendor/vendor"; }
     @GetMapping("/vendor/register") public String vendorRegister() { return "vendor/vendor-register"; }
     @GetMapping("/log")             public String log()            { return "log/log"; }
+
+    // 리뷰 · 영수증
+    @GetMapping("/receipt")        public String receipt()        { return "receipt/receipt"; }
+    @GetMapping("/review/write")   public String reviewWrite()    { return "review/write"; }
+    @GetMapping("/review/manage")  public String reviewManage()   { return "review/manage"; }
+    @GetMapping("/review/insight") public String reviewInsight()  { return "review/insight"; }
 }

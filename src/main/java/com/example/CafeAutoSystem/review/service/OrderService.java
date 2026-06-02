@@ -80,6 +80,6 @@ public class OrderService {
 
     // QR 이미지 안에 인코딩할 리뷰 작성 페이지 URL을 생성한다.
     private String createReviewPageUrl(Long orderId) {
-        return "http://localhost:8080/reviews/write?orderId=" + orderId;
+        return "http://localhost:8080/review/write?orderId=" + orderId;
     }
 }
