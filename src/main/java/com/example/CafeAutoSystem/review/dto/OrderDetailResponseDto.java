@@ -1,5 +1,7 @@
 package com.example.CafeAutoSystem.review.dto;
 
+import com.example.CafeAutoSystem.review.entity.Menu;
+import com.example.CafeAutoSystem.review.entity.OrderDetail;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,4 +19,16 @@ public class OrderDetailResponseDto {
     private Integer menuPrice;
     private Integer quantity;
     private Integer totalPrice;
+
+    public static OrderDetailResponseDto from(OrderDetail orderDetail) {
+        Menu menu = orderDetail.getMenu();
+        return OrderDetailResponseDto.builder()
+                .orderDetailId(orderDetail.getOrderDetailId())
+                .menuId(menu.getMenuId())
+                .menuName(menu.getMenuName())
+                .menuPrice(menu.getMenuPrice())
+                .quantity(orderDetail.getQuantity())
+                .totalPrice(menu.getMenuPrice() * orderDetail.getQuantity())
+                .build();
+    }
 }

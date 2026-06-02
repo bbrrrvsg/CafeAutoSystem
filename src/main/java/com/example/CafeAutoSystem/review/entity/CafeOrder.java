@@ -1,14 +1,14 @@
 package com.example.CafeAutoSystem.review.entity;
 
-
-import com.example.CafeAutoSystem.global.config.BaseTime;
+import com.example.CafeAutoSystem.common.entity.BaseTime;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.CustomLog;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -25,4 +25,13 @@ public class CafeOrder extends BaseTime {
     @Column(name = "order_price")
     private Integer orderPrice;
 
+    public static CafeOrder create(Integer orderPrice) {
+        return CafeOrder.builder()
+                .orderPrice(orderPrice)
+                .build();
+    }
+
+    public void updateQrUrl(String qrUrl) {
+        this.qrUrl = qrUrl;
+    }
 }

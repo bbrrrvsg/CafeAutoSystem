@@ -1,6 +1,6 @@
 package com.example.CafeAutoSystem.review.entity;
 
-import com.example.CafeAutoSystem.global.config.BaseTime;
+import com.example.CafeAutoSystem.common.entity.BaseTime;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "order_datail")
+@Table(name = "order_detail")
 public class OrderDetail extends BaseTime {
 
     @Id
@@ -24,11 +24,17 @@ public class OrderDetail extends BaseTime {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
-    private Long orderId;
-
+    private CafeOrder cafeOrder;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "menu_id")
     private Menu menu;
 
+    public static OrderDetail create(CafeOrder cafeOrder, Menu menu, Integer quantity) {
+        return OrderDetail.builder()
+                .cafeOrder(cafeOrder)
+                .menu(menu)
+                .quantity(quantity)
+                .build();
+    }
 }
