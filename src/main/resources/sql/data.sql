@@ -58,3 +58,14 @@ INSERT INTO purchase_order
 
 -- 2026-05-30
 (2, 'PO-20260530', 30,   30,   'COMPLETED', '2026-06-06', '2026-05-30 08:00:00', '2026-05-30 13:45:00');
+
+-- ---------------------------------------------------------
+-- CURRENT_STOCK_LOG  당월 실시간 재고 임시 장부 (PDF 샘플)
+--   STOCK_FORWARD(이월) / STOCK_OUT(판매-) / STOCK_IN(입고+)
+--   order_item_id: 입고는 발주와 연결, 판매/이월은 NULL
+-- ---------------------------------------------------------
+INSERT INTO current_stock_log
+    (ingredient_id, order_item_id, log_type, message, amount, reason, user_id, created_at) VALUES
+(4, NULL, 'STOCK_FORWARD', '[이월] 5월 마감 잔여 재고 이월 데이터 생성', 4500,  '전월 재고 이월',   'SYSTEM', '2026-06-01 00:00:00'),
+(4, NULL, 'STOCK_OUT',     '[판매] 카페 라떼 1잔 판매',                  -200,  '레시피 자동 차감', 'SYSTEM', '2026-06-01 09:05:12'),
+(4, 2,    'STOCK_IN',      '[입고] 신선한 우유 10팩 정기 입고',          10000, '정기 발주 입고',   'admin',  '2026-06-01 10:00:00');
