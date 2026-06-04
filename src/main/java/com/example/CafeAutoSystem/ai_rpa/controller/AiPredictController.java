@@ -1,12 +1,8 @@
 package com.example.CafeAutoSystem.ai_rpa.controller;
 
-import com.example.CafeAutoSystem.common.entity.CurrentStockLogEntity;
 import com.example.CafeAutoSystem.common.entity.HistoricalStockLogEntity;
 import com.example.CafeAutoSystem.common.entity.PurchaseOrderEntity;
-import com.example.CafeAutoSystem.ai_rpa.dto.OrderRequest;
-import com.example.CafeAutoSystem.ai_rpa.dto.StockOutResult;
 import com.example.CafeAutoSystem.ai_rpa.service.AiPredictService;
-import com.example.CafeAutoSystem.ai_rpa.service.StockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

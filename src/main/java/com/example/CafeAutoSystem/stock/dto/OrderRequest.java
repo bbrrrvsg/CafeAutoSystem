@@ -1,4 +1,4 @@
-package com.example.CafeAutoSystem.ai_rpa.dto;
+package com.example.CafeAutoSystem.stock.dto;
 
 import lombok.*;
 
