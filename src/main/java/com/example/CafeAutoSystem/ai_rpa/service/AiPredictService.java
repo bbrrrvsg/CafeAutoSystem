@@ -1,4 +1,4 @@
-package com.example.CafeAutoSystem.jms_ai_rpa.service;
+package com.example.CafeAutoSystem.ai_rpa.service;
 
 import com.example.CafeAutoSystem.common.entity.HistoricalStockLogEntity;
 import com.example.CafeAutoSystem.common.entity.PurchaseOrderEntity;

@@ -1,6 +1,6 @@
-package com.example.CafeAutoSystem.jms_ai_rpa.controller;
+package com.example.CafeAutoSystem.ai_rpa.controller;
 
-import com.example.CafeAutoSystem.jms_ai_rpa.dto.OrderItemDto;
+import com.example.CafeAutoSystem.ai_rpa.dto.OrderItemDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;

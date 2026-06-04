@@ -1,6 +1,6 @@
-package com.example.CafeAutoSystem.jms_ai_rpa.service;
+package com.example.CafeAutoSystem.ai_rpa.service;
 
-import com.example.CafeAutoSystem.jms_ai_rpa.dto.InventoryResponse;
+import com.example.CafeAutoSystem.ai_rpa.dto.InventoryResponse;
 import com.example.CafeAutoSystem.common.entity.IngredientEntity;
 import com.example.CafeAutoSystem.common.repository.CurrentStockLogRepository;
 import com.example.CafeAutoSystem.common.repository.IngredientRepository;

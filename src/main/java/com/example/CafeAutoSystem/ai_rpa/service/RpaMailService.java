@@ -1,11 +1,10 @@
-package com.example.CafeAutoSystem.jms_ai_rpa.service;
+package com.example.CafeAutoSystem.ai_rpa.service;
 
-import com.example.CafeAutoSystem.jms_ai_rpa.dto.OrderItemDto;
+import com.example.CafeAutoSystem.ai_rpa.dto.OrderItemDto;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -45,7 +44,7 @@ public class RpaMailService {
                     .append("================ [발주 품목 상세 리스트] ================\n");
 
             // for문 전개!
-            for (com.example.CafeAutoSystem.jms_ai_rpa.dto.OrderItemDto item : orderList) {
+            for (com.example.CafeAutoSystem.ai_rpa.dto.OrderItemDto item : orderList) {
                 itemDetails.append("■ 품목명: ").append(item.getIngredientName())
                         .append("  |  수량: ").append(item.getOrderQty()).append(" 개\n");
             }

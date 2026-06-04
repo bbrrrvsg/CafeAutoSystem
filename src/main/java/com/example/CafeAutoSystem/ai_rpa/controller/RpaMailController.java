@@ -1,10 +1,9 @@
-package com.example.CafeAutoSystem.jms_ai_rpa.controller;
+package com.example.CafeAutoSystem.ai_rpa.controller;
 
-import com.example.CafeAutoSystem.jms_ai_rpa.dto.OrderItemDto;
-import com.example.CafeAutoSystem.jms_ai_rpa.service.RpaExcelService;
-import com.example.CafeAutoSystem.jms_ai_rpa.service.RpaMailService;
+import com.example.CafeAutoSystem.ai_rpa.dto.OrderItemDto;
+import com.example.CafeAutoSystem.ai_rpa.service.RpaExcelService;
+import com.example.CafeAutoSystem.ai_rpa.service.RpaMailService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;

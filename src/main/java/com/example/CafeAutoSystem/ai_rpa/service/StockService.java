@@ -1,7 +1,7 @@
-package com.example.CafeAutoSystem.jms_ai_rpa.service;
+package com.example.CafeAutoSystem.ai_rpa.service;
 
-import com.example.CafeAutoSystem.jms_ai_rpa.dto.OrderRequest;
-import com.example.CafeAutoSystem.jms_ai_rpa.dto.StockOutResult;
+import com.example.CafeAutoSystem.ai_rpa.dto.OrderRequest;
+import com.example.CafeAutoSystem.ai_rpa.dto.StockOutResult;
 import com.example.CafeAutoSystem.common.entity.CurrentStockLogEntity;
 import com.example.CafeAutoSystem.common.entity.IngredientEntity;
 import com.example.CafeAutoSystem.common.entity.MenuRecipeEntity;
