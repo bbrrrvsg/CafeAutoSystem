@@ -16,6 +16,8 @@ const MENU_ITEMS = [
     { group: '발주 · AI', icon: 'bi-clock-history',  label: '발주 이력',         url: '/order-history' },
     { group: '관리',     icon: 'bi-people',         label: '거래처 관리',       url: '/vendor' },
     { group: '관리',     icon: 'bi-people',         label: '거래처 등록',       url: '/vendor/register' },
+    { group: '관리',     icon: 'bi-star',           label: '리뷰 관리',         url: '/review/manage' },
+    { group: '관리',     icon: 'bi-graph-up',       label: '리뷰 인사이트',     url: '/review/insight' },
     { group: '관리',     icon: 'bi-journal-text',   label: '로그 추적',         url: '/log' },
 ];
 
@@ -165,4 +167,3 @@ const MENU_ITEMS = [
         }
     });
 })();
-

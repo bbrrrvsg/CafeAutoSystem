@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+akw<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page isELIgnored="true" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <c:set var="pageTitle" value="발주 승인" scope="request" />

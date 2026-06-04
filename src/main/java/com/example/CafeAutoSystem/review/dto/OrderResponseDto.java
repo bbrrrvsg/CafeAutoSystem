@@ -1,5 +1,7 @@
 package com.example.CafeAutoSystem.review.dto;
 
+import com.example.CafeAutoSystem.review.entity.CafeOrder;
+import com.example.CafeAutoSystem.review.entity.OrderDetail;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,4 +21,18 @@ public class OrderResponseDto {
     private List<OrderDetailResponseDto> orderDetails;
     private String createdAt;
     private String updatedAt;
+
+    public static OrderResponseDto from(CafeOrder order, List<OrderDetail> details) {
+        List<OrderDetailResponseDto> orderDetails = details.stream()
+                .map(OrderDetailResponseDto::from)
+                .toList();
+        return OrderResponseDto.builder()
+                .orderId(order.getOrderId())
+                .orderPrice(order.getOrderPrice())
+                .qrUrl(order.getQrUrl())
+                .orderDetails(orderDetails)
+                .createdAt(order.getCreatedAt().toString())
+                .updatedAt(order.getUpdatedAt().toString())
+                .build();
+    }
 }

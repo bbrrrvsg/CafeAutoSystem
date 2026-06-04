@@ -1,12 +1,14 @@
 package com.example.CafeAutoSystem.review.entity;
 
 import com.example.CafeAutoSystem.common.entity.BaseTime;
+
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CollectionId;
+
 
 @Getter
 @Builder

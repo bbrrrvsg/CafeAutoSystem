@@ -31,47 +31,47 @@
     <!-- 제품 그리드 -->
     <div class="pos-products">
         <div class="product-grid">
-            <div class="product-card">
+            <div class="product-card" data-menu-id="1" data-price="3000">
                 <div class="p-thumb"></div>
                 <div class="p-name">아메리카노</div>
                 <div class="p-price">3,000원</div>
             </div>
-            <div class="product-card">
+            <div class="product-card" data-menu-id="2" data-price="3800">
                 <div class="p-thumb"></div>
                 <div class="p-name">카페라떼</div>
                 <div class="p-price">3,800원</div>
             </div>
-            <div class="product-card">
+            <div class="product-card" data-menu-id="3" data-price="4300">
                 <div class="p-thumb"></div>
                 <div class="p-name">바닐라라떼</div>
                 <div class="p-price">4,300원</div>
             </div>
-            <div class="product-card">
+            <div class="product-card" data-menu-id="4" data-price="4300">
                 <div class="p-thumb"></div>
                 <div class="p-name">카페모카</div>
                 <div class="p-price">4,300원</div>
             </div>
-            <div class="product-card">
+            <div class="product-card" data-menu-id="5" data-price="4000">
                 <div class="p-thumb"></div>
                 <div class="p-name">아메모카</div>
                 <div class="p-price">4,000원</div>
             </div>
-            <div class="product-card">
+            <div class="product-card" data-menu-id="6" data-price="4000">
                 <div class="p-thumb"></div>
                 <div class="p-name">카라멜 마키아또</div>
                 <div class="p-price">4,000원</div>
             </div>
-            <div class="product-card">
+            <div class="product-card" data-menu-id="7" data-price="4000">
                 <div class="p-thumb"></div>
                 <div class="p-name">초코라떼</div>
                 <div class="p-price">4,000원</div>
             </div>
-            <div class="product-card">
+            <div class="product-card" data-menu-id="8" data-price="4500">
                 <div class="p-thumb"></div>
                 <div class="p-name">딸기 에이드</div>
                 <div class="p-price">4,500원</div>
             </div>
-            <div class="product-card">
+            <div class="product-card" data-menu-id="9" data-price="4500">
                 <div class="p-thumb"></div>
                 <div class="p-name">콜드브루</div>
                 <div class="p-price">4,500원</div>
@@ -84,37 +84,17 @@
         <div class="cart-head">
             <h3>주문 내역 <span style="color:var(--text-muted);font-size:12px;font-weight:500;">· 테이블 5번</span></h3>
         </div>
-        <div class="cart-items">
-            <div class="cart-item">
-                <div>
-                    <span class="ci-name">아이스 아메리카노</span>
-                    <span class="ci-qty">× 1</span>
-                </div>
-                <span class="ci-price">3,000</span>
-            </div>
-            <div class="cart-item">
-                <div>
-                    <span class="ci-name">카페라떼</span>
-                    <span class="ci-qty">× 1</span>
-                </div>
-                <span class="ci-price">3,800</span>
-            </div>
-            <div class="cart-item">
-                <div>
-                    <span class="ci-name">바닐라라떼</span>
-                    <span class="ci-qty">× 1</span>
-                </div>
-                <span class="ci-price">4,300</span>
-            </div>
+        <div class="cart-items" id="cartItems">
+            <div style="text-align:center;color:#aaa;padding:32px 0;font-size:13px;">장바구니가 비어 있습니다.</div>
         </div>
         <div class="cart-foot">
             <div class="cart-total">
                 <span class="label">총 금액</span>
-                <span class="amount">11,100원</span>
+                <span class="amount" id="cartTotal">0원</span>
             </div>
             <div class="cart-actions">
-                <button class="btn btn-secondary">초기화</button>
-                <button class="btn btn-primary">결제하기</button>
+                <button class="btn btn-secondary" id="clearBtn">초기화</button>
+                <button class="btn btn-primary"   id="payBtn">결제하기</button>
             </div>
         </div>
     </div>
@@ -123,12 +103,13 @@
 
 <script>
     // 카테고리 토글
-    document.querySelectorAll('.pos-cat-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.pos-cat-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.pos-cat-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.pos-cat-btn').forEach(function (b) { b.classList.remove('active'); });
             btn.classList.add('active');
         });
     });
 </script>
+<script src="${pageContext.request.contextPath}/js/pos.js"></script>
 
 <jsp:include page="../layout/footer.jsp" />

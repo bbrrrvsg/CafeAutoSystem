@@ -30,4 +30,11 @@ public class OrderDetail extends BaseTime {
     @JoinColumn(name = "menu_id")
     private Menu menu;
 
+    public static OrderDetail create(CafeOrder cafeOrder, Menu menu, Integer quantity) {
+        return OrderDetail.builder()
+                .cafeOrder(cafeOrder)
+                .menu(menu)
+                .quantity(quantity)
+                .build();
+    }
 }

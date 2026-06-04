@@ -14,16 +14,10 @@ import lombok.NoArgsConstructor;
 public class ReviewAnalysisResponseDto {
 
     private Long analysisId;
-
     private Long reviewId;
-
     private Sentiment sentiment;
-
     private CategoryType category;
-
     private String summary;
-
     private String createdAt;
-
     private String updatedAt;
 }

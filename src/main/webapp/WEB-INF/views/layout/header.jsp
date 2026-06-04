@@ -67,6 +67,12 @@
             <li class="${menu == 'vendor' ? 'active' : ''}">
                 <a href="/vendor"><span class="menu-icon"><i class="bi bi-people"></i></span><span class="menu-label">거래처 관리</span></a>
             </li>
+            <li class="${menu == 'review-manage' ? 'active' : ''}">
+                <a href="/review/manage"><span class="menu-icon"><i class="bi bi-chat-left-text"></i></span><span class="menu-label">리뷰 관리</span></a>
+            </li>
+            <li class="${menu == 'review-insight' ? 'active' : ''}">
+                <a href="/review/insight"><span class="menu-icon"><i class="bi bi-bar-chart-line"></i></span><span class="menu-label">리뷰 대시보드</span></a>
+            </li>
             <li class="${menu == 'log' ? 'active' : ''}">
                 <a href="/log"><span class="menu-icon"><i class="bi bi-journal-text"></i></span><span class="menu-label">로그 추적</span></a>
             </li>

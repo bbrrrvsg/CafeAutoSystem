@@ -1,7 +1,7 @@
-package com.example.CafeAutoSystem.jms_ai_rpa.controller;
+package com.example.CafeAutoSystem.ai_rpa.controller;
 
-import com.example.CafeAutoSystem.jms_ai_rpa.dto.InventoryResponse;
-import com.example.CafeAutoSystem.jms_ai_rpa.service.InventoryService;
+import com.example.CafeAutoSystem.ai_rpa.dto.InventoryResponse;
+import com.example.CafeAutoSystem.ai_rpa.service.InventoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
