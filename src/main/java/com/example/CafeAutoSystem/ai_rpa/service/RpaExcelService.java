@@ -1,6 +1,6 @@
-package com.example.CafeAutoSystem.jms_ai_rpa.service;
+package com.example.CafeAutoSystem.ai_rpa.service;
 
-import com.example.CafeAutoSystem.jms_ai_rpa.dto.OrderItemDto;
+import com.example.CafeAutoSystem.ai_rpa.dto.OrderItemDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;

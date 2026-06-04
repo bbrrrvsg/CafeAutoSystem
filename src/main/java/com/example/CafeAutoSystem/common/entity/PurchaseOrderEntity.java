@@ -77,7 +77,7 @@ public class PurchaseOrderEntity extends BaseTime {
                 b.vendorName(this.vendorIngredient.getVendor().getVendorName());
             }
             if (this.vendorIngredient.getIngredient() != null) {
-                b.ingredientId(this.vendorIngredient.getIngredient().getIngredientId());
+                b.ingredientId(this.vendorIngredient.getIngredient().getIngredientId().intValue());
                 b.ingredientName(this.vendorIngredient.getIngredient().getIngredientName());
             }
         }

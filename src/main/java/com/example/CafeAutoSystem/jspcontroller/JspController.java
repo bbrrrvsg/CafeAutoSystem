@@ -34,7 +34,7 @@ public class JspController {
     @GetMapping("/inventory")     public String inventory()       { return "inventory/inventory"; }
 
     // 발주 · AI
-    @GetMapping("/ai-order")      public String aiOrder()         { return "ai-order/ai-order"; }
+    //@GetMapping("/ai-order")      public String aiOrder()         { return "ai-order/ai-order"; }
     @GetMapping("/ai-check")      public String aiCheck()         { return "ai-check/ai-check"; }
     @GetMapping("/approval")      public String approval()        { return "approval/approval"; }
     @GetMapping("/order")         public String order()           { return "order/order"; }

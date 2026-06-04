@@ -1,10 +1,9 @@
-package com.example.CafeAutoSystem.jms_ai_rpa.controller;
+package com.example.CafeAutoSystem.ai_rpa.controller;
 
-import com.example.CafeAutoSystem.jms_ai_rpa.dto.OrderItemDto;
-import com.example.CafeAutoSystem.jms_ai_rpa.service.RpaExcelService;
-import com.example.CafeAutoSystem.jms_ai_rpa.service.RpaMailService;
+import com.example.CafeAutoSystem.ai_rpa.dto.OrderItemDto;
+import com.example.CafeAutoSystem.ai_rpa.service.RpaExcelService;
+import com.example.CafeAutoSystem.ai_rpa.service.RpaMailService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,9 +28,9 @@ public class RpaMailController {
 
             // 🌟 테스트용 다중 품목 데이터 리스트 주입
             List<OrderItemDto> orderList = new java.util.ArrayList<>();
-            orderList.add(new com.example.CafeAutoSystem.jms_ai_rpa.dto.OrderItemDto("서울우유 1000ml", 15));
-            orderList.add(new com.example.CafeAutoSystem.jms_ai_rpa.dto.OrderItemDto("매일 멸균우유", 10));
-            orderList.add(new com.example.CafeAutoSystem.jms_ai_rpa.dto.OrderItemDto("휘핑크림 500ml", 5));
+            orderList.add(OrderItemDto.builder().ingredientName("서울우유 1000ml").orderQty(15).build());
+            orderList.add(OrderItemDto.builder().ingredientName("매일 멸균우유").orderQty(10).build());
+            orderList.add(OrderItemDto.builder().ingredientName("휘핑크림 500ml").orderQty(5).build());
 
             // 1. 다중 품목 엑셀 생성
             String createdExcelFile = rpaExcelService.createOrderExcelSheet(vendor, orderList);
