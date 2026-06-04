@@ -1,5 +1,6 @@
 package com.example.CafeAutoSystem.stock.service;
 
+import com.example.CafeAutoSystem.ai_rpa.service.SseEmitterManager;
 import com.example.CafeAutoSystem.common.entity.CurrentStockLogEntity;
 import com.example.CafeAutoSystem.common.entity.IngredientEntity;
 import com.example.CafeAutoSystem.common.entity.MenuRecipeEntity;
@@ -24,6 +25,7 @@ public class StockService {
     private final MenuRecipeRepository menuRecipeRepository;
     private final CurrentStockLogRepository currentStockLogRepository;
     private final IngredientRepository ingredientRepository;
+    private final SseEmitterManager sseEmitterManager;
 
     @Transactional
     public StockOutResult processOrder(OrderRequest request) {
@@ -99,6 +101,9 @@ public class StockService {
                     .build());
         }
 
+        // 주문 처리 완료 후 모든 inventory 화면에 실시간 갱신 푸시
+        sseEmitterManager.broadcastStockUpdate();
+
         return StockOutResult.builder()
                 .menuName(request.getMenuName())
                 .quantity(request.getQuantity())
@@ -136,5 +141,8 @@ public class StockService {
                 .build();
 
         currentStockLogRepository.save(reductionLog);
+
+        // 차감 후에도 SSE 푸시
+        sseEmitterManager.broadcastStockUpdate();
     }
 }
