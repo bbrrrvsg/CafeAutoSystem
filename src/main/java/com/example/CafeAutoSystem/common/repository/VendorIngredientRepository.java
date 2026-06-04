@@ -1,0 +1,14 @@
+package com.example.CafeAutoSystem.common.repository;
+
+import com.example.CafeAutoSystem.common.entity.VendorIngredientEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface VendorIngredientRepository extends JpaRepository<VendorIngredientEntity, Integer> {
+
+    // 특정 식자재의 거래처 매핑을 우선순위 오름차순 (1순위 → 2순위 → 3순위)
+    List<VendorIngredientEntity> findByIngredient_IngredientIdOrderByPriorityRankAsc(Integer ingredientId);
+}

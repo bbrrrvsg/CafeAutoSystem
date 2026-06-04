@@ -1,11 +1,10 @@
-package com.example.CafeAutoSystem.controller;
+package com.example.CafeAutoSystem.jspcontroller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
- * 전체 페이지 라우팅
- * 각 기능별 폴더의 JSP를 반환합니다.
+ * 전체 JSP 페이지 라우팅
  *
  * 폴더 구조:
  *   /WEB-INF/views/dashboard/dashboard.jsp
@@ -21,7 +20,7 @@ import org.springframework.web.bind.annotation.GetMapping;
  *   /WEB-INF/views/log/log.jsp
  */
 @Controller
-public class HomeController {
+public class JspController {
 
     // 대시보드
     @GetMapping("/")              public String dashboard()       { return "dashboard/dashboard"; }

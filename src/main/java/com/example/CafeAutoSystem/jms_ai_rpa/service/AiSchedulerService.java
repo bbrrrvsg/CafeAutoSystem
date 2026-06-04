@@ -1,6 +1,6 @@
 package com.example.CafeAutoSystem.jms_ai_rpa.service;
 
-import com.example.CafeAutoSystem.jms_ai_rpa.entity.HistoricalStockLogEntity;
+import com.example.CafeAutoSystem.common.entity.HistoricalStockLogEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

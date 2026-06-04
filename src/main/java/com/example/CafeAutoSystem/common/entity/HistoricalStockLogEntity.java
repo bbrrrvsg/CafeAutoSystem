@@ -1,42 +1,47 @@
-package com.example.CafeAutoSystem.jms_ai_rpa.entity;
+package com.example.CafeAutoSystem.common.entity;
 
-import com.example.CafeAutoSystem.global.config.BaseTime;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
+@Entity
+@Table(name = "historical_stock_log")
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
+@Data
 @Builder
-@Table(name = "HISTORICAL_STOCK_LOG")
 public class HistoricalStockLogEntity extends BaseTime {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "hist_log_id")
-    private Integer histLogId; // 누적로그번호 (PK)
+    private Integer histLogId;
 
     @Column(name = "ingredient_id", nullable = false)
-    private Integer ingredientId; // 식자재번호 (FK)
+    private Integer ingredientId;
 
     @Column(name = "order_item_id")
-    private Integer orderItemId; // 발주품목번호 (FK, Null 허용)
+    private Integer orderItemId;
 
     @Column(name = "log_type", nullable = false, length = 50)
-    private String logType; // 로그 유형 (STOCK_IN, STOCK_OUT 등)
+    private String logType;
 
     @Column(name = "message", nullable = false, columnDefinition = "TEXT")
-    private String message; // 로그 메시지
+    private String message;
 
     @Column(name = "amount", nullable = false)
-    private Integer amount; // 발생 수량
+    private Integer amount;
 
     @Column(name = "reason", nullable = false, length = 255)
-    private String reason; // 변동 사유
+    private String reason;
 
     @Column(name = "user_id", nullable = false, length = 50)
-    private String userId = "SYSTEM"; // 수행자 (기본값 SYSTEM)
+    private String userId;
 }
