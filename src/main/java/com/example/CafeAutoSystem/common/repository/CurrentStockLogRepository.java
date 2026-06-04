@@ -2,7 +2,6 @@ package com.example.CafeAutoSystem.common.repository;
 
 import com.example.CafeAutoSystem.common.entity.CurrentStockLogEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -26,12 +25,11 @@ public interface CurrentStockLogRepository extends JpaRepository<CurrentStockLog
     List<StockSumProjection>HisSum();
     // 디비만 업데이트 하기 때문에 dto 사용안하고 인터페이스 프로젝션 사용
     interface StockSumProjection{
-        Long getIngredientId();
-        Long getTotalAmount();
+        Integer getIngredientId();
+        Integer getTotalAmount();
 
     }
 
-}
     /**
      * 유통기한 만료 재고 조회
      * PURCHASE_ORDER.expiration_date 기준으로 만료된 STOCK_IN 로그 조회
@@ -52,4 +50,5 @@ public interface CurrentStockLogRepository extends JpaRepository<CurrentStockLog
      */
     @Query("SELECT COALESCE(SUM(c.amount), 0) FROM CurrentStockLogEntity c WHERE c.ingredient.ingredientId = :ingredientId")
     int convertToCurrentStock(@Param("ingredientId") Integer ingredientId);
+
 }

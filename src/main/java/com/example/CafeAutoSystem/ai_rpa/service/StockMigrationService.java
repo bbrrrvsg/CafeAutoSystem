@@ -1,4 +1,4 @@
-package com.example.CafeAutoSystem.jms_ai_rpa.service;
+package com.example.CafeAutoSystem.ai_rpa.service;
 
 import com.example.CafeAutoSystem.common.entity.CurrentStockLogEntity;
 import com.example.CafeAutoSystem.common.entity.IngredientEntity;
@@ -51,7 +51,7 @@ public class StockMigrationService {
             currentStockLogRepository.save(CurrentStockLogEntity.builder()
                     .ingredient(ing)
                     .logType("STOCK_FORWARD")
-                    .amount(s.getTotalAmount().intValue())
+                    .amount(s.getTotalAmount())
                     .reason("전월 재고 이월")
                     .message("[이월] " + ing.getIngredientName() + " 전월 마감 잔량 " + s.getTotalAmount())
                     .userId("SYSTEM")
