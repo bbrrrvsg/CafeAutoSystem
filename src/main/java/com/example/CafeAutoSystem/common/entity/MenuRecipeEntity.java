@@ -1,5 +1,6 @@
 package com.example.CafeAutoSystem.common.entity;
 
+import com.example.CafeAutoSystem.common.entity.IngredientEntity;
 import jakarta.persistence.*;
 import lombok.*;
 

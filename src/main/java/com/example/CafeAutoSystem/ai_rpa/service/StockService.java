@@ -1,12 +1,13 @@
-package com.example.CafeAutoSystem.ai_rpa.service;
+package com.example.CafeAutoSystem.jms_ai_rpa.service;
 
-import com.example.CafeAutoSystem.ai_rpa.dto.OrderRequest;
-import com.example.CafeAutoSystem.ai_rpa.dto.StockOutResult;
 import com.example.CafeAutoSystem.common.entity.CurrentStockLogEntity;
 import com.example.CafeAutoSystem.common.entity.IngredientEntity;
 import com.example.CafeAutoSystem.common.entity.MenuRecipeEntity;
 import com.example.CafeAutoSystem.common.repository.CurrentStockLogRepository;
+import com.example.CafeAutoSystem.common.repository.IngredientRepository;
 import com.example.CafeAutoSystem.common.repository.MenuRecipeRepository;
+import com.example.CafeAutoSystem.jms_ai_rpa.dto.OrderRequest;
+import com.example.CafeAutoSystem.jms_ai_rpa.dto.StockOutResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,16 +22,13 @@ import java.util.List;
 public class StockService {
 
     private final MenuRecipeRepository menuRecipeRepository;
-    private final CurrentStockLogRepository stockLogRepository;
+    private final CurrentStockLogRepository currentStockLogRepository;
+    private final IngredientRepository ingredientRepository;
 
-    /**
-     * 주문 수신 → MENU_RECIPE 기반 소요량 계산 → CURRENT_STOCK_LOG STOCK_OUT 기록
-     */
     @Transactional
     public StockOutResult processOrder(OrderRequest request) {
         log.info("[주문 수신] menu={} qty={}", request.getMenuName(), request.getQuantity());
 
-        // 1. 메뉴 레시피(재료 목록) 조회
         List<MenuRecipeEntity> recipes = menuRecipeRepository
                 .findByMenuNameWithIngredient(request.getMenuName());
 
@@ -40,38 +38,36 @@ public class StockService {
 
         List<StockOutResult.StockDetail> details = new ArrayList<>();
 
-        // 2. 재료별 소요량 계산 및 STOCK_OUT 로그 기록
         for (MenuRecipeEntity recipe : recipes) {
             IngredientEntity ingredient = recipe.getIngredient();
-
-            // 총 소요량 = required_quantity × 주문 수량
             int totalQty = recipe.calcTotalQty(request.getQuantity());
 
             String message = String.format("[판매] %s %d잔 판매",
                     request.getMenuName(), request.getQuantity());
 
-            // 3. CURRENT_STOCK_LOG INSERT (amount는 출고이므로 음수)
+            // STOCK_OUT 로그 INSERT
             CurrentStockLogEntity stockLog = CurrentStockLogEntity.builder()
                     .ingredient(ingredient)
-                    .orderItemId(null)          // 판매 차감은 발주와 무관하므로 null
+                    .orderItemId(null)
                     .logType("STOCK_OUT")
                     .message(message)
-                    .amount(-totalQty)          // 출고는 음수로 저장
+                    .amount(-totalQty)
                     .reason("레시피 자동 차감")
                     .userId("SYSTEM")
                     .build();
 
-            stockLogRepository.save(stockLog);
+            currentStockLogRepository.save(stockLog);
 
-            log.info("[STOCK_OUT] 재료={} 차감량={}{}", 
+            log.info("[STOCK_OUT] 재료={} 차감량={}{}",
                     ingredient.getIngredientName(), totalQty, ingredient.getUnit());
 
-            // 4. 현재 재고 합산 (CURRENT_STOCK_LOG SUM)으로 안전재고 이하 여부 확인
-            int currentStock = stockLogRepository
+            // 현재 재고 SUM 계산
+            int currentStock = currentStockLogRepository
                     .findByIngredient_IngredientId(ingredient.getIngredientId())
                     .stream()
                     .mapToInt(CurrentStockLogEntity::getAmount)
                     .sum();
+
             boolean isLowStock = currentStock <= ingredient.getSafetyStock();
 
             if (isLowStock) {
@@ -79,7 +75,6 @@ public class StockService {
                         ingredient.getIngredientName(), currentStock, ingredient.getUnit(),
                         ingredient.getSafetyStock(), ingredient.getUnit());
 
-                // STOCK_WARNING 로그 추가 기록
                 CurrentStockLogEntity warningLog = CurrentStockLogEntity.builder()
                         .ingredient(ingredient)
                         .orderItemId(null)
@@ -92,7 +87,7 @@ public class StockService {
                         .userId("SYSTEM")
                         .build();
 
-                stockLogRepository.save(warningLog);
+                currentStockLogRepository.save(warningLog);
             }
 
             details.add(StockOutResult.StockDetail.builder()
@@ -111,9 +106,35 @@ public class StockService {
                 .build();
     }
 
-    /** 특정 주문의 출고 내역 조회 */
+    /** 재료 ID로 출고 이력 조회 */
     @Transactional(readOnly = true)
-    public List<CurrentStockLogEntity> getStockLogsByIngredient(Long ingredientId) {
-        return stockLogRepository.findByIngredient_IngredientIdOrderByCreatedAtDesc(ingredientId);
+    public List<CurrentStockLogEntity> getStockLogsByIngredient(Integer ingredientId) {
+        return currentStockLogRepository.findByIngredient_IngredientId(ingredientId);
+    }
+
+    /** 실시간 전산 오차 모니터링 및 마이너스 재고 방지 차감 */
+    @Transactional
+    public void decreaseStockSecure(Integer ingredientId, int amount) {
+        IngredientEntity ingredient = ingredientRepository.findByIdForUpdate(ingredientId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 자재입니다. ID: " + ingredientId));
+
+        int realTimeCurrentStock = currentStockLogRepository.convertToCurrentStock(ingredientId);
+
+        if (realTimeCurrentStock - amount < 0) {
+            throw new IllegalStateException(
+                    String.format("[%s] 재고가 부족합니다. 현재 재고: %d, 차감 요청: %d",
+                            ingredient.getIngredientName(), realTimeCurrentStock, amount));
+        }
+
+        CurrentStockLogEntity reductionLog = CurrentStockLogEntity.builder()
+                .ingredient(ingredient)
+                .logType("STOCK_OUT")
+                .message(String.format("[차감] 정상 영업 소모 -%d%s", amount, ingredient.getUnit()))
+                .amount(-amount)
+                .reason("DAILY_CONSUME")
+                .userId("SYSTEM")
+                .build();
+
+        currentStockLogRepository.save(reductionLog);
     }
 }

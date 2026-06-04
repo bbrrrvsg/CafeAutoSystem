@@ -8,7 +8,7 @@ import lombok.*;
 @Builder
 public class InventoryResponse {
 
-    private Long ingredientId;  // 재료ID
+    private Integer ingredientId;  // 재료ID
     private String ingredientName;  // 재료 이름
     private String unit;        // 단위
     private int currentStock;   // CURRENT_STOCK_LOG SUM(amount) 현재 재고
