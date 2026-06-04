@@ -15,6 +15,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import com.example.CafeAutoSystem.vendoringredient.dto.VendorIngredientDto;
+
 @Entity
 @Table(name = "vendor_ingredient")
 @NoArgsConstructor
@@ -45,4 +47,17 @@ public class VendorIngredientEntity extends BaseTime {
 
     @Column(name = "priority_rank", nullable = false)
     private Integer priorityRank;
+
+    // 엔티티 → DTO (vendor/ingredient 가 LAZY 라 @Transactional 안에서 호출)
+    public VendorIngredientDto toDto() {
+        return VendorIngredientDto.builder()
+                .vendorIngredientId(this.vendorIngredientId)
+                .vendorId(this.vendor != null ? this.vendor.getVendorId() : null)
+                .vendorName(this.vendor != null ? this.vendor.getVendorName() : null)
+                .ingredientId(this.ingredient != null ? this.ingredient.getIngredientId().intValue() : null)
+                .ingredientName(this.ingredient != null ? this.ingredient.getIngredientName() : null)
+                .unitPrice(this.unitPrice)
+                .priorityRank(this.priorityRank)
+                .build();
+    }
 }

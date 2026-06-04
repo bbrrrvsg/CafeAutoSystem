@@ -1,7 +1,10 @@
 package com.example.CafeAutoSystem.purchase.service;
 
+import com.example.CafeAutoSystem.common.entity.CurrentStockLogEntity;
+import com.example.CafeAutoSystem.common.entity.IngredientEntity;
 import com.example.CafeAutoSystem.common.entity.PurchaseOrderEntity;
 import com.example.CafeAutoSystem.common.entity.VendorIngredientEntity;
+import com.example.CafeAutoSystem.common.repository.CurrentStockLogRepository;
 import com.example.CafeAutoSystem.common.repository.PurchaseOrderRepository;
 import com.example.CafeAutoSystem.common.repository.VendorIngredientRepository;
 import com.example.CafeAutoSystem.purchase.dto.PurchaseOrderDto;
@@ -19,6 +22,8 @@ public class PurchaseOrderService {
 
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final VendorIngredientRepository vendorIngredientRepository;
+    private final CurrentStockLogRepository currentStockLogRepository;
+
 
     @Value("${cafe.manager.password}")
     private String managerPassword;
@@ -57,6 +62,10 @@ public class PurchaseOrderService {
         verifyManagerPassword(password);
         PurchaseOrderEntity order = getPendingOrderOrThrow(orderItemId);
         order.setStatus("COMPLETED");
+        // 승인시 로그 작성을 위해 발주 엔티티 전달
+        if(order.getStatus().equals("COMPLETED")){
+            purchaseLog(order);
+        }
         return order.toDto();
     }
 
@@ -82,5 +91,19 @@ public class PurchaseOrderService {
         if (!managerPassword.equals(password)) {
             throw new IllegalArgumentException("점장 비밀번호가 일치하지 않습니다.");
         }
+    }
+
+    // 발주 로그
+    public void purchaseLog(PurchaseOrderEntity order) {
+        IngredientEntity ing = order.getVendorIngredient().getIngredient();
+        currentStockLogRepository.save(CurrentStockLogEntity.builder()
+                .ingredient(ing)                       // @ManyToOne → 엔티티 그대로
+                .orderItemId(order.getOrderItemId())
+                .logType("STOCK_IN")
+                .amount(order.getFinalQty())
+                .reason("정기 발주 입고")
+                .message("[입고] " + ing.getIngredientName() + " " + order.getFinalQty() + "개 입고")
+                .userId("SYSTEM")
+                .build());
     }
 }

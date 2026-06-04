@@ -21,19 +21,11 @@ public class VendorIngredientService {
         return vendorIngredientRepository
                 .findByIngredient_IngredientIdOrderByPriorityRankAsc(ingredientId)
                 .stream()
-                .map(this::toDto)
+                .map(VendorIngredientEntity::toDto)
                 .toList();
     }
 
-    private VendorIngredientDto toDto(VendorIngredientEntity vi) {
-        return VendorIngredientDto.builder()
-                .vendorIngredientId(vi.getVendorIngredientId())
-                .vendorId(vi.getVendor() != null ? vi.getVendor().getVendorId() : null)
-                .vendorName(vi.getVendor() != null ? vi.getVendor().getVendorName() : null)
-                .ingredientId(vi.getIngredient() != null ? vi.getIngredient().getIngredientId().intValue() : null)
-                .ingredientName(vi.getIngredient() != null ? vi.getIngredient().getIngredientName() : null)
-                .unitPrice(vi.getUnitPrice())
-                .priorityRank(vi.getPriorityRank())
-                .build();
-    }
+    // 거래쳐별 식자재 순위 계산 로직
+
+
 }
