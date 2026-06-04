@@ -233,6 +233,20 @@ textarea:focus { border-color: var(--primary-light); box-shadow: 0 0 0 4px rgba(
 .result-msg.msg-warning { background: #fff3cd; color: #856404; }
 .result-msg.msg-error   { background: #f8d7da; color: #842029; }
 
+/* 등록 완료 화면 */
+.done-section { display: none; }
+
+.done-header { text-align: center; padding: 12px 0 20px; }
+.done-icon   { font-size: 40px; margin-bottom: 12px; }
+.done-header h2 { margin: 0 0 6px; font-size: 18px; letter-spacing: -0.3px; }
+.done-header p  { margin: 0; color: var(--muted); font-size: 13px; }
+
+.done-content-box { background: var(--primary-soft); border-radius: 16px; padding: 16px 18px; margin-top: 4px; }
+.done-content-label { margin: 0 0 6px; color: var(--muted); font-size: 11px; font-weight: 800; }
+.done-content-text  { margin: 0; font-size: 14px; line-height: 1.65; color: var(--text); }
+
+.done-close-btn { margin-top: 16px; }
+
 @media (max-width: 460px) {
     .mobile-stage { padding: 0; align-items: stretch; }
     .phone-screen {

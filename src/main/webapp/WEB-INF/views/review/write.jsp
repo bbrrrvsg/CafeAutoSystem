@@ -59,7 +59,8 @@
             </div>
         </section>
 
-        <section class="review-card">
+        <!-- 작성 폼 (기본 표시) -->
+        <section class="review-card" id="writeSection">
             <div class="section-title">
                 <h2>리뷰 내용</h2>
                 <span id="charCount">0 / 500</span>
@@ -70,87 +71,28 @@
                 <span>i</span>
                 주문 건당 리뷰는 1회만 작성할 수 있습니다.
             </div>
-
             <div id="resultMsg" class="result-msg"></div>
-
             <button type="button" class="submit-btn" id="submitBtn">리뷰 등록</button>
             <button type="button" class="later-btn" onclick="history.back()">나중에 작성</button>
+        </section>
+
+        <!-- 등록 완료 화면 (숨김 → 성공 후 표시) -->
+        <section class="review-card done-section" id="doneSection">
+            <div class="done-header">
+                <div class="done-icon">✅</div>
+                <h2>리뷰가 등록되었습니다!</h2>
+                <p>소중한 의견 감사드립니다.</p>
+            </div>
+            <div class="done-content-box">
+                <p class="done-content-label">내가 작성한 리뷰</p>
+                <p id="doneContent" class="done-content-text"></p>
+            </div>
+            <button type="button" class="later-btn done-close-btn" onclick="window.close()">창 닫기</button>
         </section>
 
         <div class="home-indicator"></div>
     </section>
 </main>
-
-<script>
-    var orderId = null;
-
-    document.addEventListener('DOMContentLoaded', function () {
-        var params = new URLSearchParams(window.location.search);
-        orderId = params.get('orderId');
-
-        if (!orderId) {
-            document.getElementById('orderNumber').textContent = '주문 정보를 찾을 수 없습니다.';
-            document.getElementById('submitBtn').disabled = true;
-            return;
-        }
-
-        fetch('/api/orders/' + orderId)
-            .then(function (res) {
-                if (!res.ok) throw new Error('주문 조회 실패');
-                return res.json();
-            })
-            .then(function (order) {
-                document.getElementById('orderNumber').textContent = order.orderId;
-                document.getElementById('orderDate').textContent = order.createdAt
-                    ? order.createdAt.replace('T', ' ').substring(0, 16) : '-';
-                document.getElementById('orderPrice').textContent =
-                    order.orderPrice.toLocaleString() + '원';
-                var menus = (order.orderDetails || [])
-                    .map(function (d) { return d.menuName + ' ' + d.quantity + '잔'; })
-                    .join(', ');
-                document.getElementById('orderMenus').textContent = menus || '-';
-            })
-            .catch(function (err) {
-                document.getElementById('orderNumber').textContent = '조회 실패';
-                console.error(err);
-            });
-
-        document.getElementById('reviewContent').addEventListener('input', function () {
-            document.getElementById('charCount').textContent = this.value.length + ' / 500';
-        });
-
-        document.getElementById('submitBtn').addEventListener('click', function () {
-            var content = document.getElementById('reviewContent').value.trim();
-            if (!content) { showMsg('리뷰 내용을 입력해주세요.', 'msg-warning'); return; }
-
-            document.getElementById('submitBtn').disabled = true;
-
-            fetch('/api/reviews', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({orderId: parseInt(orderId), reviewContent: content})
-            })
-                .then(function (res) {
-                    if (!res.ok) return res.json().then(function (e) { throw new Error(e.message || '등록 실패'); });
-                    return res.json();
-                })
-                .then(function () {
-                    showMsg('리뷰가 등록되었습니다. 감사합니다! 😊', 'msg-success');
-                    document.getElementById('reviewContent').disabled = true;
-                })
-                .catch(function (err) {
-                    showMsg(err.message || '리뷰 등록에 실패했습니다.', 'msg-error');
-                    document.getElementById('submitBtn').disabled = false;
-                });
-        });
-    });
-
-    function showMsg(text, type) {
-        var el = document.getElementById('resultMsg');
-        el.textContent = text;
-        el.className = 'result-msg ' + type;
-        el.style.display = 'block';
-    }
-</script>
+<script src="${pageContext.request.contextPath}/js/review-write.js"></script>
 </body>
 </html>
