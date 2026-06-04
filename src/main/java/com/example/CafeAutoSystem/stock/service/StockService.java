@@ -1,4 +1,4 @@
-package com.example.CafeAutoSystem.jms_ai_rpa.service;
+package com.example.CafeAutoSystem.stock.service;
 
 import com.example.CafeAutoSystem.common.entity.CurrentStockLogEntity;
 import com.example.CafeAutoSystem.common.entity.IngredientEntity;
@@ -6,8 +6,8 @@ import com.example.CafeAutoSystem.common.entity.MenuRecipeEntity;
 import com.example.CafeAutoSystem.common.repository.CurrentStockLogRepository;
 import com.example.CafeAutoSystem.common.repository.IngredientRepository;
 import com.example.CafeAutoSystem.common.repository.MenuRecipeRepository;
-import com.example.CafeAutoSystem.jms_ai_rpa.dto.OrderRequest;
-import com.example.CafeAutoSystem.jms_ai_rpa.dto.StockOutResult;
+import com.example.CafeAutoSystem.stock.dto.OrderRequest;
+import com.example.CafeAutoSystem.stock.dto.StockOutResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
