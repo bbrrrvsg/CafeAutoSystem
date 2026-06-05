@@ -1,6 +1,5 @@
 package com.example.CafeAutoSystem.stock.service;
 
-import com.example.CafeAutoSystem.common.entity.CurrentStockLogEntity;
 import com.example.CafeAutoSystem.common.entity.IngredientEntity;
 import com.example.CafeAutoSystem.common.repository.CurrentStockLogRepository;
 import com.example.CafeAutoSystem.common.repository.IngredientRepository;
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -23,23 +23,24 @@ public class InventoryService {
 
     /**
      * 전체 재료 목록 + 현재 재고(LOG SUM) + 상태 계산
+     * 쿼리 2번으로 처리: 재료 전체 조회 + 재고 SUM 일괄 집계
      */
     @Transactional(readOnly = true)
     public List<InventoryResponse> getInventoryList() {
         List<IngredientEntity> ingredients = ingredientRepository.findAll();
 
-        return ingredients.stream().map(ingredient -> {
-            // CURRENT_STOCK_LOG SUM으로 현재 재고 계산
-            int currentStock = currentStockLogRepository
-                    .findByIngredient_IngredientId(ingredient.getIngredientId())
-                    .stream()
-                    .mapToInt(CurrentStockLogEntity::getAmount)
-                    .sum();
+        // 재료별 재고 SUM을 한 번에 조회 (GROUP BY 쿼리 1번)
+        Map<Integer, Integer> stockMap = currentStockLogRepository.HisSum().stream()
+                .collect(Collectors.toMap(
+                        CurrentStockLogRepository.StockSumProjection::getIngredientId,
+                        p -> p.getTotalAmount() != null ? p.getTotalAmount() : 0
+                ));
 
-            // 상태 계산
+        return ingredients.stream().map(ingredient -> {
+            int currentStock = stockMap.getOrDefault(ingredient.getIngredientId(), 0);
+
             String status = calcStatus(currentStock, ingredient.getSafetyStock());
 
-            // 프로그레스바 비율 (안전재고 * 2 기준 100%)
             int maxStock = ingredient.getSafetyStock() * 2;
             int percent = maxStock > 0
                     ? Math.min((int) ((double) currentStock / maxStock * 100), 100)
@@ -60,7 +61,4 @@ public class InventoryService {
 
     private String calcStatus(int currentStock, int safetyStock) {
         if (currentStock <= safetyStock) return "LOW";
-        if (currentStock <= safetyStock * 1.5) return "WARN";
-        return "OK";
-    }
-}
+       
