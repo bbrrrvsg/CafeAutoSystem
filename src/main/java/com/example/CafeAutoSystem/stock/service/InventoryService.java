@@ -61,4 +61,7 @@ public class InventoryService {
 
     private String calcStatus(int currentStock, int safetyStock) {
         if (currentStock <= safetyStock) return "LOW";
-       
+        if (currentStock <= safetyStock * 1.5) return "WARN";
+        return "OK";
+    }
+}
