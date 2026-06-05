@@ -43,6 +43,10 @@ public class JspController {
     // 관리
     @GetMapping("/vendor")          public String vendor()         { return "vendor/vendor"; }
     @GetMapping("/vendor/register") public String vendorRegister() { return "vendor/vendor-register"; }
+    @GetMapping("/ingredient")        public String ingredient()        { return "ingredient/ingredient"; }
+    @GetMapping("/menu")              public String menu()              { return "menu/menu"; }
+    @GetMapping("/menu-recipe")       public String menuRecipe()        { return "menu-recipe/menu-recipe"; }
+    @GetMapping("/vendor-ingredient") public String vendorIngredient()  { return "vendor-ingredient/vendor-ingredient"; }
     @GetMapping("/log")             public String log()            { return "log/log"; }
 
     // 리뷰 · 영수증

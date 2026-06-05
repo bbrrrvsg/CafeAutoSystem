@@ -6,196 +6,86 @@
 
 <section class="hero">
     <div class="hero-text">
-        <div class="hero-meta">SYSTEM LOG · 활동 기록</div>
-        <h1>오늘 <span class="accent">8개</span>의 활동이 기록됐어요.</h1>
-        <p class="hero-brief">시스템, AI, 사용자, 액션별로 발생한 모든 이벤트를 추적합니다.</p>
+        <div class="hero-meta">STOCK LOG · 재고 변동 기록</div>
+        <h1>총 <span class="accent"><span id="logCount">0</span>건</span>의 재고 변동이 기록됐어요.</h1>
+        <p class="hero-brief">입고(STOCK_IN)·판매(STOCK_OUT)·이월·폐기 등 모든 재고 변동 이벤트를 추적합니다.</p>
     </div>
     <div class="hero-side">
         <div class="date">마지막 활동</div>
-        <div class="time" style="font-size:14px; font-weight:600;">23:00:00</div>
+        <div class="time" id="lastTime" style="font-size:14px; font-weight:600;">—</div>
     </div>
 </section>
 
-<!-- 툴바 -->
 <div class="toolbar">
-    <input type="date" value="2026-05-16" style="padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
-    <span style="color:var(--text-muted);">~</span>
-    <input type="date" value="2026-05-16" style="padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
-
-    <select style="padding:8px 12px; border:1px solid var(--border); border-radius:10px; font-size:13px; background:var(--bg-content);">
-        <option>구분 전체</option>
-        <option>SYSTEM</option>
-        <option>AI</option>
-        <option>USER</option>
-        <option>ACTION</option>
+    <select id="typeFilter" style="padding:8px 12px; border:1px solid var(--border); border-radius:10px; font-size:13px; background:var(--bg-content);">
+        <option value="">구분 전체</option>
+        <option value="STOCK_IN">입고</option>
+        <option value="STOCK_OUT">출고/판매</option>
+        <option value="STOCK_FORWARD">이월</option>
+        <option value="STOCK_DISCARD">폐기</option>
+        <option value="STOCK_REJECT">반려</option>
+        <option value="STOCK_WARNING">경고</option>
     </select>
-
-    <select style="padding:8px 12px; border:1px solid var(--border); border-radius:10px; font-size:13px; background:var(--bg-content);">
-        <option>사용자 전체</option>
-        <option>시스템</option>
-        <option>AI 모델</option>
-        <option>사장님</option>
-    </select>
-
-    <button class="btn btn-primary btn-sm">조회</button>
-
+    <div class="search-input"><input type="text" id="searchInput" placeholder="내용 검색..."></div>
     <div class="toolbar-spacer"></div>
-
-    <!-- 보기 전환 -->
     <div class="chip-group" style="padding:2px;">
         <button class="chip active" id="viewTable" style="padding:5px 12px; font-size:12px;">테이블</button>
         <button class="chip" id="viewTimeline" style="padding:5px 12px; font-size:12px;">타임라인</button>
     </div>
-    <button class="btn btn-secondary btn-sm">내보내기</button>
 </div>
 
-<!-- 테이블 뷰 -->
 <div class="card flush" id="tableView">
     <table class="data-table">
-        <thead>
-            <tr>
-                <th style="width:130px;">시간</th>
-                <th style="width:90px;">구분</th>
-                <th>내용</th>
-                <th style="width:140px;">사용자/시스템</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td class="num">23:00:00</td>
-                <td><span class="timeline-tag system">SYSTEM</span></td>
-                <td>스케줄러 가동 — 일말 마감 프로세스 시작</td>
-                <td class="text-muted">시스템</td>
-            </tr>
-            <tr>
-                <td class="num">23:00:10</td>
-                <td><span class="timeline-tag system">SYSTEM</span></td>
-                <td>원두 재고 부족 감지 (현재고: 1.2kg &lt; 안전재고: 5kg)</td>
-                <td class="text-muted">시스템</td>
-            </tr>
-            <tr>
-                <td class="num">23:01:05</td>
-                <td><span class="timeline-tag ai">AI</span></td>
-                <td>AI 발주서 작성 완료 (원두 5kg, 우유 20팩 등)</td>
-                <td class="text-muted">AI 모델</td>
-            </tr>
-            <tr>
-                <td class="num">23:01:20</td>
-                <td><span class="timeline-tag ai">AI</span></td>
-                <td>AI 오발주 검사 결과 — 모든 항목 정상 범위</td>
-                <td class="text-muted">AI 모델</td>
-            </tr>
-            <tr>
-                <td class="num">09:00:15</td>
-                <td><span class="timeline-tag user">USER</span></td>
-                <td>사장님 로그인</td>
-                <td class="text-muted">사장님</td>
-            </tr>
-            <tr>
-                <td class="num">09:00:45</td>
-                <td><span class="timeline-tag action">ACTION</span></td>
-                <td>발주 승인 (PO-20260516-001)</td>
-                <td class="text-muted">사장님</td>
-            </tr>
-            <tr>
-                <td class="num">09:01:10</td>
-                <td><span class="timeline-tag action">ACTION</span></td>
-                <td>발주 이메일 전송 완료 (서울원두유통)</td>
-                <td class="text-muted">시스템</td>
-            </tr>
-            <tr>
-                <td class="num">14:30:00</td>
-                <td><span class="timeline-tag system">SYSTEM</span></td>
-                <td>일일 매출 집계 시작</td>
-                <td class="text-muted">시스템</td>
-            </tr>
-        </tbody>
+        <thead><tr><th style="width:170px;">시간</th><th style="width:120px;">구분</th><th>내용</th><th style="width:90px;">수량</th><th style="width:120px;">사용자</th></tr></thead>
+        <tbody id="tbody"><tr><td colspan="5" class="text-muted">불러오는 중...</td></tr></tbody>
     </table>
 </div>
 
-<!-- 타임라인 뷰 (숨김) -->
 <div class="card" id="timelineView" style="display:none;">
-    <div class="timeline">
-        <div class="timeline-item system">
-            <div class="timeline-head">
-                <span class="timeline-time">23:00:00</span>
-                <span class="timeline-tag system">SYSTEM</span>
-                <span class="timeline-actor">시스템</span>
-            </div>
-            <div class="timeline-content">스케줄러 가동 — 일말 마감 프로세스 시작</div>
-        </div>
-        <div class="timeline-item system">
-            <div class="timeline-head">
-                <span class="timeline-time">23:00:10</span>
-                <span class="timeline-tag system">SYSTEM</span>
-                <span class="timeline-actor">시스템</span>
-            </div>
-            <div class="timeline-content">원두 재고 부족 감지 (현재고 1.2kg &lt; 안전재고 5kg)</div>
-        </div>
-        <div class="timeline-item ai">
-            <div class="timeline-head">
-                <span class="timeline-time">23:01:05</span>
-                <span class="timeline-tag ai">AI</span>
-                <span class="timeline-actor">AI 모델</span>
-            </div>
-            <div class="timeline-content">AI 발주 초안 생성 완료 (원두 5kg, 우유 20팩 등)</div>
-        </div>
-        <div class="timeline-item ai">
-            <div class="timeline-head">
-                <span class="timeline-time">23:01:20</span>
-                <span class="timeline-tag ai">AI</span>
-                <span class="timeline-actor">AI 모델</span>
-            </div>
-            <div class="timeline-content">AI 오발주 검사 결과 통과 — 모든 항목 정상 범위</div>
-        </div>
-        <div class="timeline-item user">
-            <div class="timeline-head">
-                <span class="timeline-time">09:00:15</span>
-                <span class="timeline-tag user">USER</span>
-                <span class="timeline-actor">사장님</span>
-            </div>
-            <div class="timeline-content">사장님 로그인</div>
-        </div>
-        <div class="timeline-item action">
-            <div class="timeline-head">
-                <span class="timeline-time">09:00:45</span>
-                <span class="timeline-tag action">ACTION</span>
-                <span class="timeline-actor">사장님</span>
-            </div>
-            <div class="timeline-content">발주 승인 (PO-20260516-001)</div>
-        </div>
-        <div class="timeline-item action">
-            <div class="timeline-head">
-                <span class="timeline-time">09:01:10</span>
-                <span class="timeline-tag action">ACTION</span>
-                <span class="timeline-actor">시스템</span>
-            </div>
-            <div class="timeline-content">발주 이메일 전송 완료 (서울원두유통)</div>
-        </div>
-        <div class="timeline-item system">
-            <div class="timeline-head">
-                <span class="timeline-time">14:30:00</span>
-                <span class="timeline-tag system">SYSTEM</span>
-                <span class="timeline-actor">시스템</span>
-            </div>
-            <div class="timeline-content">일일 매출 집계 시작</div>
-        </div>
-    </div>
+    <div class="timeline" id="timeline"></div>
 </div>
 
 <script>
-    document.getElementById('viewTable').addEventListener('click', () => {
-        document.getElementById('viewTable').classList.add('active');
-        document.getElementById('viewTimeline').classList.remove('active');
-        document.getElementById('tableView').style.display = '';
-        document.getElementById('timelineView').style.display = 'none';
-    });
-    document.getElementById('viewTimeline').addEventListener('click', () => {
-        document.getElementById('viewTimeline').classList.add('active');
-        document.getElementById('viewTable').classList.remove('active');
-        document.getElementById('tableView').style.display = 'none';
-        document.getElementById('timelineView').style.display = '';
-    });
+const $=id=>document.getElementById(id);
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+let LOGS=[];
+function tagClass(t){ if(t==='STOCK_IN'||t==='STOCK_FORWARD')return 'action'; if(t==='STOCK_OUT'||t==='STOCK_DISCARD')return 'system'; if(t==='STOCK_WARNING'||t==='STOCK_REJECT')return 'ai'; return 'user'; }
+function fmt(dt){ return (dt||'').replace('T',' ').substring(0,19); }
+
+async function load(){
+    try{ LOGS=await (await fetch('/api/stock/logs')).json(); render(); }
+    catch(e){ $('tbody').innerHTML='<tr><td colspan="5" class="text-muted">불러오기 실패: '+e.message+'</td></tr>'; }
+}
+function filtered(){
+    const t=$('typeFilter').value, q=$('searchInput').value.trim().toLowerCase();
+    return LOGS.filter(l => (!t || l.logType===t) && (!q || (l.message||'').toLowerCase().includes(q)));
+}
+function render(){
+    $('logCount').textContent=LOGS.length;
+    if(LOGS.length) $('lastTime').textContent=fmt(LOGS[0].createdAt).substring(11);
+    const list=filtered();
+    // 테이블
+    $('tbody').innerHTML = list.length? list.map(l=>
+        '<tr><td class="num">'+esc(fmt(l.createdAt))+'</td>'+
+        '<td><span class="timeline-tag '+tagClass(l.logType)+'">'+esc(l.logType)+'</span></td>'+
+        '<td>'+esc(l.message||'')+'</td>'+
+        '<td class="num">'+(l.amount!=null?(l.amount>0?'+':'')+l.amount.toLocaleString():'')+'</td>'+
+        '<td class="text-muted">'+esc(l.userId||'')+'</td></tr>').join('')
+        : '<tr><td colspan="5" class="text-muted">로그가 없습니다.</td></tr>';
+    // 타임라인
+    $('timeline').innerHTML = list.map(l=>{
+        const cls=tagClass(l.logType);
+        return '<div class="timeline-item '+cls+'"><div class="timeline-head">'+
+            '<span class="timeline-time">'+esc(fmt(l.createdAt))+'</span>'+
+            '<span class="timeline-tag '+cls+'">'+esc(l.logType)+'</span>'+
+            '<span class="timeline-actor">'+esc(l.userId||'')+'</span></div>'+
+            '<div class="timeline-content">'+esc(l.message||'')+'</div></div>';
+    }).join('');
+}
+$('typeFilter').onchange=render; $('searchInput').addEventListener('input',render);
+$('viewTable').onclick=()=>{ $('viewTable').classList.add('active'); $('viewTimeline').classList.remove('active'); $('tableView').style.display=''; $('timelineView').style.display='none'; };
+$('viewTimeline').onclick=()=>{ $('viewTimeline').classList.add('active'); $('viewTable').classList.remove('active'); $('tableView').style.display='none'; $('timelineView').style.display=''; };
+load();
 </script>
 
 <jsp:include page="../layout/footer.jsp" />
