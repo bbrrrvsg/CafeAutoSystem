@@ -126,29 +126,4 @@ public class StockService {
         return currentStockLogRepository.findTop300ByOrderByCreatedAtDesc();
     }
 
-    /** 실시간 전산 오차 모니터링 및 마이너스 재고 방지 차감 */
-    @Transactional
-    public void decreaseStockSecure(Integer ingredientId, int amount) {
-        IngredientEntity ingredient = ingredientRepository.findByIdForUpdate(ingredientId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 자재입니다. ID: " + ingredientId));
-
-        int realTimeCurrentStock = currentStockLogRepository.convertToCurrentStock(ingredientId);
-
-        if (realTimeCurrentStock - amount < 0) {
-            throw new IllegalStateException(
-                    String.format("[%s] 재고가 부족합니다. 현재 재고: %d, 차감 요청: %d",
-                            ingredient.getIngredientName(), realTimeCurrentStock, amount));
-        }
-
-        CurrentStockLogEntity reductionLog = CurrentStockLogEntity.builder()
-                .ingredient(ingredient)
-                .logType("STOCK_OUT")
-                .message(String.format("[차감] 정상 영업 소모 -%d%s", amount, ingredient.getUnit()))
-                .amount(-amount)
-                .reason("DAILY_CONSUME")
-                .userId("SYSTEM")
-                .build();
-
-        currentStockLogRepository.save(reductionLog);
-    }
 }
