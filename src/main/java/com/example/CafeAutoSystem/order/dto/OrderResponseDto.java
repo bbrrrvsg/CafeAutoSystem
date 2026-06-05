@@ -1,4 +1,4 @@
-package com.example.CafeAutoSystem.review.dto;
+package com.example.CafeAutoSystem.order.dto;
 
 import com.example.CafeAutoSystem.review.entity.CafeOrder;
 import com.example.CafeAutoSystem.review.entity.OrderDetail;
@@ -26,13 +26,14 @@ public class OrderResponseDto {
         List<OrderDetailResponseDto> orderDetails = details.stream()
                 .map(OrderDetailResponseDto::from)
                 .toList();
+
         return OrderResponseDto.builder()
                 .orderId(order.getOrderId())
                 .orderPrice(order.getOrderPrice())
                 .qrUrl(order.getQrUrl())
                 .orderDetails(orderDetails)
-                .createdAt(order.getCreatedAt().toString())
-                .updatedAt(order.getUpdatedAt().toString())
+                .createdAt(order.getCreatedAt() == null ? null : order.getCreatedAt().toString())
+                .updatedAt(order.getUpdatedAt() == null ? null : order.getUpdatedAt().toString())
                 .build();
     }
 }

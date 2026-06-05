@@ -1,4 +1,4 @@
-package com.example.CafeAutoSystem.review.dto;
+package com.example.CafeAutoSystem.order.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @Builder
-public class ReviewReplyRequestDto {
-    private String replyContent;
+public class OrderItemEvent {
+
+    private Long menuId;
+    private Integer quantity;
 }

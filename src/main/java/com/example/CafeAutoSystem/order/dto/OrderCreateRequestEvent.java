@@ -1,4 +1,4 @@
-package com.example.CafeAutoSystem.review.dto;
+package com.example.CafeAutoSystem.order.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +11,8 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @Builder
-public class OrderCreateRequestDto {
+public class OrderCreateRequestEvent {
 
-    private List<OrderItemRequestDto> items;
+    private String requestId;
+    private List<OrderItemEvent> items;
 }
