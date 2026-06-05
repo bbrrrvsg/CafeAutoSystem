@@ -271,6 +271,17 @@
     }
 
     loadInventory();
+
+    // SSE 연결 - 주문 발생 시 서버가 푸시하면 재고 자동 갱신
+    const evtSource = new EventSource('/api/sse/stock');
+    evtSource.addEventListener('stockUpdate', function(e) {
+        console.log('[SSE] 재고 변경 감지 - 화면 갱신');
+        loadInventory();
+    });
+    evtSource.onerror = function() {
+        console.warn('[SSE] 연결 끊김 - 자동 재연결 시도 중...');
+    };
+
 </script>
 
 <jsp:include page="../layout/footer.jsp" />
