@@ -16,6 +16,9 @@ public interface CurrentStockLogRepository extends JpaRepository<CurrentStockLog
     /** 재료별 로그 최신순 조회 */
     List<CurrentStockLogEntity> findByIngredient_IngredientIdOrderByCreatedAtDesc(Long ingredientId);
 
+    /** 전체 로그 최신순 (활동 로그 화면용, 최근 300건) */
+    List<CurrentStockLogEntity> findTop300ByOrderByCreatedAtDesc();
+
     // 현제 로그 집계 후 첫행에 총수량 반영을 위해
     @Query("""
             SELECT c.ingredient.ingredientId AS ingredientId, SUM(c.amount) AS totalAmount

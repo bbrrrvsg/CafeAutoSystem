@@ -34,11 +34,11 @@ INSERT INTO vendor (vendor_name, manager_email, manager_phone, created_at, updat
 -- ---------------------------------------------------------
 -- INGREDIENT  식자재 마스터 (심준현 담당, PDF: 4개)
 -- ---------------------------------------------------------
-INSERT INTO ingredient (ingredient_name, unit, safety_stock, ingredient_image) VALUES
-('하우스 블렌드 원두',  'g',    5000, '/images/ingredients/house_blend.jpg'),
-('파우더 및 시럽',      '개',   10,   '/images/ingredients/powder_syrup.jpg'),
-('냉동 딸기 블렌드',    'pack', 5,    '/images/ingredients/frozen_strawberry.jpg'),
-('신선한 우유(1L)',     'ml',   5000, '/images/ingredients/fresh_milk_1l.jpg');
+INSERT INTO ingredient (ingredient_name, unit, safety_stock, ingredient_image, order_unit, unit_per_order) VALUES
+('하우스 블렌드 원두',  'g',    5000, '/images/ingredients/house_blend.jpg',        'kg',   1000),
+('파우더 및 시럽',      '개',   10,   '/images/ingredients/powder_syrup.jpg',      '개',   1),
+('냉동 딸기 블렌드',    'pack', 5,    '/images/ingredients/frozen_strawberry.jpg', 'pack', 1),
+('신선한 우유(1L)',     'ml',   5000, '/images/ingredients/fresh_milk_1l.jpg',      '팩',   1000);
 
 -- ---------------------------------------------------------
 -- VENDOR_INGREDIENT  거래처별 식자재 매핑 (PDF 그대로 3개)
@@ -58,17 +58,17 @@ INSERT INTO vendor_ingredient (vendor_id, ingredient_id, unit_price, priority_ra
 INSERT INTO purchase_order
     (vendor_ingredient_id, order_date_key, suggested_qty, final_qty, status, expiration_date, created_at, updated_at) VALUES
 -- 2026-05-25
-(3, 'PO-20260525', 5000, 5000, 'COMPLETED', '2026-07-25', '2026-05-25 08:00:00', '2026-05-25 11:30:00'),  -- 원두 5000g 입고
+(3, 'PO-20260525', 5,    5,    'COMPLETED', '2026-07-25', '2026-05-25 08:00:00', '2026-05-25 11:30:00'),  -- 원두 5kg 입고 (→ 5000g 환산)
 (1, 'PO-20260525', 20,   20,   'COMPLETED', '2026-06-01', '2026-05-25 08:00:00', '2026-05-25 11:32:00'),  -- 우유 20팩 입고
 
 -- 2026-05-26
 (1, 'PO-20260526', 50,   0,    'REJECTED',  NULL,         '2026-05-26 08:00:00', '2026-05-26 10:50:00'),  -- 우유 과다발주 반려
-(3, 'PO-20260526', 3000, 0,    'REJECTED',  NULL,         '2026-05-26 08:00:00', '2026-05-26 10:55:00'),  -- 원두 단가 비싸 반려
+(3, 'PO-20260526', 3,    0,    'REJECTED',  NULL,         '2026-05-26 08:00:00', '2026-05-26 10:55:00'),  -- 원두 단가 비싸 반려
 
 -- 2026-05-28 (대기)
 (1, 'PO-20260528', 15,   15,   'PENDING',   '2026-06-04', '2026-05-28 08:00:00', '2026-05-28 08:00:00'),
 (2, 'PO-20260528', 25,   25,   'PENDING',   '2026-06-05', '2026-05-28 08:00:00', '2026-05-28 08:00:00'),  -- 우유 2순위 사용
-(3, 'PO-20260528', 5000, 5000, 'PENDING',   '2026-07-28', '2026-05-28 08:00:00', '2026-05-28 08:00:00'),
+(3, 'PO-20260528', 5,    5,    'PENDING',   '2026-07-28', '2026-05-28 08:00:00', '2026-05-28 08:00:00'),
 
 -- 2026-05-30
 (2, 'PO-20260530', 30,   30,   'COMPLETED', '2026-06-06', '2026-05-30 08:00:00', '2026-05-30 13:45:00');

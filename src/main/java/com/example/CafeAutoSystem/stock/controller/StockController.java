@@ -39,4 +39,12 @@ public class StockController {
             @PathVariable Integer ingredientId) {
         return ResponseEntity.ok(stockService.getStockLogsByIngredient(ingredientId));
     }
+
+    /**
+     * [GET] 전체 재고 로그 최신순 (활동 로그 화면용)
+     */
+    @GetMapping("/logs")
+    public ResponseEntity<List<CurrentStockLogEntity>> getAllLogs() {
+        return ResponseEntity.ok(stockService.getAllLogs());
+    }
 }

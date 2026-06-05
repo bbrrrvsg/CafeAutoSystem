@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -37,6 +39,49 @@ public class PurchaseOrderService {
         return purchaseOrderRepository.findByStatus(status).stream()
                 .map(PurchaseOrderEntity::toDto)
                 .toList();
+    }
+
+    // 단건 조회
+    public PurchaseOrderDto getById(Integer orderItemId) {
+        PurchaseOrderEntity order = purchaseOrderRepository.findById(orderItemId)
+                .orElseThrow(() -> new IllegalArgumentException("발주서를 찾을 수 없습니다. id=" + orderItemId));
+        return order.toDto();
+    }
+
+    // 생성 (PENDING 발주서 신규 등록)
+    //   수량(suggestedQty/finalQty) 단위는 식자재(ingredient.unit) 기준 — 프론트가 그 단위로 입력
+    public PurchaseOrderDto createOrder(PurchaseOrderDto dto) {
+        if (dto.getVendorIngredientId() == null) {
+            throw new IllegalArgumentException("거래처-식자재 매핑(vendorIngredientId)은 필수입니다.");
+        }
+        VendorIngredientEntity vi = vendorIngredientRepository.findById(dto.getVendorIngredientId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "거래처 매핑을 찾을 수 없습니다. id=" + dto.getVendorIngredientId()));
+
+        Integer suggested = dto.getSuggestedQty();
+        if (suggested == null || suggested <= 0) {
+            throw new IllegalArgumentException("발주 수량(suggestedQty)은 1 이상이어야 합니다.");
+        }
+        Integer finalQty = (dto.getFinalQty() != null) ? dto.getFinalQty() : suggested;
+
+        PurchaseOrderEntity order = PurchaseOrderEntity.builder()
+                .vendorIngredient(vi)
+                .orderDateKey("PO-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+                .suggestedQty(suggested)
+                .finalQty(finalQty)
+                .status("PENDING")
+                .expirationDate(dto.getExpirationDate())
+                .build();
+
+        return purchaseOrderRepository.save(order).toDto();
+    }
+
+    // 삭제
+    public void deleteOrder(Integer orderItemId) {
+        if (!purchaseOrderRepository.existsById(orderItemId)) {
+            throw new IllegalArgumentException("발주서를 찾을 수 없습니다. id=" + orderItemId);
+        }
+        purchaseOrderRepository.deleteById(orderItemId);
     }
 
     // 수정 (수량 / 거래처매핑 변경)
@@ -75,6 +120,9 @@ public class PurchaseOrderService {
         PurchaseOrderEntity order = getPendingOrderOrThrow(orderItemId);
         order.setStatus("REJECTED");
         order.setFinalQty(0);
+        if(order.getStatus().equals("REJECTED")){
+            rejectLog(order);
+        }
         return order.toDto();
     }
 
@@ -93,16 +141,32 @@ public class PurchaseOrderService {
         }
     }
 
-    // 발주 로그
+    // 발주 로그 — 발주량(발주단위)을 재고단위로 환산해 STOCK_IN 기록
     public void purchaseLog(PurchaseOrderEntity order) {
         IngredientEntity ing = order.getVendorIngredient().getIngredient();
+        int factor = ing.unitPerOrderOrDefault();      // 1 발주단위 = factor 재고단위
+        int amount = order.getFinalQty() * factor;      // 예: 우유 15팩 × 1000 = 15000ml
         currentStockLogRepository.save(CurrentStockLogEntity.builder()
                 .ingredient(ing)                       // @ManyToOne → 엔티티 그대로
                 .orderItemId(order.getOrderItemId())
                 .logType("STOCK_IN")
-                .amount(order.getFinalQty())
+                .amount(amount)                        // 재고단위(ml/g/개)로 저장 → recipe/재고와 일관
                 .reason("정기 발주 입고")
-                .message("[입고] " + ing.getIngredientName() + " " + order.getFinalQty() + "개 입고")
+                .message("[입고] " + ing.getIngredientName() + " " + order.getFinalQty() + ing.orderUnitOrDefault()
+                        + " 입고 (" + amount + ing.getUnit() + ")")
+                .userId("SYSTEM")
+                .build());
+    }
+    // 반려 로그 (입고와 별개)
+    public void rejectLog(PurchaseOrderEntity order) {
+        IngredientEntity ing = order.getVendorIngredient().getIngredient();
+        currentStockLogRepository.save(CurrentStockLogEntity.builder()
+                .ingredient(ing)
+                .orderItemId(order.getOrderItemId())
+                .logType("STOCK_REJECT")              // 반려 전용 타입
+                .amount(0)
+                .reason("발주 반려")
+                .message("[반려] " + ing.getIngredientName() + " 발주 반려")
                 .userId("SYSTEM")
                 .build());
     }

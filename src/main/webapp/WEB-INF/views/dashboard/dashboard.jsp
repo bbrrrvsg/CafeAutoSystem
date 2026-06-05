@@ -36,26 +36,15 @@
     <!-- 2) 재고 부족 (피치) -->
     <div class="bento peach col-3">
         <h4>재고 부족 · 즉시 발주 필요</h4>
-        <div class="mini-list">
-            <div class="mini-list-item">
-                <span class="name">원두 (블렌드)</span>
-                <span class="val">−3.8 kg</span>
-            </div>
-            <div class="mini-list-item">
-                <span class="name">우유 1L</span>
-                <span class="val">−17 팩</span>
-            </div>
-            <div class="mini-list-item">
-                <span class="name">바닐라 시럽</span>
-                <span class="val">−1.7 L</span>
-            </div>
+        <div class="mini-list" id="dashLowList">
+            <div class="mini-list-item text-muted"><span class="name">불러오는 중...</span></div>
         </div>
     </div>
 
     <!-- 3) 발주 대기 (라벤더) -->
     <div class="bento lavender col-3">
         <div class="tile-label">발주 대기</div>
-        <div class="tile-value">3<span class="unit">건</span></div>
+        <div class="tile-value"><span id="dashPending">0</span><span class="unit">건</span></div>
         <div class="tile-foot">
             <span class="pill"><span class="dot"></span>승인 필요</span>
             <span>→</span>
@@ -184,6 +173,24 @@
             interaction: { intersect: false, mode: 'index' }
         }
     });
+</script>
+
+<!-- 실데이터 연동: 재고 부족 / 발주 대기 (매출·AI·인기메뉴 타일은 POS/AI 영역이라 목업 유지) -->
+<script>
+(async function dashLive(){
+    try{
+        const inv = await (await fetch('/api/inventory')).json();
+        const low = inv.filter(d => d.status === 'LOW');
+        const el = document.getElementById('dashLowList');
+        if (el) el.innerHTML = low.length
+            ? low.slice(0,5).map(d => '<div class="mini-list-item"><span class="name">'+d.ingredientName+'</span><span class="val">'+d.currentStock.toLocaleString()+'/'+d.safetyStock.toLocaleString()+d.unit+'</span></div>').join('')
+            : '<div class="mini-list-item text-muted"><span class="name">부족 품목 없음</span></div>';
+    } catch(e) {}
+    try {
+        const pend = await (await fetch('/api/order/pending')).json();
+        const p = document.getElementById('dashPending'); if (p) p.textContent = pend.length;
+    } catch(e) {}
+})();
 </script>
 
 <jsp:include page="../layout/footer.jsp" />

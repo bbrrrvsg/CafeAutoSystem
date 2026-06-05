@@ -1,10 +1,12 @@
 package com.example.CafeAutoSystem.review.entity;
 
 import com.example.CafeAutoSystem.common.entity.BaseTime;
+import com.example.CafeAutoSystem.menu.dto.MenuDto;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -22,6 +24,14 @@ public class Menu extends BaseTime {
     @Column(name = "menu_price" , nullable = false)
     private Integer menuPrice;
 
-
-
+    // 엔티티 → DTO
+    public MenuDto toDto() {
+        return MenuDto.builder()
+                .menuId(this.menuId)
+                .menuName(this.menuName)
+                .menuPrice(this.menuPrice)
+                .createdAt(getCreatedAt())
+                .updatedAt(getUpdatedAt())
+                .build();
+    }
 }

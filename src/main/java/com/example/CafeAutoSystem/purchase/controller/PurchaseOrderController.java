@@ -3,8 +3,10 @@ package com.example.CafeAutoSystem.purchase.controller;
 import com.example.CafeAutoSystem.purchase.dto.PurchaseOrderDto;
 import com.example.CafeAutoSystem.purchase.service.PurchaseOrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,6 +40,28 @@ public class PurchaseOrderController {
     @GetMapping("/rejected")
     public List<PurchaseOrderDto> getRejectedList() {
         return purchaseOrderService.getRejectedList();
+    }
+
+    // -----------------------------------------------------
+    // [POST] /api/order  — 발주서 신규 생성 (status=PENDING)
+    //   body: { vendorIngredientId, suggestedQty, finalQty?, expirationDate? }
+    //   수량 단위는 식자재(ingredient.unit) 기준
+    // -----------------------------------------------------
+    @PostMapping
+    public PurchaseOrderDto create(@RequestBody PurchaseOrderDto dto) {
+        return purchaseOrderService.createOrder(dto);
+    }
+
+    // [GET] /api/order/{id} — 단건 조회
+    @GetMapping("/{id}")
+    public PurchaseOrderDto getOne(@PathVariable Integer id) {
+        return purchaseOrderService.getById(id);
+    }
+
+    // [DELETE] /api/order/{id} — 삭제
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Integer id) {
+        purchaseOrderService.deleteOrder(id);
     }
 
     // -----------------------------------------------------

@@ -238,8 +238,8 @@
                 '<td><span class="status ' + s.cls + '"><span class="dot"></span>' + s.label + '</span></td>' +
                 '<td class="text-right">' +
                     '<div class="row-actions">' +
-                        '<button>수정</button>' +
-                        '<button class="danger">삭제</button>' +
+                        '<button onclick="location.href=\'/ingredient\'">수정</button>' +
+                        '<button class="danger" onclick="delIngredient(' + item.ingredientId + ')">삭제</button>' +
                     '</div>' +
                 '</td>' +
             '</tr>';
@@ -268,6 +268,12 @@
             filtered = filtered.filter(d => d.ingredientName.toLowerCase().includes(keyword));
         }
         renderTable(filtered);
+    }
+
+    async function delIngredient(id){
+        if(!confirm('식자재 #'+id+' 삭제할까요?')) return;
+        const r = await fetch('/api/ingredient/'+id, { method:'DELETE' });
+        if(r.ok) loadInventory(); else alert('삭제 실패 ('+r.status+') — 발주/재고/레시피가 참조 중일 수 있습니다.');
     }
 
     loadInventory();

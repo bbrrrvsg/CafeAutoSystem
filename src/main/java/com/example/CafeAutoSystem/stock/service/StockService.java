@@ -112,6 +112,12 @@ public class StockService {
         return currentStockLogRepository.findByIngredient_IngredientId(ingredientId);
     }
 
+    /** 전체 재고 로그 최신순 (활동 로그 화면용) */
+    @Transactional(readOnly = true)
+    public List<CurrentStockLogEntity> getAllLogs() {
+        return currentStockLogRepository.findTop300ByOrderByCreatedAtDesc();
+    }
+
     /** 실시간 전산 오차 모니터링 및 마이너스 재고 방지 차감 */
     @Transactional
     public void decreaseStockSecure(Integer ingredientId, int amount) {
