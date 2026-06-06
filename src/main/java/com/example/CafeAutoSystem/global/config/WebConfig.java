@@ -12,5 +12,8 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/qrcodes/**")
                 .addResourceLocations("file:uploads/qrcodes/");
+        // 업로드된 이미지(메뉴 사진 등)를 /uploads/** URL로 접근 가능하게 한다.
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:uploads/");
     }
 }

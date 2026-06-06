@@ -43,4 +43,7 @@ out/
 *.yaml
 !gradle/wrapper/gradle-wrapper.properties
 
+### 업로드 파일 (메뉴/식자재 사진, QR 등 — 런타임 생성물) ###
+uploads/
+
 

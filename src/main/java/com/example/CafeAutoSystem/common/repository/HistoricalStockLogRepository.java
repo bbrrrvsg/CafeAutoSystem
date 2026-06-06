@@ -15,6 +15,9 @@ public interface HistoricalStockLogRepository extends JpaRepository<HistoricalSt
 
     List<HistoricalStockLogEntity> findByLogType(String logType);
 
+    /** 전체 이력 로그 최신순 (통합 로그 화면용, 최근 300건) */
+    List<HistoricalStockLogEntity> findTop300ByOrderByCreatedAtDesc();
+
 
     // 백업
     @Modifying

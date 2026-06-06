@@ -4,9 +4,11 @@ import com.example.CafeAutoSystem.common.entity.CurrentStockLogEntity;
 import com.example.CafeAutoSystem.common.entity.IngredientEntity;
 import com.example.CafeAutoSystem.common.entity.MenuRecipeEntity;
 import com.example.CafeAutoSystem.common.repository.CurrentStockLogRepository;
+import com.example.CafeAutoSystem.common.repository.HistoricalStockLogRepository;
 import com.example.CafeAutoSystem.common.repository.IngredientRepository;
 import com.example.CafeAutoSystem.common.repository.MenuRecipeRepository;
 import com.example.CafeAutoSystem.stock.dto.OrderRequest;
+import com.example.CafeAutoSystem.stock.dto.StockLogView;
 import com.example.CafeAutoSystem.stock.dto.StockOutResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +25,7 @@ public class StockService {
 
     private final MenuRecipeRepository menuRecipeRepository;
     private final CurrentStockLogRepository currentStockLogRepository;
+    private final HistoricalStockLogRepository historicalStockLogRepository;
     private final IngredientRepository ingredientRepository;
 
     @Transactional
@@ -112,10 +115,31 @@ public class StockService {
         return currentStockLogRepository.findByIngredient_IngredientId(ingredientId);
     }
 
-    /** 전체 재고 로그 최신순 (활동 로그 화면용) */
+    /** 전체 재고 로그 최신순 — 현재(current) + 이력(historical) 통합 (활동 로그 화면용) */
     @Transactional(readOnly = true)
-    public List<CurrentStockLogEntity> getAllLogs() {
-        return currentStockLogRepository.findTop300ByOrderByCreatedAtDesc();
+    public List<StockLogView> getAllLogs() {
+        List<StockLogView> all = new ArrayList<>();
+        for (CurrentStockLogEntity c : currentStockLogRepository.findTop300ByOrderByCreatedAtDesc()) {
+            all.add(StockLogView.builder()
+                    .source("현재")
+                    .ingredientId(c.getIngredient() != null ? c.getIngredient().getIngredientId() : null)
+                    .logType(c.getLogType()).message(c.getMessage()).amount(c.getAmount())
+                    .reason(c.getReason()).userId(c.getUserId()).createdAt(c.getCreatedAt())
+                    .build());
+        }
+        historicalStockLogRepository.findTop300ByOrderByCreatedAtDesc().forEach(h ->
+            all.add(StockLogView.builder()
+                    .source("이력")
+                    .ingredientId(h.getIngredientId())
+                    .logType(h.getLogType()).message(h.getMessage()).amount(h.getAmount())
+                    .reason(h.getReason()).userId(h.getUserId()).createdAt(h.getCreatedAt())
+                    .build()));
+        all.sort((a, b) -> {
+            if (a.getCreatedAt() == null) return 1;
+            if (b.getCreatedAt() == null) return -1;
+            return b.getCreatedAt().compareTo(a.getCreatedAt());
+        });
+        return all;
     }
 
     /** 실시간 전산 오차 모니터링 및 마이너스 재고 방지 차감 */

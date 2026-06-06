@@ -36,6 +36,7 @@ public class MenuService {
         Menu entity = Menu.builder()
                 .menuName(dto.getMenuName())
                 .menuPrice(dto.getMenuPrice())
+                .menuImage(dto.getMenuImage())
                 .build();
         return menuRepository.save(entity).toDto();
     }
@@ -45,6 +46,7 @@ public class MenuService {
         Menu entity = findOrThrow(menuId);
         if (dto.getMenuName() != null)  entity.setMenuName(dto.getMenuName());
         if (dto.getMenuPrice() != null) entity.setMenuPrice(dto.getMenuPrice());
+        if (dto.getMenuImage() != null) entity.setMenuImage(dto.getMenuImage());
         return entity.toDto(); // dirty checking
     }
 
