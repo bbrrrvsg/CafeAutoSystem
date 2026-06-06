@@ -1,6 +1,5 @@
 package com.example.CafeAutoSystem.common.entity;
 
-import com.example.CafeAutoSystem.common.entity.BaseTime;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;

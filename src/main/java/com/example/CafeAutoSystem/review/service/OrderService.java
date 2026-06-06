@@ -9,6 +9,8 @@ import com.example.CafeAutoSystem.review.entity.OrderDetail;
 import com.example.CafeAutoSystem.review.repository.CafeOrderRepository;
 import com.example.CafeAutoSystem.review.repository.MenuRepository;
 import com.example.CafeAutoSystem.review.repository.OrderDetailRepository;
+import com.example.CafeAutoSystem.stock.dto.OrderRequest;
+import com.example.CafeAutoSystem.stock.service.StockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,7 @@ public class OrderService {
     private final CafeOrderRepository cafeOrderRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final QrCodeService qrCodeService;
+    private final StockService stockService;
 
     // 주문 요청 메뉴 목록을 기반으로 주문과 주문상세를 저장한다.
     public OrderResponseDto createOrder(OrderCreateRequestDto request) {
@@ -67,6 +70,13 @@ public class OrderService {
         List<OrderDetail> details = new ArrayList<>();
         for (OrderItemRequestDto item : items) {
             Menu menu = findMenu(item.getMenuId());
+
+            // 재고 차감 연결
+            stockService.processOrder(OrderRequest.builder()
+                    .menuName(menu.getMenuName())
+                    .quantity(item.getQuantity())
+                    .build());
+
             details.add(orderDetailRepository.save(OrderDetail.create(order, menu, item.getQuantity())));
         }
         return details;
