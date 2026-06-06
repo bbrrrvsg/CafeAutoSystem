@@ -277,6 +277,16 @@
     }
 
     loadInventory();
+
+    // ===== 실시간 재고 갱신 (SSE) =====
+    // POS 판매 등으로 재고가 차감되면 서버가 'stockUpdate' 이벤트를 푸시 → 화면 자동 새로고침
+    (function connectSSE(){
+        try {
+            const es = new EventSource('/api/sse/stock');
+            es.addEventListener('stockUpdate', () => loadInventory());
+            es.onerror = () => { es.close(); setTimeout(connectSSE, 3000); }; // 끊기면 3초 후 재연결
+        } catch (e) { /* SSE 미지원 브라우저는 무시 (수동 새로고침으로 동작) */ }
+    })();
 </script>
 
 <jsp:include page="../layout/footer.jsp" />

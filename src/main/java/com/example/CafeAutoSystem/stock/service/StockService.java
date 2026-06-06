@@ -1,5 +1,6 @@
 package com.example.CafeAutoSystem.stock.service;
 
+import com.example.CafeAutoSystem.ai_rpa.service.SseEmitterManager;
 import com.example.CafeAutoSystem.common.entity.CurrentStockLogEntity;
 import com.example.CafeAutoSystem.common.entity.IngredientEntity;
 import com.example.CafeAutoSystem.common.entity.MenuRecipeEntity;
@@ -27,6 +28,7 @@ public class StockService {
     private final CurrentStockLogRepository currentStockLogRepository;
     private final HistoricalStockLogRepository historicalStockLogRepository;
     private final IngredientRepository ingredientRepository;
+    private final SseEmitterManager sseEmitterManager;
 
     @Transactional
     public StockOutResult processOrder(OrderRequest request) {
@@ -44,6 +46,14 @@ public class StockService {
         for (MenuRecipeEntity recipe : recipes) {
             IngredientEntity ingredient = recipe.getIngredient();
             int totalQty = recipe.calcTotalQty(request.getQuantity());
+
+            // 마이너스 재고 방지: 차감 전 현재고 확인 (부족하면 판매 거부)
+            int stockBeforeDeduct = currentStockLogRepository.convertToCurrentStock(ingredient.getIngredientId());
+            if (stockBeforeDeduct - totalQty < 0) {
+                throw new IllegalStateException(
+                        String.format("[%s] 재고가 부족합니다. 현재 재고: %d, 필요 수량: %d",
+                                ingredient.getIngredientName(), stockBeforeDeduct, totalQty));
+            }
 
             String message = String.format("[판매] %s %d잔 판매",
                     request.getMenuName(), request.getQuantity());
@@ -64,12 +74,9 @@ public class StockService {
             log.info("[STOCK_OUT] 재료={} 차감량={}{}",
                     ingredient.getIngredientName(), totalQty, ingredient.getUnit());
 
-            // 현재 재고 SUM 계산
+            // 현재 재고 SUM 계산 (DB 집계 쿼리)
             int currentStock = currentStockLogRepository
-                    .findByIngredient_IngredientId(ingredient.getIngredientId())
-                    .stream()
-                    .mapToInt(CurrentStockLogEntity::getAmount)
-                    .sum();
+                    .convertToCurrentStock(ingredient.getIngredientId());
 
             boolean isLowStock = currentStock <= ingredient.getSafetyStock();
 
@@ -101,6 +108,9 @@ public class StockService {
                     .lowStock(isLowStock)
                     .build());
         }
+
+        // 주문 처리 완료 후 모든 inventory 화면에 실시간 갱신 푸시
+        sseEmitterManager.broadcastStockUpdate();
 
         return StockOutResult.builder()
                 .menuName(request.getMenuName())

@@ -7,6 +7,7 @@ import com.example.CafeAutoSystem.stock.dto.StockLogView;
 import com.example.CafeAutoSystem.stock.dto.StockOutResult;
 import com.example.CafeAutoSystem.stock.service.StockService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,7 +45,11 @@ public class StockController {
             StockOutResult result = stockService.processOrder(request);
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
+            // 레시피 없음 등 잘못된 요청
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (IllegalStateException e) {
+            // 재고 부족으로 판매 거부 (409 Conflict)
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
         }
     }
 
