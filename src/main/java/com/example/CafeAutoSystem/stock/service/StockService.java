@@ -42,6 +42,14 @@ public class StockService {
             IngredientEntity ingredient = recipe.getIngredient();
             int totalQty = recipe.calcTotalQty(request.getQuantity());
 
+            int preStock = currentStockLogRepository.convertToCurrentStock(ingredient.getIngredientId());
+            if (preStock < totalQty) {
+                throw new IllegalStateException(
+                        String.format("[%s] 재고 부족. 현재: %d%s, 필요: %d%s",
+                                ingredient.getIngredientName(), preStock, ingredient.getUnit(),
+                                totalQty, ingredient.getUnit()));
+            }
+
             String message = String.format("[판매] %s %d잔 판매",
                     request.getMenuName(), request.getQuantity());
 

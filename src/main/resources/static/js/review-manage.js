@@ -1,6 +1,9 @@
 var allReviews = [];
 var currentTab = 'all';
 var currentReviewId = null;
+var currentPage = 0;
+var totalCount = 0;
+var PAGE_SIZE = 10;
 
 document.addEventListener('DOMContentLoaded', function () {
     loadReviews();
@@ -10,12 +13,32 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function loadReviews() {
-    fetch('/api/reviews')
+    document.getElementById('reviewTableBody').innerHTML =
+        '<tr><td colspan="5" class="table-empty">로딩 중...</td></tr>';
+
+    fetch('/api/owner/reviews?page=' + currentPage + '&size=' + PAGE_SIZE)
         .then(function (res) { return res.json(); })
-        .then(function (reviews) {
-            allReviews = reviews;
-            updateStats(reviews);
+        .then(function (data) {
+            totalCount = data.totalCount;
+            var reviews = data.reviews || [];
+
+            var promises = reviews.map(function (r) {
+                return fetch('/api/owner/reviews/' + r.reviewId + '/reply')
+                    .then(function (res) { return res.json(); })
+                    .then(function (replyData) {
+                        r.hasReply     = replyData.hasReply;
+                        r.replyContent = replyData.replyContent;
+                        return r;
+                    });
+            });
+
+            return Promise.all(promises);
+        })
+        .then(function (enrichedReviews) {
+            allReviews = enrichedReviews;
+            updateStats();
             renderTable(currentTab);
+            updatePagination();
         })
         .catch(function () {
             document.getElementById('reviewTableBody').innerHTML =
@@ -23,10 +46,10 @@ function loadReviews() {
         });
 }
 
-function updateStats(reviews) {
-    var pending = reviews.filter(function (r) { return !r.ownerReply; }).length;
-    var done    = reviews.filter(function (r) { return !!r.ownerReply; }).length;
-    document.getElementById('statTotal').textContent   = reviews.length + '건';
+function updateStats() {
+    var pending = allReviews.filter(function (r) { return !r.hasReply; }).length;
+    var done    = allReviews.filter(function (r) { return  r.hasReply; }).length;
+    document.getElementById('statTotal').textContent   = totalCount + '건';
     document.getElementById('statPending').textContent = pending + '건';
     document.getElementById('statDone').textContent    = done + '건';
 }
@@ -40,20 +63,22 @@ function switchTab(tab, btn) {
 
 function renderTable(tab) {
     var filtered = allReviews.filter(function (r) {
-        if (tab === 'pending') return !r.ownerReply;
-        if (tab === 'done')    return !!r.ownerReply;
+        if (tab === 'pending') return !r.hasReply;
+        if (tab === 'done')    return  r.hasReply;
         return true;
     });
+
     var tbody = document.getElementById('reviewTableBody');
     if (filtered.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" class="table-empty">리뷰가 없습니다.</td></tr>';
         return;
     }
+
     tbody.innerHTML = filtered.map(function (r) {
-        var badge   = r.ownerReply
+        var badge   = r.hasReply
             ? '<em class="review-badge done">답글 완료</em>'
             : '<em class="review-badge wait">답글 대기</em>';
-        var date    = r.createdAt ? r.createdAt.replace('T', ' ').substring(0, 16) : '-';
+        var date    = r.createdAt ? r.createdAt.substring(0, 16) : '-';
         var content = r.reviewContent
             ? r.reviewContent.substring(0, 28) + (r.reviewContent.length > 28 ? '…' : '') : '-';
         return '<tr onclick="selectReview(' + r.reviewId + ')" id="row-' + r.reviewId + '">' +
@@ -72,31 +97,29 @@ function selectReview(reviewId) {
     var row = document.getElementById('row-' + reviewId);
     if (row) row.classList.add('selected');
 
-    fetch('/api/reviews/' + reviewId)
-        .then(function (res) { return res.json(); })
-        .then(function (review) {
-            document.getElementById('detailReviewId').textContent  = review.reviewId;
-            document.getElementById('detailOrderId').textContent   = review.orderId;
-            document.getElementById('detailCreatedAt').textContent = review.createdAt
-                ? review.createdAt.replace('T', ' ').substring(0, 16) : '-';
-            document.getElementById('detailContent').textContent   = review.reviewContent || '-';
+    var review = allReviews.find(function (r) { return r.reviewId === reviewId; });
+    if (!review) return;
 
-            var textarea = document.getElementById('replyTextarea');
-            if (review.ownerReply) {
-                textarea.value = review.ownerReply;
-                document.getElementById('replyCharCount').textContent = review.ownerReply.length;
-                setReplyState(true);
-            } else {
-                textarea.value = '';
-                document.getElementById('replyCharCount').textContent = '0';
-                setReplyState(false);
-            }
+    document.getElementById('detailReviewId').textContent  = review.reviewId;
+    document.getElementById('detailOrderId').textContent   = review.orderId;
+    document.getElementById('detailCreatedAt').textContent = review.createdAt
+        ? review.createdAt.substring(0, 16) : '-';
+    document.getElementById('detailContent').textContent   = review.reviewContent || '-';
 
-            document.getElementById('replyMsg').className    = 'reply-msg';
-            document.getElementById('replyMsg').style.display = 'none';
-            document.getElementById('detailPanel').classList.add('active');
-        })
-        .catch(function (err) { console.error(err); });
+    var textarea = document.getElementById('replyTextarea');
+    if (review.hasReply) {
+        textarea.value = review.replyContent || '';
+        document.getElementById('replyCharCount').textContent = (review.replyContent || '').length;
+        setReplyState(true);
+    } else {
+        textarea.value = '';
+        document.getElementById('replyCharCount').textContent = '0';
+        setReplyState(false);
+    }
+
+    document.getElementById('replyMsg').className     = 'reply-msg';
+    document.getElementById('replyMsg').style.display = 'none';
+    document.getElementById('detailPanel').classList.add('active');
 }
 
 function setReplyState(hasReply) {
@@ -126,7 +149,10 @@ function createReply() {
     var content = document.getElementById('replyTextarea').value.trim();
     if (!content) { showReplyMsg('답글 내용을 입력해주세요.', 'msg-warning'); return; }
 
-    fetch('/api/reviews/' + currentReviewId + '/reply', {
+    var review = allReviews.find(function (r) { return r.reviewId === currentReviewId; });
+    if (!review) return;
+
+    fetch('/api/owner/reviews/' + currentReviewId + '/reply?orderId=' + review.orderId, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({replyContent: content})
@@ -145,7 +171,7 @@ function updateReply() {
     var content = document.getElementById('replyTextarea').value.trim();
     if (!content) { showReplyMsg('수정할 답글 내용을 입력해주세요.', 'msg-warning'); return; }
 
-    fetch('/api/reviews/' + currentReviewId + '/reply', {
+    fetch('/api/owner/reviews/' + currentReviewId + '/reply', {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({replyContent: content})
@@ -162,12 +188,12 @@ function deleteReply() {
     if (!currentReviewId) return;
     if (!confirm('답글을 삭제하시겠습니까?')) return;
 
-    fetch('/api/reviews/' + currentReviewId + '/reply', {method: 'DELETE'})
+    fetch('/api/owner/reviews/' + currentReviewId + '/reply', {method: 'DELETE'})
         .then(function (res) { return res.json(); })
         .then(function () {
             showReplyMsg('답글이 삭제되었습니다.', 'msg-success');
-            document.getElementById('replyTextarea').value            = '';
-            document.getElementById('replyCharCount').textContent     = '0';
+            document.getElementById('replyTextarea').value        = '';
+            document.getElementById('replyCharCount').textContent = '0';
             setReplyState(false);
             loadReviews();
         })
@@ -179,4 +205,26 @@ function showReplyMsg(text, type) {
     el.textContent   = text;
     el.className     = 'reply-msg ' + type;
     el.style.display = 'block';
+}
+
+function prevPage() {
+    if (currentPage <= 0) return;
+    currentPage--;
+    closePanel();
+    loadReviews();
+}
+
+function nextPage() {
+    var totalPages = Math.ceil(totalCount / PAGE_SIZE);
+    if (currentPage >= totalPages - 1) return;
+    currentPage++;
+    closePanel();
+    loadReviews();
+}
+
+function updatePagination() {
+    var totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+    document.getElementById('pageInfo').textContent = (currentPage + 1) + ' / ' + totalPages + ' 페이지';
+    document.getElementById('btnPrev').disabled = currentPage <= 0;
+    document.getElementById('btnNext').disabled = currentPage >= totalPages - 1;
 }

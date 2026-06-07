@@ -10,6 +10,8 @@ import com.example.CafeAutoSystem.review.entity.OrderDetail;
 import com.example.CafeAutoSystem.review.repository.CafeOrderRepository;
 import com.example.CafeAutoSystem.review.repository.MenuRepository;
 import com.example.CafeAutoSystem.review.repository.OrderDetailRepository;
+import com.example.CafeAutoSystem.stock.dto.OrderRequest;
+import com.example.CafeAutoSystem.stock.service.StockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,7 @@ public class OrderService {
     private final MenuRepository menuRepository;
     private final CafeOrderRepository cafeOrderRepository;
     private final OrderDetailRepository orderDetailRepository;
+    private final StockService stockService;
 
     // 구매 서버가 Kafka로 보낸 주문 생성 요청을 받아 사장 서버 DB에 주문/주문상세를 저장한다.
     public OrderCreateResultEvent createOrderFromEvent(OrderCreateRequestEvent event) {
@@ -42,6 +45,7 @@ public class OrderService {
                 .orderId(savedOrder.getOrderId())
                 .orderPrice(savedOrder.getOrderPrice())
                 .createdAt(savedOrder.getCreatedAt() == null ? null : savedOrder.getCreatedAt().toString())
+                .success(true)
                 .build();
     }
 
@@ -79,11 +83,7 @@ public class OrderService {
 
             orderDetailRepository.save(orderDetail);
 
-            /*
-             * 재고 차감 기능이 있으면 여기에서 호출하면 됩니다.
-             *
-             * stockService.decreaseByMenuId(menu.getMenuId(), item.getQuantity());
-             */
+            stockService.processOrder(new OrderRequest(menu.getMenuName(), item.getQuantity()));
         }
     }
 

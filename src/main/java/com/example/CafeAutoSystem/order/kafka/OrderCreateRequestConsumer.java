@@ -23,19 +23,27 @@ public class OrderCreateRequestConsumer {
             groupId = "owner-order-service"
     )
     public void consume(String message) {
+        OrderCreateRequestEvent event = null;
         try {
             log.info("📩 주문 생성 요청 수신: {}", message);
 
-            OrderCreateRequestEvent event =
-                    objectMapper.readValue(message, OrderCreateRequestEvent.class);
+            event = objectMapper.readValue(message, OrderCreateRequestEvent.class);
 
-            OrderCreateResultEvent result =
-                    orderService.createOrderFromEvent(event);
-
+            OrderCreateResultEvent result = orderService.createOrderFromEvent(event);
             orderCreateResultProducer.send(result);
 
         } catch (Exception e) {
-            log.error("주문 생성 요청 처리 실패", e);
+            log.error("주문 생성 처리 실패 - requestId={}, 사유={}",
+                    event != null ? event.getRequestId() : "unknown", e.getMessage());
+
+            if (event != null && event.getRequestId() != null) {
+                OrderCreateResultEvent failResult = OrderCreateResultEvent.builder()
+                        .requestId(event.getRequestId())
+                        .success(false)
+                        .message("주문 처리에 실패했습니다.")
+                        .build();
+                orderCreateResultProducer.send(failResult);
+            }
         }
     }
 }

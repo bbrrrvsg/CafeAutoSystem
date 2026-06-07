@@ -97,6 +97,31 @@
 .table-empty { text-align: center; padding: 40px; color: var(--text-muted); }
 .table-error { text-align: center; padding: 40px; color: var(--danger); }
 
+/* ── 페이지네이션 ── */
+.review-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 14px 20px;
+    border-top: 1px solid var(--border-light);
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+.page-btn {
+    padding: 6px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.12s;
+}
+.page-btn:hover:not(:disabled) { background: var(--bg-content); }
+.page-btn:disabled { opacity: 0.35; cursor: default; }
+
 /* ── 상세 패널 ── */
 .review-detail-panel {
     background: var(--bg-card);
