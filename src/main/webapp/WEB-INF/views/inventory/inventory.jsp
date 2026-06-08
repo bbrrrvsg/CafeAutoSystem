@@ -238,8 +238,8 @@
                 '<td><span class="status ' + s.cls + '"><span class="dot"></span>' + s.label + '</span></td>' +
                 '<td class="text-right">' +
                     '<div class="row-actions">' +
-                        '<button>수정</button>' +
-                        '<button class="danger">삭제</button>' +
+                        '<button onclick="location.href=\'/ingredient\'">수정</button>' +
+                        '<button class="danger" onclick="delIngredient(' + item.ingredientId + ')">삭제</button>' +
                     '</div>' +
                 '</td>' +
             '</tr>';
@@ -270,7 +270,23 @@
         renderTable(filtered);
     }
 
+    async function delIngredient(id){
+        if(!confirm('식자재 #'+id+' 삭제할까요?')) return;
+        const r = await fetch('/api/ingredient/'+id, { method:'DELETE' });
+        if(r.ok) loadInventory(); else alert('삭제 실패 ('+r.status+') — 발주/재고/레시피가 참조 중일 수 있습니다.');
+    }
+
     loadInventory();
+
+    // ===== 실시간 재고 갱신 (SSE) =====
+    // POS 판매 등으로 재고가 차감되면 서버가 'stockUpdate' 이벤트를 푸시 → 화면 자동 새로고침
+    (function connectSSE(){
+        try {
+            const es = new EventSource('/api/sse/stock');
+            es.addEventListener('stockUpdate', () => loadInventory());
+            es.onerror = () => { es.close(); setTimeout(connectSSE, 3000); }; // 끊기면 3초 후 재연결
+        } catch (e) { /* SSE 미지원 브라우저는 무시 (수동 새로고침으로 동작) */ }
+    })();
 </script>
 
 <jsp:include page="../layout/footer.jsp" />

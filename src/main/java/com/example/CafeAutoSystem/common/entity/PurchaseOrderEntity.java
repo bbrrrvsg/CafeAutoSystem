@@ -79,6 +79,8 @@ public class PurchaseOrderEntity extends BaseTime {
             if (this.vendorIngredient.getIngredient() != null) {
                 b.ingredientId(this.vendorIngredient.getIngredient().getIngredientId().intValue());
                 b.ingredientName(this.vendorIngredient.getIngredient().getIngredientName());
+                b.ingredientUnit(this.vendorIngredient.getIngredient().getUnit());               // 재고 단위
+                b.orderUnit(this.vendorIngredient.getIngredient().orderUnitOrDefault());         // 발주 단위
             }
         }
         return b.build();

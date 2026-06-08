@@ -1,6 +1,7 @@
 package com.example.CafeAutoSystem.common.entity;
 
 import com.example.CafeAutoSystem.common.entity.IngredientEntity;
+import com.example.CafeAutoSystem.menurecipe.dto.MenuRecipeDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -37,5 +38,21 @@ public class MenuRecipeEntity {
     /** 주문 수량에 따른 총 소요량 계산 */
     public int calcTotalQty(int orderQuantity) {
         return this.requiredQuantity * orderQuantity;
+    }
+
+    // 엔티티 → DTO (ingredient 는 LAZY → @Transactional 안에서 호출)
+    public MenuRecipeDto toDto() {
+        MenuRecipeDto.MenuRecipeDtoBuilder b = MenuRecipeDto.builder()
+                .recipeId(this.recipeId)
+                .menuName(this.menuName)
+                .price(this.price)
+                .requiredQuantity(this.requiredQuantity)
+                .note(this.note);
+        if (this.ingredient != null) {
+            b.ingredientId(this.ingredient.getIngredientId());
+            b.ingredientName(this.ingredient.getIngredientName());
+            b.ingredientUnit(this.ingredient.getUnit());
+        }
+        return b.build();
     }
 }

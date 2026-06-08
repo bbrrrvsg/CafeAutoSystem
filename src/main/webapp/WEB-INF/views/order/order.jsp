@@ -4,207 +4,106 @@
 <c:set var="menu" value="order" scope="request" />
 <jsp:include page="../layout/header.jsp" />
 
+<style>
+.crud-form label{display:block;font-size:12px;color:var(--text-muted);font-weight:600;margin-bottom:6px;}
+.crud-form input,.crud-form select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg-content);}
+</style>
+
 <section class="hero">
     <div class="hero-text">
         <div class="hero-meta">NEW ORDER · 발주서 작성</div>
         <h1>새 발주서를 작성합니다.</h1>
-        <p class="hero-brief">거래처와 발주 목적을 선택하고 품목을 추가하세요.</p>
+        <p class="hero-brief">거래처-식자재와 발주량을 선택해 품목을 담고, 발주서를 생성하세요. 생성된 발주는 승인 화면에서 처리됩니다.</p>
     </div>
 </section>
 
-<!-- 스텝퍼 -->
-<div class="stepper">
-    <div class="step active">
-        <span class="step-num">1</span>
-        <span>발주 정보 입력</span>
-    </div>
-    <div class="step-line"></div>
-    <div class="step">
-        <span class="step-num">2</span>
-        <span>품목 선택</span>
-    </div>
-    <div class="step-line"></div>
-    <div class="step">
-        <span class="step-num">3</span>
-        <span>확인 및 발주</span>
+<!-- 품목 추가 폼 -->
+<div class="form-section crud-form">
+    <h3>발주 품목 추가</h3>
+    <div style="display:grid; grid-template-columns: 2.4fr 1fr 1.4fr auto; gap:12px; align-items:end; margin-top:8px;">
+        <div><label>거래처-식자재 (단가순) *</label><select id="fVi"><option value="">— 선택 —</option></select></div>
+        <div><label>발주량 * <span class="text-muted">(단가 기준 단위: 예 우유=팩/L)</span></label><input id="fQty" type="number" placeholder="단가 기준 수량"></div>
+        <div><label>유통기한 (선택)</label><input id="fExp" type="date"></div>
+        <div><button id="addBtn" class="btn btn-secondary btn-sm">+ 품목 담기</button></div>
     </div>
 </div>
 
-<!-- 본문: 좌(폼) / 우(요약) -->
+<!-- 발주 목록(장바구니) -->
 <div class="split-layout">
-
-    <div>
-        <!-- 기본 정보 -->
-        <div class="form-section">
-            <h3>기본 정보</h3>
-            <div class="sec-sub">발주서의 핵심 정보를 입력하세요.</div>
-
-            <div class="form-row">
-                <div class="fr-label">
-                    거래처 선택
-                    <span class="help">발주를 보낼 거래처를 선택합니다.</span>
-                </div>
-                <div class="fr-control" style="display:flex; gap:8px;">
-                    <select style="flex:1;">
-                        <option>서울원두유통 (milk@seoulyu.co.kr)</option>
-                        <option>커피빈코리아</option>
-                        <option>삼양식품</option>
-                    </select>
-                    <button class="btn btn-secondary btn-sm">+ 새 거래처</button>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="fr-label">발주 목적</div>
-                <div class="fr-control">
-                    <label style="margin-right:16px; font-size:13px;"><input type="radio" name="purpose"> AI 추천 발주</label>
-                    <label style="margin-right:16px; font-size:13px;"><input type="radio" name="purpose" checked> 수동 발주</label>
-                    <label style="font-size:13px;"><input type="radio" name="purpose"> 긴급 발주</label>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="fr-label">희망 납품일</div>
-                <div class="fr-control">
-                    <input type="date" value="2026-05-18">
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="fr-label">메모 <span class="help">선택사항</span></div>
-                <div class="fr-control">
-                    <textarea rows="3" placeholder="발주 관련 메모를 입력하세요..."></textarea>
-                </div>
-            </div>
-        </div>
-
-        <!-- 첨부파일 -->
-        <div class="form-section">
-            <h3>첨부파일 <span style="color:var(--text-muted); font-size:13px; font-weight:500;">(선택)</span></h3>
-            <div class="sec-sub">발주 관련 참고 자료가 있다면 첨부하세요. PDF, Excel, 이미지 파일 지원.</div>
-
-            <div class="dropzone" onclick="document.getElementById('attachFile').click()">
-                <input type="file" id="attachFile" style="display:none;" multiple accept=".pdf,.xlsx,.xls,.png,.jpg,.jpeg">
-                <div style="font-size:30px; margin-bottom:10px; opacity:0.4;">⬆</div>
-                <div class="dz-title">파일을 드래그하거나 클릭하여 업로드</div>
-                <div class="dz-sub">PDF, Excel, 이미지 파일 지원 · 최대 10MB</div>
-            </div>
-        </div>
-
-        <!-- 발주 품목 리스트 -->
-        <div class="form-section">
-            <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px;">
-                <div>
-                    <h3 style="margin:0;">발주 품목 리스트</h3>
-                    <div class="sec-sub" style="margin:0;">5개 품목 · 총 228개</div>
-                </div>
-                <button class="btn btn-secondary btn-sm">+ 품목 추가</button>
-            </div>
-
-            <table class="data-table" style="border:1px solid var(--border-light); border-radius:8px;">
-                <thead>
-                    <tr>
-                        <th>품목</th>
-                        <th>규격</th>
-                        <th>현재고</th>
-                        <th>안전재고</th>
-                        <th style="width:130px;">발주량</th>
-                        <th>단가</th>
-                        <th class="text-right">금액</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>원두 (블렌드)</strong></td>
-                        <td>1kg</td>
-                        <td class="num">1.2</td>
-                        <td class="num">5</td>
-                        <td><input type="number" value="5" style="width:80px; padding:6px 8px; border:1px solid var(--border); border-radius:6px;"></td>
-                        <td class="num">32,000</td>
-                        <td class="text-right num font-bold">160,000</td>
-                        <td><button class="row-actions"><button class="danger">×</button></button></td>
-                    </tr>
-                    <tr>
-                        <td><strong>우유 (1L)</strong></td>
-                        <td>1L</td>
-                        <td class="num">3</td>
-                        <td class="num">20</td>
-                        <td><input type="number" value="20" style="width:80px; padding:6px 8px; border:1px solid var(--border); border-radius:6px;"></td>
-                        <td class="num">2,500</td>
-                        <td class="text-right num font-bold">50,000</td>
-                        <td><button class="row-actions"><button class="danger">×</button></button></td>
-                    </tr>
-                    <tr>
-                        <td><strong>플라스틱 컵</strong></td>
-                        <td>16oz</td>
-                        <td class="num">40</td>
-                        <td class="num">100</td>
-                        <td><input type="number" value="100" style="width:80px; padding:6px 8px; border:1px solid var(--border); border-radius:6px;"></td>
-                        <td class="num">150</td>
-                        <td class="text-right num font-bold">15,000</td>
-                        <td><button class="row-actions"><button class="danger">×</button></button></td>
-                    </tr>
-                    <tr>
-                        <td><strong>바닐라 시럽</strong></td>
-                        <td>1L</td>
-                        <td class="num">0.3</td>
-                        <td class="num">2</td>
-                        <td><input type="number" value="3" style="width:80px; padding:6px 8px; border:1px solid var(--border); border-radius:6px;"></td>
-                        <td class="num">12,000</td>
-                        <td class="text-right num font-bold">36,000</td>
-                        <td><button class="row-actions"><button class="danger">×</button></button></td>
-                    </tr>
-                    <tr>
-                        <td><strong>빨대</strong></td>
-                        <td>개별포장</td>
-                        <td class="num">30</td>
-                        <td class="num">100</td>
-                        <td><input type="number" value="100" style="width:80px; padding:6px 8px; border:1px solid var(--border); border-radius:6px;"></td>
-                        <td class="num">50</td>
-                        <td class="text-right num font-bold">5,000</td>
-                        <td><button class="row-actions"><button class="danger">×</button></button></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+    <div class="card flush">
+        <table class="data-table">
+            <thead><tr><th>식자재</th><th>거래처</th><th>단가</th><th>발주량</th><th class="text-right">금액</th><th></th></tr></thead>
+            <tbody id="cartBody"><tr><td colspan="6" class="text-muted">담은 품목이 없습니다.</td></tr></tbody>
+        </table>
     </div>
 
-    <!-- 발주 요약 (sticky) -->
     <aside class="detail-panel">
-        <div class="panel-head">
-            <div>
-                <div class="panel-title">발주 요약</div>
-                <div class="panel-sub">최종 확인 후 발주서 생성</div>
-            </div>
-        </div>
-
+        <div class="panel-head"><div><div class="panel-title">발주 요약</div><div class="panel-sub">생성 시 품목별 발주서가 만들어집니다</div></div></div>
         <div class="detail-list">
-            <div class="detail-row"><span class="key">거래처</span><span class="val">서울원두유통</span></div>
-            <div class="detail-row"><span class="key">발주 목적</span><span class="val"><span class="badge badge-info">수동 발주</span></span></div>
-            <div class="detail-row"><span class="key">희망 납품일</span><span class="val num">2026-05-18</span></div>
-            <div class="detail-row"><span class="key">품목 수</span><span class="val num">5개</span></div>
-            <div class="detail-row"><span class="key">총 수량</span><span class="val num">228개</span></div>
-            <div class="detail-row"><span class="key">공급가 합계</span><span class="val num">266,000원</span></div>
-            <div class="detail-row"><span class="key">부가세 (10%)</span><span class="val num">26,600원</span></div>
+            <div class="detail-row"><span class="key">품목 수</span><span class="val num"><span id="sumCount">0</span>개</span></div>
+            <div class="detail-row"><span class="key">총 발주 금액</span><span class="val num"><span id="sumPrice">0</span>원</span></div>
         </div>
-
-        <div style="padding: 18px 0; border-top: 2px solid var(--text-primary); display:flex; justify-content:space-between; align-items:baseline; margin-top: 8px;">
-            <span style="font-size:13px; font-weight:600;">총 발주 금액</span>
-            <span style="font-size:22px; font-weight:700; color:var(--primary); font-feature-settings:'tnum';">292,600원</span>
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:16px;">
+            <button id="submitBtn" class="btn btn-primary" style="padding:12px;">발주서 생성하기</button>
         </div>
-
-        <div style="display:flex; flex-direction:column; gap:8px; margin-top: 8px;">
-            <button class="btn btn-primary" style="padding:12px;">발주서 생성하기</button>
-            <button class="btn btn-secondary" style="padding:12px;">미리보기 (PDF)</button>
-        </div>
-
-        <div style="margin-top:20px; padding:14px; background:#FEF3C7; border-radius:10px; font-size:12px; color:#92400E;">
-            <strong>안내</strong><br>
-            발주서 생성 후 승인 절차를 거쳐 거래처로 자동 발송됩니다.
+        <div style="margin-top:16px; padding:12px; background:#FEF3C7; border-radius:10px; font-size:12px; color:#92400E;">
+            발주량 단위는 선택한 식자재의 단위를 따릅니다. 생성된 발주는 <strong>PENDING</strong> 상태로 승인 대기합니다.
         </div>
     </aside>
-
 </div>
+
+<script>
+const $=id=>document.getElementById(id);
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+let VIS=[], UNIT={}, CART=[];
+
+async function loadRefs(){
+    try{ VIS = await (await fetch('/api/vendor-ingredient')).json(); }catch(e){ VIS=[]; }
+    try{ (await (await fetch('/api/ingredient')).json()).forEach(i=>UNIT[i.ingredientId]=i.unit); }catch(e){}
+    // 식자재 → 순위순 정렬해서 표시
+    VIS.sort((a,b)=>(a.ingredientId-b.ingredientId)||(a.priorityRank-b.priorityRank));
+    $('fVi').innerHTML='<option value="">— 선택 —</option>'+VIS.map(v=>
+        '<option value="'+v.vendorIngredientId+'">'+esc(v.ingredientName)+' ← '+esc(v.vendorName)+' ('+(v.unitPrice||0).toLocaleString()+'원, '+v.priorityRank+'순위)</option>').join('');
+}
+// 발주량은 '단가 기준 단위(발주 단위)'로 입력 — 재고 단위(ingredient.unit, 예 ml)와 다를 수 있어 단위 라벨은 표시하지 않음
+
+function addItem(){
+    const v=VIS.find(x=>String(x.vendorIngredientId)===$('fVi').value);
+    const qty=$('fQty').value===''?null:Number($('fQty').value);
+    if(!v){ alert('거래처-식자재를 선택하세요.'); return; }
+    if(qty==null||qty<=0){ alert('발주량은 1 이상이어야 합니다.'); return; }
+    CART.push({ vendorIngredientId:v.vendorIngredientId, ingredientName:v.ingredientName, vendorName:v.vendorName,
+        unitPrice:v.unitPrice||0, unit:UNIT[v.ingredientId]||'', qty, expirationDate:$('fExp').value||null });
+    $('fQty').value=''; renderCart();
+}
+function renderCart(){
+    if(!CART.length){ $('cartBody').innerHTML='<tr><td colspan="6" class="text-muted">담은 품목이 없습니다.</td></tr>'; }
+    else{
+        $('cartBody').innerHTML=CART.map((c,i)=>
+            '<tr><td><strong>'+esc(c.ingredientName)+'</strong></td>'+
+            '<td>'+esc(c.vendorName)+'</td>'+
+            '<td class="num">'+c.unitPrice.toLocaleString()+'원</td>'+
+            '<td class="num">'+c.qty.toLocaleString()+'</td>'+
+            '<td class="text-right num">'+(c.unitPrice*c.qty).toLocaleString()+'원</td>'+
+            '<td class="text-right"><button class="danger" data-rm="'+i+'">×</button></td></tr>').join('');
+        $('cartBody').querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{ CART.splice(Number(b.dataset.rm),1); renderCart(); });
+    }
+    $('sumCount').textContent=CART.length;
+    $('sumPrice').textContent=CART.reduce((s,c)=>s+c.unitPrice*c.qty,0).toLocaleString();
+}
+async function submit(){
+    if(!CART.length){ alert('담은 품목이 없습니다.'); return; }
+    let ok=0, fail=0;
+    for(const c of CART){
+        const body={ vendorIngredientId:c.vendorIngredientId, suggestedQty:c.qty, finalQty:c.qty, expirationDate:c.expirationDate };
+        const r=await fetch('/api/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+        if(r.ok) ok++; else fail++;
+    }
+    alert('발주서 생성 완료: 성공 '+ok+'건'+(fail?(' / 실패 '+fail+'건'):''));
+    if(ok){ CART=[]; renderCart(); location.href='/order-history'; }
+}
+$('addBtn').onclick=addItem; $('submitBtn').onclick=submit;
+loadRefs();
+</script>
 
 <jsp:include page="../layout/footer.jsp" />

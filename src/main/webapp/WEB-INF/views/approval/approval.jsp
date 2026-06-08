@@ -1,4 +1,4 @@
-akw<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page isELIgnored="true" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <c:set var="pageTitle" value="발주 승인" scope="request" />
@@ -30,13 +30,14 @@ akw<%@ page contentType="text/html;charset=UTF-8" language="java" %>
                 <th>거래처</th>
                 <th>식자재</th>
                 <th class="text-right">최종 수량</th>
+                <th class="text-right">금액</th>
                 <th>유통기한</th>
                 <th>상태</th>
                 <th class="text-right" style="width:220px;">작업</th>
             </tr>
         </thead>
         <tbody id="orderTbody">
-            <tr><td colspan="8" style="text-align:center; padding:30px; color:var(--text-muted);">로딩 중...</td></tr>
+            <tr><td colspan="9" style="text-align:center; padding:30px; color:var(--text-muted);">로딩 중...</td></tr>
         </tbody>
     </table>
 </div>
@@ -53,6 +54,8 @@ akw<%@ page contentType="text/html;charset=UTF-8" language="java" %>
                 <div class="detail-row"><span class="key">발주일</span><span class="val num" id="mCreateDate">-</span></div>
                 <div class="detail-row"><span class="key">식자재</span><span class="val" id="mIngredient">-</span></div>
                 <div class="detail-row"><span class="key">AI 제안 수량</span><span class="val num" id="mSuggested">-</span></div>
+                <div class="detail-row"><span class="key">공급 단가</span><span class="val num" id="mUnitPrice">-</span></div>
+                <div class="detail-row"><span class="key">예상 금액</span><span class="val num" id="mAmount">-</span></div>
                 <div class="detail-row"><span class="key">유통기한</span><span class="val num" id="mExpiration">-</span></div>
             </div>
 
@@ -177,7 +180,7 @@ akw<%@ page contentType="text/html;charset=UTF-8" language="java" %>
         const list = getCurrentList();
         const tbody = document.getElementById('orderTbody');
         if (list.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:30px; color:var(--text-muted);">해당 상태의 발주가 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:30px; color:var(--text-muted);">해당 상태의 발주가 없습니다.</td></tr>';
             return;
         }
         tbody.innerHTML = list.map(function(o) {
@@ -188,7 +191,8 @@ akw<%@ page contentType="text/html;charset=UTF-8" language="java" %>
                 + '<td class="num">' + fmtDate(o.createdAt) + '</td>'
                 + '<td>' + vendorLabel + '</td>'
                 + '<td>' + (o.ingredientName || '-') + '</td>'
-                + '<td class="text-right num font-bold">' + o.finalQty + '</td>'
+                + '<td class="text-right num font-bold">' + o.finalQty + ' ' + (o.orderUnit || '') + '</td>'
+                + '<td class="text-right num">' + (o.finalQty * (o.unitPrice || 0)).toLocaleString() + '원</td>'
                 + '<td class="num">' + (fmtDate(o.expirationDate) || '-') + '</td>'
                 + '<td>' + statusBadge(o.status) + '</td>'
                 + '<td class="text-right">' + actionButtons(o) + '</td>'
@@ -206,6 +210,8 @@ akw<%@ page contentType="text/html;charset=UTF-8" language="java" %>
         document.getElementById('mCreateDate').textContent  = fmtDate(order.createdAt);
         document.getElementById('mIngredient').textContent  = order.ingredientName || '-';
         document.getElementById('mSuggested').textContent   = order.suggestedQty;
+        document.getElementById('mUnitPrice').textContent   = (order.unitPrice || 0).toLocaleString() + '원';
+        document.getElementById('mAmount').textContent      = (order.finalQty * (order.unitPrice || 0)).toLocaleString() + '원';
         document.getElementById('mExpiration').textContent  = fmtDate(order.expirationDate) || '없음';
         document.getElementById('mFinalQty').value          = order.finalQty;
 
@@ -330,5 +336,34 @@ akw<%@ page contentType="text/html;charset=UTF-8" language="java" %>
     window.addEventListener('DOMContentLoaded', init);
 </script>
 <script src="/js/rpa.js"></script>
+<style>
+    /* 화면 전체를 흐리게 덮는 로딩 레이어 */
+    .rpa-loading-overlay {
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.6); z-index: 99999; justify-content: center; align-items: center; flex-direction: column; color: white;
+    }
+    /* 초록색  스피너 */
+    .rpa-spinner {
+        width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.3); border-radius: 50%;
+        border-top-color: #1cc88a; animation: rpaSpin 1s ease-in-out infinite; margin-bottom: 15px;
+    }
+    @keyframes rpaSpin { to { transform: rotate(360deg); } }
 
+    /* 알림 토스트창 */
+    .rpa-toast {
+        display: none; position: fixed; top: 30px; right: 30px; background: #1cc88a; color: white;
+        padding: 16px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 100000;
+        font-weight: 600; font-size: 14px; transition: opacity 0.5s ease;
+    }
+</style>
+
+<div id="rpaLoading" class="rpa-loading-overlay">
+    <div class="rpa-spinner"></div>
+    <h3 style="margin:0; font-weight:600;">🤖 RPA 자동 발주 엔진 가동 중...</h3>
+    <p style="margin:5px 0 0 0; font-size:13px; color:#ddd;">점장 승인이 확인되어, 엑셀 명세서를 생성하고 거래처로 이메일을 발송하고 있습니다.</p>
+</div>
+
+<div id="rpaToast" class="rpa-toast">
+    🚀 [RPA 완료] 거래처로 발주 명세서 메일 발송이 완벽하게 성공했습니다!
+</div>
 <jsp:include page="../layout/footer.jsp" />

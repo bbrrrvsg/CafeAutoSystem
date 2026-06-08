@@ -1933,3 +1933,65 @@ input { font-family: inherit; }
     margin-top: 4px;
 }
 .check-box.fail .cb-sub { color: #B91C1C; }
+
+/* ============================================================
+   🎯 Compact Refinement Layer (2025 어드민 톤 — 밀도↑·여백 정리)
+   요즘 SaaS 대시보드(Linear/Vercel/Notion) 처럼 타이트하게.
+   ============================================================ */
+
+/* 페이지 외곽 여백 축소 */
+.page-content { padding: 22px 30px 48px; }
+
+/* 히어로 — 과하게 큰 타이틀/여백 정리 */
+.hero { margin-bottom: 18px; padding: 2px 0 16px; gap: 24px; border-bottom: 1px solid var(--border-light); }
+.hero-meta { font-size: 11px; margin-bottom: 7px; letter-spacing: 0.5px; }
+.hero h1 { font-size: 27px; letter-spacing: -0.7px; line-height: 1.22; }
+.hero-brief { margin-top: 8px; font-size: 13px; line-height: 1.55; max-width: 720px; }
+.hero-side .time { font-size: 20px; }
+
+/* 미니 통계 카드 — 컴팩트 */
+.mini-stats { gap: 10px; margin-bottom: 16px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.mini-stat { padding: 12px 14px; border-radius: 10px; }
+.mini-stat .ms-label { font-size: 11px; margin-bottom: 4px; }
+.mini-stat .ms-value { font-size: 19px; letter-spacing: -0.3px; }
+
+/* 툴바 간격 */
+.toolbar { gap: 8px; margin-bottom: 14px; }
+
+/* 폼 섹션 — 패딩 축소 */
+.form-section { padding: 16px 18px; margin-bottom: 14px; border-radius: var(--radius-md); }
+.form-section h3 { font-size: 14px; margin-bottom: 2px; }
+.sec-sub { font-size: 12px; margin-bottom: 6px; }
+
+/* 카드 / 테이블 — 데이터 밀도 ↑ */
+.card-body { padding: 18px; }
+.card-header { padding: 13px 18px; }
+.data-table th { padding: 8px 16px; font-size: 11px; }
+.data-table td { padding: 9px 16px; font-size: 13px; }
+.data-table tbody tr:hover { background: var(--primary-soft); }
+
+/* 배지/태그 살짝 작게 */
+.badge { padding: 2px 8px; font-size: 11px; }
+
+/* 버튼 — 한 톤 작게 + 부드러운 전환 */
+.btn { padding: 7px 13px; font-size: 13px; transition: background .12s, border-color .12s, transform .04s; }
+.btn:active { transform: translateY(1px); }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+
+/* 좌(목록)/우(상세) 레이아웃 */
+.split-layout { gap: 16px; grid-template-columns: 1fr 320px; }
+.detail-panel { border-radius: var(--radius-md); }
+.detail-row { padding: 7px 0; }
+
+/* 입력 폼 — 라벨/인풋 톤 통일 (관리 페이지 .crud-form) */
+.crud-form label { margin-bottom: 5px; font-size: 11.5px; }
+.crud-form input, .crud-form select { padding: 8px 11px; border-radius: var(--radius-sm); transition: border-color .12s, box-shadow .12s; }
+.crud-form input:focus, .crud-form select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+
+/* 스텝퍼도 포커스 링 통일 */
+.stepper:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+.stepper input[type=number]:focus { box-shadow: none; }
+
+/* 카드 호버 시 살짝 떠오르는 느낌 (관리 테이블 카드) */
+.card { transition: box-shadow .15s, border-color .15s; }
+.card:hover { box-shadow: var(--shadow-sm); }
