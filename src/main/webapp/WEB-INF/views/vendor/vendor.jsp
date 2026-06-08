@@ -64,16 +64,28 @@
                 <div class="panel-sub" id="dpSub">—</div>
             </div>
             <div style="display:flex; gap:4px;">
+                <button class="panel-close" title="거래처 정보 수정" onclick="startVendorEdit()" style="font-size:14px;">✎</button>
                 <button class="panel-close" title="닫기" onclick="document.getElementById('detailPanel').style.display='none'">×</button>
             </div>
         </div>
 
-        <div class="detail-list">
+        <div class="detail-list" id="vViewBox">
             <div class="detail-row"><span class="key">거래처명</span><span class="val" id="dpVendorName">—</span></div>
             <div class="detail-row"><span class="key">담당자 이메일</span><span class="val" id="dpEmail">—</span></div>
             <div class="detail-row"><span class="key">담당자 연락처</span><span class="val num" id="dpPhone">—</span></div>
             <div class="detail-row"><span class="key">등록일</span><span class="val" id="dpCreated">—</span></div>
             <div class="detail-row"><span class="key">최근 수정</span><span class="val" id="dpUpdated">—</span></div>
+        </div>
+
+        <!-- 인라인 수정 폼 -->
+        <div class="detail-list" id="vEditBox" style="display:none;">
+            <div class="detail-row"><span class="key">거래처명</span><input id="evName" style="flex:1;text-align:right;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:13px;background:var(--bg-content);"></div>
+            <div class="detail-row"><span class="key">담당자 이메일</span><input id="evEmail" style="flex:1;text-align:right;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:13px;background:var(--bg-content);"></div>
+            <div class="detail-row"><span class="key">담당자 연락처</span><input id="evPhone" style="flex:1;text-align:right;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:13px;background:var(--bg-content);"></div>
+            <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:10px;">
+                <button class="btn btn-primary btn-sm" onclick="saveVendor()">저장</button>
+                <button class="btn btn-secondary btn-sm" onclick="cancelVendorEdit()">취소</button>
+            </div>
         </div>
 
         <div class="detail-section">
@@ -116,6 +128,7 @@
               '<td class="num">' + esc(v.managerPhone) + '</td>' +
               '<td class="num">' + v.vendorId + '</td>' +
               '<td class="text-right"><div class="row-actions">' +
+                '<button data-edit="' + v.vendorId + '">수정</button>' +
                 '<button class="danger" data-del="' + v.vendorId + '">삭제</button>' +
               '</div></td>' +
             '</tr>'
@@ -124,6 +137,10 @@
         // 행 클릭 → 상세
         TBODY.querySelectorAll('tr.clickable').forEach(tr => {
             tr.addEventListener('click', () => showDetail(Number(tr.dataset.id)));
+        });
+        // 수정 버튼 → 상세 + 편집모드
+        TBODY.querySelectorAll('button[data-edit]').forEach(btn => {
+            btn.addEventListener('click', (e) => { e.stopPropagation(); showDetail(Number(btn.dataset.edit)); startVendorEdit(); });
         });
         // 삭제 버튼
         TBODY.querySelectorAll('button[data-del]').forEach(btn => {
@@ -175,6 +192,34 @@
         if(!confirm('이 공급 식자재 매핑을 삭제할까요?')) return;
         const r=await fetch('/api/vendor-ingredient/'+id,{method:'DELETE'});
         if(r.ok){ loadSupply(curVendorId); } else alert('삭제 실패 ('+r.status+')');
+    }
+
+    // ----- 거래처 정보 수정 -----
+    function startVendorEdit(){
+        if(curVendorId==null) return;
+        const v=VENDORS.find(x=>x.vendorId===curVendorId); if(!v) return;
+        document.getElementById('evName').value  = v.vendorName  || '';
+        document.getElementById('evEmail').value = v.managerEmail || '';
+        document.getElementById('evPhone').value = v.managerPhone || '';
+        document.getElementById('vViewBox').style.display='none';
+        document.getElementById('vEditBox').style.display='';
+    }
+    function cancelVendorEdit(){
+        document.getElementById('vEditBox').style.display='none';
+        document.getElementById('vViewBox').style.display='';
+    }
+    async function saveVendor(){
+        const body={
+            vendorName:  document.getElementById('evName').value.trim(),
+            managerEmail:document.getElementById('evEmail').value.trim(),
+            managerPhone:document.getElementById('evPhone').value.trim()
+        };
+        if(!body.vendorName){ alert('거래처명은 필수입니다.'); return; }
+        const r=await fetch('/api/vendor/'+curVendorId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+        if(!r.ok){ alert('수정 실패 ('+r.status+')\n'+await r.text()); return; }
+        await loadVendors();
+        cancelVendorEdit();
+        showDetail(curVendorId);
     }
 
     async function del(id) {

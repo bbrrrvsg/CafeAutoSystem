@@ -24,6 +24,7 @@ public class StockService {
     private final MenuRecipeRepository menuRecipeRepository;
     private final CurrentStockLogRepository currentStockLogRepository;
     private final IngredientRepository ingredientRepository;
+    private final SseEmitterManager sseEmitterManager;
 
     @Transactional
     public StockOutResult processOrder(OrderRequest request) {
@@ -42,12 +43,12 @@ public class StockService {
             IngredientEntity ingredient = recipe.getIngredient();
             int totalQty = recipe.calcTotalQty(request.getQuantity());
 
-            int preStock = currentStockLogRepository.convertToCurrentStock(ingredient.getIngredientId());
-            if (preStock < totalQty) {
+            // 마이너스 재고 방지: 차감 전 현재고 확인 (부족하면 판매 거부)
+            int stockBeforeDeduct = currentStockLogRepository.convertToCurrentStock(ingredient.getIngredientId());
+            if (stockBeforeDeduct - totalQty < 0) {
                 throw new IllegalStateException(
-                        String.format("[%s] 재고 부족. 현재: %d%s, 필요: %d%s",
-                                ingredient.getIngredientName(), preStock, ingredient.getUnit(),
-                                totalQty, ingredient.getUnit()));
+                        String.format("[%s] 재고가 부족합니다. 현재 재고: %d, 필요 수량: %d",
+                                ingredient.getIngredientName(), stockBeforeDeduct, totalQty));
             }
 
             String message = String.format("[판매] %s %d잔 판매",
@@ -69,12 +70,9 @@ public class StockService {
             log.info("[STOCK_OUT] 재료={} 차감량={}{}",
                     ingredient.getIngredientName(), totalQty, ingredient.getUnit());
 
-            // 현재 재고 SUM 계산
+            // 현재 재고 SUM 계산 (DB 집계 쿼리)
             int currentStock = currentStockLogRepository
-                    .findByIngredient_IngredientId(ingredient.getIngredientId())
-                    .stream()
-                    .mapToInt(CurrentStockLogEntity::getAmount)
-                    .sum();
+                    .convertToCurrentStock(ingredient.getIngredientId());
 
             boolean isLowStock = currentStock <= ingredient.getSafetyStock();
 
@@ -107,6 +105,9 @@ public class StockService {
                     .build());
         }
 
+        // 주문 처리 완료 후 모든 inventory 화면에 실시간 갱신 푸시
+        sseEmitterManager.broadcastStockUpdate();
+
         return StockOutResult.builder()
                 .menuName(request.getMenuName())
                 .quantity(request.getQuantity())
@@ -120,10 +121,31 @@ public class StockService {
         return currentStockLogRepository.findByIngredient_IngredientId(ingredientId);
     }
 
-    /** 전체 재고 로그 최신순 (활동 로그 화면용) */
+    /** 전체 재고 로그 최신순 — 현재(current) + 이력(historical) 통합 (활동 로그 화면용) */
     @Transactional(readOnly = true)
-    public List<CurrentStockLogEntity> getAllLogs() {
-        return currentStockLogRepository.findTop300ByOrderByCreatedAtDesc();
+    public List<StockLogView> getAllLogs() {
+        List<StockLogView> all = new ArrayList<>();
+        for (CurrentStockLogEntity c : currentStockLogRepository.findTop300ByOrderByCreatedAtDesc()) {
+            all.add(StockLogView.builder()
+                    .source("현재")
+                    .ingredientId(c.getIngredient() != null ? c.getIngredient().getIngredientId() : null)
+                    .logType(c.getLogType()).message(c.getMessage()).amount(c.getAmount())
+                    .reason(c.getReason()).userId(c.getUserId()).createdAt(c.getCreatedAt())
+                    .build());
+        }
+        historicalStockLogRepository.findTop300ByOrderByCreatedAtDesc().forEach(h ->
+            all.add(StockLogView.builder()
+                    .source("이력")
+                    .ingredientId(h.getIngredientId())
+                    .logType(h.getLogType()).message(h.getMessage()).amount(h.getAmount())
+                    .reason(h.getReason()).userId(h.getUserId()).createdAt(h.getCreatedAt())
+                    .build()));
+        all.sort((a, b) -> {
+            if (a.getCreatedAt() == null) return 1;
+            if (b.getCreatedAt() == null) return -1;
+            return b.getCreatedAt().compareTo(a.getCreatedAt());
+        });
+        return all;
     }
 
     /** 실시간 전산 오차 모니터링 및 마이너스 재고 방지 차감 */

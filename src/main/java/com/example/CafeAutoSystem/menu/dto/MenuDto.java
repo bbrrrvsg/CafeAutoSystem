@@ -16,6 +16,7 @@ public class MenuDto {
     private Long      menuId;
     private String    menuName;   // 메뉴명
     private Integer   menuPrice;  // 판매가
+    private String    menuImage;  // 메뉴 사진 URL (/uploads/images/...)
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
