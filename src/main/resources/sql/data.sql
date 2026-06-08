@@ -1,55 +1,57 @@
--- =========================================================
--- 초기 샘플 데이터 (PDF 스키마)
--- =========================================================
+-- ---------------------------------------------------------
+-- 기존 적재 데이터 완전 초기화 (중복 예방 및 외래키 순서 고려)
+-- ---------------------------------------------------------
+SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE TABLE current_stock_log;
+TRUNCATE TABLE purchase_order;
+TRUNCATE TABLE vendor_ingredient;
+TRUNCATE TABLE ingredient;
+TRUNCATE TABLE vendor;
+TRUNCATE TABLE menu;
+SET FOREIGN_KEY_CHECKS = 1;
 
 -- ---------------------------------------------------------
--- MENU  메뉴 마스터 (POS 화면 menuId 1~9 기준)
+-- MENU  메뉴 마스터
 -- ---------------------------------------------------------
 INSERT INTO menu (menu_name, menu_price, created_at, updated_at) VALUES
-('아메리카노',      3000, NOW(), NOW()),
-('카페라떼',        3800, NOW(), NOW()),
-('바닐라라떼',      4300, NOW(), NOW()),
-('카페모카',        4300, NOW(), NOW()),
-('아메모카',        4000, NOW(), NOW()),
-('카라멜 마키아또', 4000, NOW(), NOW()),
-('초코라떼',        4000, NOW(), NOW()),
-('딸기 에이드',     4500, NOW(), NOW()),
-('콜드브루',        4500, NOW(), NOW());
+                                                                     ('아메리카노',      3000, NOW(), NOW()),
+                                                                     ('카페라떼',        3800, NOW(), NOW()),
+                                                                     ('바닐라라떼',      4300, NOW(), NOW()),
+                                                                     ('카페모카',        4300, NOW(), NOW()),
+                                                                     ('아메모카',        4000, NOW(), NOW()),
+                                                                     ('카라멜 마키아또', 4000, NOW(), NOW()),
+                                                                     ('초코라떼',        4000, NOW(), NOW()),
+                                                                     ('딸기 에이드',     4500, NOW(), NOW()),
+                                                                     ('콜드브루',        4500, NOW(), NOW());
 
 -- ---------------------------------------------------------
 -- VENDOR  거래처 마스터 (10개)
 -- ---------------------------------------------------------
-INSERT INTO vendor (vendor_name, manager_email, manager_phone, created_at, updated_at) VALUES
-('서울원두유통',   'seoul_bean@naver.com',   '010-1234-5678', '2025-01-10 09:15:00', '2025-01-10 09:15:00'),
-('매일유통 대리점', 'maeil_milk@gmail.com',   '010-9876-5432', '2025-02-15 11:40:00', '2025-02-15 11:40:00'),
-('대박부자재마트', 'daebak_pack@daum.net',   '02-111-2222',   '2025-03-05 14:20:00', '2025-03-05 14:20:00'),
-('한국제과재료',   'kbakery@naver.com',      '031-222-3344',  '2025-04-20 10:00:00', '2025-04-20 10:00:00'),
-('청정과일농장',   'fresh_fruit@gmail.com',  '010-2222-1111', '2025-05-08 16:30:00', '2025-05-08 16:30:00'),
-('프리미엄시럽',   'premium_syrup@daum.net', '02-555-7788',   '2025-06-12 13:10:00', '2025-06-12 13:10:00'),
-('깔끔포장',       'clean_pack@naver.com',   '031-888-9900',  '2025-07-22 09:50:00', '2025-07-22 09:50:00'),
-('아이스큐브',     'icecube@gmail.com',      '010-3333-4444', '2025-09-03 15:25:00', '2025-09-03 15:25:00'),
-('신선유통',       'sinsun@naver.com',       '02-777-6655',   '2025-11-10 11:00:00', '2025-11-10 11:00:00'),
-('행복디저트',     'happy_dessert@daum.net', '010-7777-8888', '2026-01-15 10:45:00', '2026-01-15 10:45:00');
+INSERT INTO vendor (vendor_id, vendor_name, manager_email, manager_phone, created_at, updated_at) VALUES
+                                                                                                      (1, '서울원두유통',   'seoul_bean@naver.com',   '010-1234-5678', '2025-01-10 09:15:00', '2025-01-10 09:15:00'),
+                                                                                                      (2, '매일유통 대리점', 'maeil_milk@gmail.com',   '010-9876-5432', '2025-02-15 11:40:00', '2025-02-15 11:40:00'),
+                                                                                                      (3, '대박부자재마트', 'daebak_pack@daum.net',   '02-111-2222',   '2025-03-05 14:20:00', '2025-03-05 14:20:00'),
+                                                                                                      (4, '한국제과재료',   'kbakery@naver.com',      '031-222-3344',  '2025-04-20 10:00:00', '2025-04-20 10:00:00'),
+                                                                                                      (5, '청정과일농장',   'fresh_fruit@gmail.com',  '010-2222-1111', '2025-05-08 16:30:00', '2025-05-08 16:30:00'),
+                                                                                                      (6, '프리미엄시럽',   'premium_syrup@daum.net', '02-555-7788',   '2025-06-12 13:10:00', '2025-06-12 13:10:00'),
+                                                                                                      (7, '깔끔포장',       'clean_pack@naver.com',   '031-888-9900',  '2025-07-22 09:50:00', '2025-07-22 09:50:00'),
+                                                                                                      (8, '아이스큐브',     'icecube@gmail.com',      '010-3333-4444', '2025-09-03 15:25:00', '2025-09-03 15:25:00'),
+                                                                                                      (9, '신선유통',       'sinsun@naver.com',       '02-777-6655',   '2025-11-10 11:00:00', '2025-11-10 11:00:00'),
+                                                                                                      (10, '행복디저트',    'happy_dessert@daum.net', '010-7777-8888', '2026-01-15 10:45:00', '2026-01-15 10:45:00');
 
 -- ---------------------------------------------------------
--- INGREDIENT  식자재 마스터 (심준현 담당, PDF: 4개)
+-- INGREDIENT  식자재 마스터 (엔티티 구조에 맞춰 컬럼 개수 수정 완료)
 -- ---------------------------------------------------------
-INSERT INTO ingredient (ingredient_name, unit, safety_stock, ingredient_image, order_unit, unit_per_order) VALUES
-('하우스 블렌드 원두',  'g',    5000, '/images/ingredients/house_blend.jpg',        'kg',   1000),
-('파우더 및 시럽',      '개',   10,   '/images/ingredients/powder_syrup.jpg',      '개',   1),
-('냉동 딸기 블렌드',    'pack', 5,    '/images/ingredients/frozen_strawberry.jpg', 'pack', 1),
-('신선한 우유(1L)',     'ml',   5000, '/images/ingredients/fresh_milk_1l.jpg',      '팩',   1000);
+INSERT INTO ingredient (ingredient_id, ingredient_name, unit, safety_stock, ingredient_image) VALUES
+                                                                                                  (1, '하우스 블렌드 원두',  'g',    5000, '/images/ingredients/house_blend.jpg'),
+                                                                                                  (2, '파우더 및 시럽',      '개',   10,   '/images/ingredients/powder_syrup.jpg'),
+                                                                                                  (3, '냉동 딸기 블렌드',    'pack', 5,    '/images/ingredients/frozen_strawberry.jpg'),
+                                                                                                  (4, '신선한 우유(1L)',     'ml',   5000, '/images/ingredients/fresh_milk_1l.jpg');
 
--- ---------------------------------------------------------
--- VENDOR_INGREDIENT  거래처별 식자재 매핑 (PDF 그대로 3개)
---   PDF: vendor_id=1=매일유통 → 우리: vendor_id=2 (매일유통)
---   PDF: vendor_id=2=대박마트 → 우리: vendor_id=3 (대박부자재)
---   PDF: vendor_id=3=서울원두 → 우리: vendor_id=1 (서울원두유통)
--- ---------------------------------------------------------
-INSERT INTO vendor_ingredient (vendor_id, ingredient_id, unit_price, priority_rank, created_at, updated_at) VALUES
-(2, 4, 2500,  1, '2025-03-01 10:00:00', '2025-03-01 10:00:00'),  -- 우유 1순위: 매일유통
-(3, 4, 2700,  2, '2025-03-20 10:00:00', '2025-03-20 10:00:00'),  -- 우유 2순위: 대박부자재
-(1, 1, 15000, 1, '2025-02-10 10:00:00', '2025-02-10 10:00:00');  -- 원두 1순위: 서울원두유통
+INSERT INTO vendor_ingredient (vendor_ingredient_id, vendor_id, ingredient_id, unit_price, priority_rank, created_at, updated_at) VALUES
+                                                                                                                                      (1, 2, 4, 2500,  1, '2025-03-01 10:00:00', '2025-03-01 10:00:00'),  -- 우유 1순위: 매일유통
+                                                                                                                                      (2, 3, 4, 2700,  2, '2025-03-20 10:00:00', '2025-03-20 10:00:00'),  -- 우유 2순위: 대박부자재
+                                                                                                                                      (3, 1, 1, 15000, 1, '2025-02-10 10:00:00', '2025-02-10 10:00:00');  -- 원두 1순위: 서울원두유통                                                                                                                               (3, 1, 1 warm, 15000, 1, '2025-02-10 10:00:00', '2025-02-10 10:00:00');  -- 원두 1순위: 서울원두유통
 
 -- ---------------------------------------------------------
 -- PURCHASE_ORDER  발주 (8개 — vendor_ingredient_id 1/2/3 만 참조)
