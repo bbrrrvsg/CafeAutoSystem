@@ -4,13 +4,13 @@ import com.example.CafeAutoSystem.ai_rpa.dto.OrderItemDto;
 import com.example.CafeAutoSystem.ai_rpa.service.RpaExcelService;
 import com.example.CafeAutoSystem.ai_rpa.service.RpaMailService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+import java.util.Map;
+@Slf4j
 @RestController
 @RequestMapping("/api/jms-rpa")
 @RequiredArgsConstructor
@@ -51,4 +51,41 @@ public class RpaMailController {
         return "approval/approval";
     }
 
+    @PostMapping("/approve")
+    public ResponseEntity<?> approveAndSendOrder(@RequestBody Map<String, Object> requestBody) {
+        try {
+            // 프론트에서 넘겨준 거래처명과 수신 메일 주소 수거
+            String vendorName = (String) requestBody.get("vendorName");       // 예: "매일유통 대리점"
+            String toEmail = (String) requestBody.get("toEmail");             // 예: "vendor@naver.com"
+
+            // 프론트에서 넘어온 AI 기반 최종 발주 품목 리스트 수거
+            List<Map<String, Object>> items = (List<Map<String, Object>>) requestBody.get("orderItems");
+
+            // DTO 규격으로 리스트 변환
+            List<OrderItemDto> orderList = new java.util.ArrayList<>();
+            for (Map<String, Object> item : items) {
+                orderList.add(OrderItemDto.builder()
+                        .ingredientName((String) item.get("ingredientName"))
+                        .orderQty((Integer) item.get("orderQty"))
+                        .build());
+            }
+
+            log.info("🎯 [AI 발주 승인 트리거] 거래처: {} ({}) | 총 {}건 명세서 발행 시작", vendorName, toEmail, orderList.size());
+
+            String createdExcelFile = rpaExcelService.createOrderExcelSheet(vendorName, orderList);
+
+            rpaMailService.sendOrderEmailWithAttachment(toEmail, orderList, createdExcelFile);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "AI 발주 승인 완료! 엑셀 명세서 첨부 메일이 정상 발송되었습니다."
+            ));
+        } catch (Exception e) {
+            log.error("❌ AI 발주 승인 처리 중 장애 발생: {}", e.getMessage());
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "success", false,
+                    "message", "RPA 승인 처리 오류: " + e.getMessage()
+            ));
+        }
+    }
 }
