@@ -12,66 +12,65 @@
         </p>
     </div>
 </c:if>
+
 <section class="hero">
     <div class="hero-text">
-        <div class="hero-meta">AI ORDER · 자동 분석</div>
+        <div class="hero-meta">AI ORDER · 실시간 시계열 분석</div>
         <h1>내일은 <span class="accent">${totalOrderPrice}원</span> 발주를 추천드려요.</h1>
         <p class="hero-brief">
-            아이스 아메리카노 소요량이 약 40% 증가가 예상되어 원두 · 우유 등의 발주가 필요합니다.
+            PyTorch 모델 분석 결과, 주말 매출 트렌드 반영 및 안전재고 기준치 미달 자재에 대한 추천 자동 연산이 완료되었습니다.
         </p>
     </div>
     <div class="hero-side">
-        <div class="date">분석 기간</div>
-        <div class="time" style="font-size:14px; font-weight:600;">5/10 ~ 5/16</div>
+        <div class="date">예측 스냅샷</div>
+        <div class="time" style="font-size:14px; font-weight:600;">2026-06-08 (현재)</div>
     </div>
 </section>
 
-<!-- 옵션 바 -->
 <div class="toolbar">
     <div class="form-row" style="border:none; padding:0; grid-template-columns: auto auto auto auto; gap:12px; align-items:center;">
         <label style="font-size:12px; color:var(--text-muted); font-weight:600;">발주 예정일</label>
-        <input type="date" value="2026-05-17" style="padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
-        <label style="font-size:12px; color:var(--text-muted); font-weight:600; margin-left:12px;">분석 기간</label>
-        <input type="text" value="2026-05-10 ~ 2026-05-16" style="padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
+        <input type="date" value="2026-06-09" style="padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
+        <label style="font-size:12px; color:var(--text-muted); font-weight:600; margin-left:12px;">학습 로그 범위</label>
+        <input type="text" value="2026-06-01 ~ 2026-06-08 (총 50스텝 누적)" style="padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px; width: 260px;" readonly>
     </div>
     <div class="toolbar-spacer"></div>
-    <button class="btn btn-primary btn-sm">AI 재분석</button>
+    <button class="btn btn-primary btn-sm">AI 재분석 API 호출</button>
 </div>
 
-<!-- AI 분석 요약 -->
 <div class="ai-box" style="margin-bottom: 24px;">
-    <div class="ai-label">AI 분석 요약</div>
+    <div class="ai-label">🤖 PyTorch LSTM 신경망 분석 요약</div>
     <div class="ai-msg">
-        내일(5/17) 아이스 아메리카노 소요량 <strong>40% 증가</strong>가 예상되어
-        원두, 우유 등의 발주가 필요합니다. 권장 총 발주액은 <strong>${totalOrderPrice}원</strong>입니다.
+        매월 초 이월 데이터 및 일주일간 누적된 200여 개의 원장 데이터를 합산한 결과,
+        현재 원두 및 우유 품목의 재고가 임계선(안전재고) 이하로 식별되었습니다.
+        권장 총 예상 발주액은 <strong>${totalOrderPrice}원</strong>입니다.
     </div>
 </div>
 
-<!-- 추천 발주 테이블 -->
 <div class="card flush">
     <table class="data-table">
         <thead>
-            <tr>
-                <th>품목명</th>
-                <th>예상 필요량</th>
-                <th>현재고</th>
-                <th>발주 제안량</th>
-                <th>단가</th>
-                <th class="text-right">예상 금액</th>
-                <th>상태</th>
-            </tr>
+        <tr>
+            <th>품목명</th>
+            <th>예상 필요량</th>
+            <th>현재고</th>
+            <th>발주 제안량</th>
+            <th>계약 단가</th>
+            <th class="text-right">예상 금액</th>
+            <th>상태</th>
+        </tr>
         </thead>
         <tbody>
         <c:forEach var="item" items="${orderList}">
             <tr>
                 <td><strong>${item.ingredientName}</strong></td>
-                <td class="num">${item.predictedRequiredQty} 개</td>
-                <td class="num">${item.currentStock} 개</td>
-                <td class="num font-bold" style="color: var(--primary);">${item.orderQty} 개</td>
+                <td class="num">${item.predictedRequiredQty}</td>
+                <td class="num">${item.currentStock}</td>
+                <td class="num font-bold" style="color: var(--primary);">${item.orderQty}</td>
                 <td class="num">${item.unitPrice}원</td>
                 <td class="text-right num font-bold">${item.totalPrice}원</td>
                 <td>
-                    <span class="badge badge-info">AI 검토 중</span>
+                    <span class="badge badge-info">AI 검토 완료</span>
                     <div class="row-actions" style="margin-top:4px;">
                         <button>수정</button>
                         <button class="danger">제외</button>
@@ -81,7 +80,7 @@
         </c:forEach>
 
         <tr style="background: #FAFAF9;">
-            <td colspan="5" class="text-right" style="font-weight:600; color:var(--text-secondary);">총 예상 금액</td>
+            <td colspan="5" class="text-right" style="font-weight:600; color:var(--text-secondary);">총 예상 발주 금액</td>
             <td class="text-right num" style="font-size:16px; font-weight:700; color:var(--primary);">${totalOrderPrice}원</td>
             <td></td>
         </tr>
@@ -91,7 +90,7 @@
 
 <div style="display:flex; gap:8px; margin-top:20px; justify-content:flex-end;">
     <button class="btn btn-secondary">초안 저장</button>
-    <button class="btn btn-primary">승인 요청</button>
+    <button class="btn btn-primary">승인 및 발주전송</button>
 </div>
 
 <jsp:include page="../layout/footer.jsp" />
