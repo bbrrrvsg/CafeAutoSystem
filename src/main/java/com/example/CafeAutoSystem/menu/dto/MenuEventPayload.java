@@ -6,13 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Kafka로 구매 서버에 전달할 메뉴 1개 정보.
+ * menu.created / menu.updated / menu.deleted 이벤트 payload.
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MenuItemEvent {
+public class MenuEventPayload {
 
     private Long menuId;
 
@@ -21,4 +21,5 @@ public class MenuItemEvent {
     private Integer menuPrice;
 
     private String menuImage;
+    
 }
