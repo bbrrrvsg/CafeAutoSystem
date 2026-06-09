@@ -10,7 +10,7 @@ public class WebClientConfig {
     @Bean
     public WebClient webClient(){
         return WebClient.builder()
-                .baseUrl("https://mazelike-disposingly-zander.ngrok-free.dev ")
+                .baseUrl("https://mazelike-disposingly-zander.ngrok-free.dev")
                 .build();
     }
 
