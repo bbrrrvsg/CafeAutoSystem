@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface HistoricalStockLogRepository extends JpaRepository<HistoricalStockLogEntity, Integer> {
 
-    List<HistoricalStockLogEntity> findByIngredientId(Integer ingredientId);
+    List<HistoricalStockLogEntity> findByIngredientIdOrderByCreatedAtAsc(Integer ingredientId);
 
     List<HistoricalStockLogEntity> findByLogType(String logType);
 
@@ -29,5 +29,11 @@ public interface HistoricalStockLogRepository extends JpaRepository<HistoricalSt
         """, nativeQuery = true)
     int backup(); // 영향받은 행수 반환
 
-
+    @Query("""
+    SELECT h FROM HistoricalStockLogEntity h
+    WHERE h.ingredientId = :ingredientId
+    AND h.logType = 'AI_PREDICT'
+    ORDER BY h.createdAt DESC
+    """)
+        List<HistoricalStockLogEntity> findLatestAiLogs(Integer ingredientId);
 }

@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface VendorIngredientRepository extends JpaRepository<VendorIngredientEntity, Integer> {
@@ -14,4 +15,6 @@ public interface VendorIngredientRepository extends JpaRepository<VendorIngredie
 
     // 단가 오름차순(동률 시 등록순 id) — recalculatePriority 재정렬용
     List<VendorIngredientEntity> findByIngredient_IngredientIdOrderByUnitPriceAscVendorIngredientIdAsc(Integer ingredientId);
+
+    Optional<VendorIngredientEntity> findFirstByIngredient_IngredientIdOrderByPriorityRankAsc(Integer ingredientId);
 }

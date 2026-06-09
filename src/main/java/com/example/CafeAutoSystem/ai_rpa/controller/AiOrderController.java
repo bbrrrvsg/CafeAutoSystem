@@ -6,6 +6,7 @@ import com.example.CafeAutoSystem.common.entity.HistoricalStockLogEntity;
 import com.example.CafeAutoSystem.common.entity.IngredientEntity;
 import com.example.CafeAutoSystem.common.entity.VendorIngredientEntity;
 import com.example.CafeAutoSystem.common.repository.CurrentStockLogRepository;
+import com.example.CafeAutoSystem.common.repository.HistoricalStockLogRepository;
 import com.example.CafeAutoSystem.common.repository.IngredientRepository;
 import com.example.CafeAutoSystem.common.repository.VendorIngredientRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,11 +28,12 @@ public class AiOrderController {
     private final CurrentStockLogRepository currentStockLogRepository;
     private final AiPredictService aiPredictService;
     private final VendorIngredientRepository vendorIngredientRepository;
+    private final HistoricalStockLogRepository historicalStockLogRepository;
 
     @GetMapping("/ai-order")
     @Transactional(readOnly = true)
     public String aiOrderPage(Model model) {
-        log.info("📊 [AI 대시보드] 데이터 바인딩 및 최종 단위 동기화 연산 주행");
+        log.info("📊 [AI 대시보드] 정석 데이터 바인딩 및 3일 누적 연산 동기화 주행");
 
         try {
             List<OrderItemDto> orderList = new ArrayList<>();
@@ -46,16 +48,16 @@ public class AiOrderController {
                     currentStock = 0;
                 }
 
-                // 2. 최신 AI 예측 발주량 데이터 수거
-                List<HistoricalStockLogEntity> logs = aiPredictService.getHistoricalLogsByIngredient(ingredientId);
-                int aiSuggestedStockQty = 0;
                 int safetyStock = ingredient.getSafetyStock();
 
-                if (logs != null && !logs.isEmpty()) {
-                    HistoricalStockLogEntity latestAiLog = logs.get(logs.size() - 1);
-                    if ("AI_PREDICT".equals(latestAiLog.getLogType())) {
-                        aiSuggestedStockQty = latestAiLog.getAmount();
-                    }
+                // 2. 최신 AI 예측 발주량 데이터 수거
+                List<HistoricalStockLogEntity> aiLogs =
+                        historicalStockLogRepository.findLatestAiLogs(ingredientId);
+
+                int aiSuggestedStockQty = 0;
+
+                if (aiLogs != null && !aiLogs.isEmpty()) {
+                    aiSuggestedStockQty = aiLogs.get(0).getAmount(); // 최신 1개
                 }
 
                 // 3. 거래처 정보 및 환산 계수(factor) 추출
@@ -73,18 +75,14 @@ public class AiOrderController {
                     factor = ingredient.unitPerOrderOrDefault();
                 }
 
-                // 4. 발주 제안량 최종 규격 가공 (과거 대용량 로그 잔상이 디비에 남아있을 경우 자동 분할 보정)
+                // 4. [하드코딩 방어벽 걷어내기]
                 int displayOrderQty = aiSuggestedStockQty;
-                if (displayOrderQty > 100) {
-                    displayOrderQty = (int) Math.round((double) displayOrderQty / factor);
-                }
 
                 // 5. 현재고와 안전재고를 화면 규격(팩, 봉)으로 분할 환산
                 int calculatedCurrentStock = (int) Math.round((double) currentStock / factor);
                 int calculatedSafetyStock = (int) Math.round((double) safetyStock / factor);
 
-                // 6. 🌟 [모순 해결] 예상 필요량 칸에 진짜 '내일 순수 소모 예측량'을 역산해서 바인딩
-                // 공식: 순수 예측 소모량 = 최종 발주 제안량 - 안전재고 기준치 + 현재고
+                // 6. 예상 필요량 칸에 '3일간의 순수 소모 예측량' 역산 대입
                 int calculatedPredictedRequiredQty = displayOrderQty - calculatedSafetyStock + calculatedCurrentStock;
                 if (calculatedPredictedRequiredQty < 0) {
                     calculatedPredictedRequiredQty = 0;
@@ -93,9 +91,10 @@ public class AiOrderController {
                 int totalPrice = displayOrderQty * unitPrice;
 
                 OrderItemDto dto = OrderItemDto.builder()
+                        .ingredientId(ingredientId)
                         .ingredientName(ingredient.getIngredientName())
                         .orderQty(displayOrderQty)
-                        .predictedRequiredQty(calculatedPredictedRequiredQty) // 진짜 내일 쓸 개수 반영
+                        .predictedRequiredQty(calculatedPredictedRequiredQty)
                         .currentStock(calculatedCurrentStock)
                         .unitPrice(unitPrice)
                         .totalPrice(totalPrice)
