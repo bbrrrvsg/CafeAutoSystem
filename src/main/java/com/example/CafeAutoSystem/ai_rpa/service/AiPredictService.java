@@ -35,7 +35,7 @@ public class AiPredictService {
     // [Read] 특정 식자재의 과거 누적 로그 조회 (AI 통계 가동용)
     @Transactional(readOnly = true)
     public List<HistoricalStockLogEntity> getHistoricalLogsByIngredient(Integer ingredientId) {
-        return historicalStockLogRepository.findByIngredientId(ingredientId);
+        return historicalStockLogRepository.findByIngredientIdOrderByCreatedAtAsc(ingredientId);
     }
 
     @Transactional

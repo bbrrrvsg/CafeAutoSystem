@@ -43,17 +43,17 @@ public class AiSchedulerService {
                 List<HistoricalStockLogEntity> logEntities = aiPredictService.getHistoricalLogsByIngredient(targetIngredientId);
 
                 List<CurrentStockLogEntity> currentLogEntities =
-                        currentStockLogRepository.findByIngredient_IngredientIdAndAmountLessThan(targetIngredientId, 0);
+                        currentStockLogRepository.findByIngredient_IngredientIdOrderByCreatedAtAsc(targetIngredientId);
 
                 List<Integer> amountList = new ArrayList<>();
 
                 for (HistoricalStockLogEntity entity : logEntities) {
-                    amountList.add(Math.abs(entity.getAmount()));
+                    amountList.add(entity.getAmount());;
                 }
 
                 if (currentLogEntities != null) {
                     for (CurrentStockLogEntity entity : currentLogEntities) {
-                        amountList.add(Math.abs(entity.getAmount()));
+                        amountList.add(entity.getAmount());
                     }
                 }
 
