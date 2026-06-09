@@ -56,8 +56,22 @@ dependencies {
 	implementation 'org.apache.poi:poi-ooxml:5.2.5'
 	// 스프링 카프카 라이브러리 추가
 	implementation 'org.springframework.kafka:spring-kafka'
+
+	// AWS S3 연동 (SDK v2 직접 버전 명시 - Spring Boot 4.x 호환)
+	implementation 'software.amazon.awssdk:s3:2.25.60'
+	implementation 'software.amazon.awssdk:sts:2.25.60'
+	implementation 'software.amazon.awssdk:url-connection-client:2.25.60'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+// Spring Boot dependency management가 AWS SDK 버전을 override하지 않도록 설정
+dependencyManagement {
+	dependencies {
+		dependency 'software.amazon.awssdk:s3:2.25.60'
+		dependency 'software.amazon.awssdk:sts:2.25.60'
+		dependency 'software.amazon.awssdk:url-connection-client:2.25.60'
+	}
 }
