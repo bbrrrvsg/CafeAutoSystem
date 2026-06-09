@@ -3,6 +3,7 @@ package com.example.CafeAutoSystem.review.kafka;
 import com.example.CafeAutoSystem.global.event.EventEnvelope;
 import com.example.CafeAutoSystem.global.event.ProcessedEventService;
 import com.example.CafeAutoSystem.review.dto.ReviewCreatedPayload;
+import com.example.CafeAutoSystem.review.read.ReviewAnalysisStatus;
 import com.example.CafeAutoSystem.review.read.ReviewRead;
 import com.example.CafeAutoSystem.review.read.ReviewReadRepository;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +52,7 @@ public class ReviewCreatedConsumer {
                     .reviewId(payload.getReviewId())
                     .orderId(payload.getOrderId())
                     .reviewContent(payload.getReviewContent())
+                    .analysisStatus(ReviewAnalysisStatus.PENDING)
                     .customerCreatedAt(payload.getCreatedAt())
                     .build();
 
