@@ -97,3 +97,107 @@ INSERT INTO PURCHASE_ORDER (order_date_key, vendor_ingredient_id, suggested_qty,
 VALUES
     ('PO-20260529', 1, 15, 15, 'PENDING', NULL, NOW(), NOW()),
     ('PO-20260529', 3, 5000, 5000, 'PENDING', NULL, NOW(), NOW());
+
+
+
+
+-- ============================================================
+-- data.sql
+-- Spring 서버 시작 시 JPA 테이블 생성 완료 후 자동 실행
+-- 대상: INGREDIENT, MENU_RECIPE 초기 데이터 INSERT
+-- ※ CREATE TABLE 없음 (JPA ddl-auto=create 가 대신 처리)
+-- ※ VENDOR, HISTORICAL_STOCK_LOG, PURCHASE_ORDER 는
+--    MySQL Workbench에서 schema.sql 로 별도 실행
+-- ============================================================
+
+-- INGREDIENT 초기 데이터
+INSERT INTO ingredient (ingredient_name, unit, safety_stock, ingredient_image) VALUES
+                                                                                   ('하우스 블렌드 원두', 'g',    5000, '/images/ingredients/house_blend.jpg'),
+                                                                                   ('파우더 및 시럽',    '개',     10,  '/images/ingredients/powder_syrup.jpg'),
+                                                                                   ('냉동 딸기 블렌드',  'pack',    5,  '/images/ingredients/frozen_strawberry.jpg'),
+                                                                                   ('신선한 우유(1L)',   'ml',    5000, '/images/ingredients/fresh_milk_1l.jpg');
+
+-- MENU_RECIPE 초기 데이터 (메뉴 1잔 기준 소요량)
+-- 아이스 아메리카노
+INSERT INTO menu_recipe (menu_name, price, ingredient_id, required_quantity, note) VALUES
+                                                                                       ('아이스 아메리카노', 4500, 1, 18,  '아메리카노 1잔당 원두 18g 소진'),
+                                                                                       ('아이스 아메리카노', 4500, 3,  1,  '아메리카노 1잔당 컵 1개 소진');
+
+-- 카페 라떼
+INSERT INTO menu_recipe (menu_name, price, ingredient_id, required_quantity, note) VALUES
+                                                                                       ('카페라떼', 5000, 1,  18,  '라떼 1잔당 원두 18g 소진'),
+                                                                                       ('카페라떼', 5000, 4, 200,  '라떼 1잔당 우유 200ml 소진');
+
+-- 바닐라 라떼
+INSERT INTO menu_recipe (menu_name, price, ingredient_id, required_quantity, note) VALUES
+                                                                                       ('바닐라 라떼', 5500, 1,  18,  '바닐라 라떼 1잔당 원두 18g 소진'),
+                                                                                       ('바닐라 라떼', 5500, 4, 180,  '바닐라 라떼 1잔당 우유 180ml 소진'),
+                                                                                       ('바닐라 라떼', 5500, 2,  30,  '바닐라 라떼 1잔당 시럽 30ml 소진');
+
+-- 카페 모카
+INSERT INTO menu_recipe (menu_name, price, ingredient_id, required_quantity, note) VALUES
+                                                                                       ('카페 모카', 5500, 1,  18,  '카페 모카 1잔당 원두 18g 소진'),
+                                                                                       ('카페 모카', 5500, 4, 160,  '카페 모카 1잔당 우유 160ml 소진'),
+                                                                                       ('카페 모카', 5500, 2,  30,  '카페 모카 1잔당 초콜릿 소스 30ml 소진');
+
+-- ============================================================
+-- CURRENT_STOCK_LOG 초기 재고 (STOCK_FORWARD - 월초 이월 데이터)
+-- 재고 현황 화면 테스트용 샘플
+-- ============================================================
+INSERT INTO current_stock_log (ingredient_id, order_item_id, log_type, message, amount, reason, user_id, created_at, updated_at) VALUES
+                                                                                                                                     (1, NULL, 'STOCK_FORWARD', '[이월] 하우스 블렌드 원두 월초 재고 이월', 3500, '전월 재고 이월', 'SYSTEM', NOW(), NOW()),
+                                                                                                                                     (2, NULL, 'STOCK_FORWARD', '[이월] 파우더 및 시럽 월초 재고 이월',    15,   '전월 재고 이월', 'SYSTEM', NOW(), NOW()),
+                                                                                                                                     (3, NULL, 'STOCK_FORWARD', '[이월] 냉동 딸기 블렌드 월초 재고 이월',   2,    '전월 재고 이월', 'SYSTEM', NOW(), NOW()),
+                                                                                                                                     (4, NULL, 'STOCK_FORWARD', '[이월] 신선한 우유 월초 재고 이월',      12000, '전월 재고 이월', 'SYSTEM', NOW(), NOW());
+
+
+
+
+-- ============================================================
+-- data.sql
+-- Spring 서버 시작 시 JPA 테이블 생성 완료 후 자동 실행
+-- 대상: INGREDIENT, MENU_RECIPE 초기 데이터 INSERT
+-- ※ CREATE TABLE 없음 (JPA ddl-auto=create 가 대신 처리)
+-- ※ VENDOR, HISTORICAL_STOCK_LOG, PURCHASE_ORDER 는
+--    MySQL Workbench에서 schema.sql 로 별도 실행
+-- ============================================================
+
+-- INGREDIENT 초기 데이터
+INSERT INTO ingredient (ingredient_name, unit, safety_stock, ingredient_image) VALUES
+                                                                                   ('하우스 블렌드 원두', 'g',    5000, '/images/ingredients/house_blend.jpg'),
+                                                                                   ('파우더 및 시럽',    '개',     10,  '/images/ingredients/powder_syrup.jpg'),
+                                                                                   ('냉동 딸기 블렌드',  'pack',    5,  '/images/ingredients/frozen_strawberry.jpg'),
+                                                                                   ('신선한 우유(1L)',   'ml',    5000, '/images/ingredients/fresh_milk_1l.jpg');
+
+-- MENU_RECIPE 초기 데이터 (메뉴 1잔 기준 소요량)
+-- 아이스 아메리카노
+INSERT INTO menu_recipe (menu_name, price, ingredient_id, required_quantity, note) VALUES
+                                                                                       ('아이스 아메리카노', 4500, 1, 18,  '아메리카노 1잔당 원두 18g 소진'),
+                                                                                       ('아이스 아메리카노', 4500, 3,  1,  '아메리카노 1잔당 컵 1개 소진');
+
+-- 카페 라떼
+INSERT INTO menu_recipe (menu_name, price, ingredient_id, required_quantity, note) VALUES
+                                                                                       ('카페라떼', 5000, 1,  18,  '라떼 1잔당 원두 18g 소진'),
+                                                                                       ('카페라떼', 5000, 4, 200,  '라떼 1잔당 우유 200ml 소진');
+
+-- 바닐라 라떼
+INSERT INTO menu_recipe (menu_name, price, ingredient_id, required_quantity, note) VALUES
+                                                                                       ('바닐라 라떼', 5500, 1,  18,  '바닐라 라떼 1잔당 원두 18g 소진'),
+                                                                                       ('바닐라 라떼', 5500, 4, 180,  '바닐라 라떼 1잔당 우유 180ml 소진'),
+                                                                                       ('바닐라 라떼', 5500, 2,  30,  '바닐라 라떼 1잔당 시럽 30ml 소진');
+
+-- 카페 모카
+INSERT INTO menu_recipe (menu_name, price, ingredient_id, required_quantity, note) VALUES
+                                                                                       ('카페 모카', 5500, 1,  18,  '카페 모카 1잔당 원두 18g 소진'),
+                                                                                       ('카페 모카', 5500, 4, 160,  '카페 모카 1잔당 우유 160ml 소진'),
+                                                                                       ('카페 모카', 5500, 2,  30,  '카페 모카 1잔당 초콜릿 소스 30ml 소진');
+
+-- ============================================================
+-- CURRENT_STOCK_LOG 초기 재고 (STOCK_FORWARD - 월초 이월 데이터)
+-- 재고 현황 화면 테스트용 샘플
+-- ============================================================
+INSERT INTO current_stock_log (ingredient_id, order_item_id, log_type, message, amount, reason, user_id, created_at, updated_at) VALUES
+                                                                                                                                     (1, NULL, 'STOCK_FORWARD', '[이월] 하우스 블렌드 원두 월초 재고 이월', 3500, '전월 재고 이월', 'SYSTEM', NOW(), NOW()),
+                                                                                                                                     (2, NULL, 'STOCK_FORWARD', '[이월] 파우더 및 시럽 월초 재고 이월',    15,   '전월 재고 이월', 'SYSTEM', NOW(), NOW()),
+                                                                                                                                     (3, NULL, 'STOCK_FORWARD', '[이월] 냉동 딸기 블렌드 월초 재고 이월',   2,    '전월 재고 이월', 'SYSTEM', NOW(), NOW()),
+                                                                                                                                     (4, NULL, 'STOCK_FORWARD', '[이월] 신선한 우유 월초 재고 이월',      12000, '전월 재고 이월', 'SYSTEM', NOW(), NOW());

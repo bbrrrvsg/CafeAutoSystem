@@ -39,7 +39,7 @@ out/
 ### Config files (민감 정보 포함 가능) ###
 *.properties
 *.xml
-*.yml
+
 *.yaml
 !gradle/wrapper/gradle-wrapper.properties
 
