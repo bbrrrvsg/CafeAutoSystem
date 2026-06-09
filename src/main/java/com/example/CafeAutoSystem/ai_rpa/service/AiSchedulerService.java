@@ -25,7 +25,8 @@ public class AiSchedulerService {
     private final CurrentStockLogRepository currentStockLogRepository;
     private final IngredientRepository ingredientRepository;
 
-    @Scheduled(initialDelay = 2000, fixedRate = 99999999)
+    // 매일 오후 10시 마감 시간에 자동으로 분석 엔진 가동
+    @Scheduled(cron = "0 0 22 * * *")
     public void runDailyAiStockAnalysis() {
         log.info("🤖 [AI 스케줄러] 전 자재 대상 PyTorch 딥러닝 분석 및 장부 병합 시작");
 

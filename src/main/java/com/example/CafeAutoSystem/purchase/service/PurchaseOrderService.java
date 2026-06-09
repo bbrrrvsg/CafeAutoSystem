@@ -1,5 +1,8 @@
 package com.example.CafeAutoSystem.purchase.service;
 
+import com.example.CafeAutoSystem.ai_rpa.dto.OrderItemDto;
+import com.example.CafeAutoSystem.ai_rpa.service.RpaExcelService;
+import com.example.CafeAutoSystem.ai_rpa.service.RpaMailService;
 import com.example.CafeAutoSystem.common.entity.CurrentStockLogEntity;
 import com.example.CafeAutoSystem.common.entity.IngredientEntity;
 import com.example.CafeAutoSystem.common.entity.PurchaseOrderEntity;
@@ -10,12 +13,14 @@ import com.example.CafeAutoSystem.common.repository.VendorIngredientRepository;
 import com.example.CafeAutoSystem.purchase.dto.PurchaseOrderDto;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+@Slf4j
 
 @Service
 @Transactional
@@ -25,6 +30,8 @@ public class PurchaseOrderService {
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final VendorIngredientRepository vendorIngredientRepository;
     private final CurrentStockLogRepository currentStockLogRepository;
+    private final RpaExcelService rpaExcelService;
+    private final RpaMailService rpaMailService;
 
 
     @Value("${cafe.manager.password}")
@@ -102,13 +109,13 @@ public class PurchaseOrderService {
         return order.toDto();
     }
 
-    // 승인 (PENDING → COMPLETED)
+    // 승인 (PENDING -> COMPLETED)
     public PurchaseOrderDto approve(Integer orderItemId, String password) {
         verifyManagerPassword(password);
         PurchaseOrderEntity order = getPendingOrderOrThrow(orderItemId);
         order.setStatus("COMPLETED");
-        // 승인시 로그 작성을 위해 발주 엔티티 전달
-        if(order.getStatus().equals("COMPLETED")){
+
+        if (order.getStatus().equals("COMPLETED")) {
             purchaseLog(order);
         }
         return order.toDto();
