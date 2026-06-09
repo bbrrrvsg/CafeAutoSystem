@@ -15,4 +15,5 @@ public class OrderItemDto {
     private int unitPrice;            // 단가
     private int totalPrice;           // 예상 금액 (발주 제안량 * 단가)
     private Integer ingredientId;
+    private String orderUnit;
 }

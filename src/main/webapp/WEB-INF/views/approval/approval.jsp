@@ -279,14 +279,17 @@
         const password = document.getElementById('pwInput').value;
         if (!password) { alert('비밀번호를 입력하세요.'); return; }
         if (!pendingAction) return;
+
+        const loadingOverlay = document.getElementById("rpaLoading");
+        const toast = document.getElementById("rpaToast");
+
         try {
             if (pendingAction.action === 'approve') {
                 await approveOrder(pendingAction.orderId, password);
-                // 승인 성공 → 장민서 RPA 메일 발송 연동
                 if (typeof sendRpaMail === 'function') {
-                    sendRpaMail(RPA_TARGET_EMAIL);
+                    sendRpaMail(RPA_TARGET_EMAIL, pendingAction.orderId);
                 } else {
-                    alert('승인 완료!');
+                    alert('승인 완료되었습니다.');
                 }
             } else if (pendingAction.action === 'reject') {
                 await rejectOrder(pendingAction.orderId, password);
@@ -295,12 +298,16 @@
                 await updateOrder(pendingAction.orderId, password);
                 alert('수정 저장됨!');
             }
+
             closePwModal();
             closeOrderModal();
             await Promise.all([loadOrders('pending'), loadOrders('completed'), loadOrders('rejected')]);
             updateCounts();
             renderTable();
-        } catch (e) { alert(e.message); }
+        } catch (e) {
+            if (loadingOverlay) loadingOverlay.style.display = "none";
+            alert(e.message);
+        }
     }
 
     async function approveOrder(id, password) {
