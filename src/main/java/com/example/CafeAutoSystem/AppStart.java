@@ -19,7 +19,8 @@ import java.io.*;
 
 @SpringBootApplication
 @EnableJpaAuditing      // BaseTime 자동 주입
-@EnableScheduling       // @Scheduled 스케줄러 활성화
+@EnableScheduling       // @Scheduled 스케줄러 활성화 (장민서 AI 스케줄러용)
+@EnableKafka
 public class AppStart {
     public static void main(String[] args) {
         SpringApplication.run(AppStart.class);

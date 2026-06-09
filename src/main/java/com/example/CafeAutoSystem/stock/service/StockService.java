@@ -26,9 +26,9 @@ public class StockService {
 
     private final MenuRecipeRepository menuRecipeRepository;
     private final CurrentStockLogRepository currentStockLogRepository;
-    private final HistoricalStockLogRepository historicalStockLogRepository;
     private final IngredientRepository ingredientRepository;
     private final SseEmitterManager sseEmitterManager;
+    private final HistoricalStockLogRepository historicalStockLogRepository;
 
     @Transactional
     public StockOutResult processOrder(OrderRequest request) {

@@ -57,7 +57,11 @@ dependencies {
 	// 스프링 카프카 라이브러리 추가
 	implementation 'org.springframework.kafka:spring-kafka'
 
-	// AWS S3 연동 (SDK v2 직접 버전 명시 - Spring Boot 4.x 호환)
+    // WebClient (Ollama LLM / 파이썬 예측서버 등 외부 API 호출용)
+    // webmvc 위에서 client 기능만 사용 — 앱은 그대로 MVC(서블릿) 방식 유지됨
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    // AWS S3 연동 (SDK v2 직접 버전 명시 - Spring Boot 4.x 호환)
 	implementation 'software.amazon.awssdk:s3:2.25.60'
 	implementation 'software.amazon.awssdk:sts:2.25.60'
 	implementation 'software.amazon.awssdk:url-connection-client:2.25.60'

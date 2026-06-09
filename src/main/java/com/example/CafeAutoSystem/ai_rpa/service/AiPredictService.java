@@ -1,8 +1,10 @@
 package com.example.CafeAutoSystem.ai_rpa.service;
 
 import com.example.CafeAutoSystem.common.entity.HistoricalStockLogEntity;
+import com.example.CafeAutoSystem.common.entity.IngredientEntity;
 import com.example.CafeAutoSystem.common.entity.PurchaseOrderEntity;
 import com.example.CafeAutoSystem.common.repository.HistoricalStockLogRepository;
+import com.example.CafeAutoSystem.common.repository.IngredientRepository;
 import com.example.CafeAutoSystem.common.repository.PurchaseOrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import java.util.List;
 public class AiPredictService {
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final HistoricalStockLogRepository historicalStockLogRepository;
+    private final IngredientRepository ingredientRepository;
 
     // [Create] AI 발주 제안 초안 데이터 단건 저장 (1차 검증용)
     public PurchaseOrderEntity createAiDraftOrder(PurchaseOrderEntity order) {
@@ -45,5 +48,11 @@ public class AiPredictService {
         logEntity.setReason(reason);
         logEntity.setUserId("SYSTEM");
         historicalStockLogRepository.saveAndFlush(logEntity);
+    }
+    @Transactional(readOnly = true)
+    public int getSafetyStockByIngredient(Integer ingredientId) {
+        return ingredientRepository.findById(ingredientId)
+                .map(IngredientEntity::getSafetyStock)
+                .orElse(0); // 혹시 식자재가 없으면 방어코드로 0 반환
     }
 }

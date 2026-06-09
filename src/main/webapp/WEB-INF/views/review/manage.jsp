@@ -58,6 +58,11 @@
             <tr><td colspan="5" class="table-empty">로딩 중...</td></tr>
             </tbody>
         </table>
+        <div class="review-pagination">
+            <button id="btnPrev" class="page-btn" onclick="prevPage()" disabled>← 이전</button>
+            <span id="pageInfo">1 / 1 페이지</span>
+            <button id="btnNext" class="page-btn" onclick="nextPage()" disabled>다음 →</button>
+        </div>
     </div>
 
     <!-- 상세 패널 -->
