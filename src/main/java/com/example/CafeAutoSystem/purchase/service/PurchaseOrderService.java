@@ -170,4 +170,41 @@ public class PurchaseOrderService {
                 .userId("SYSTEM")
                 .build());
     }
+
+    public void createBulkOrdersFromAi(List<PurchaseOrderDto> dtoList) {
+        if (dtoList == null || dtoList.isEmpty()) {
+            throw new IllegalArgumentException("발주할 항목이 존재하지 않습니다.");
+        }
+
+        // 오늘 날짜 기준 발주 공통 키 생성 (예: PO-20260609)
+        String dateKey = "PO-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+
+        for (PurchaseOrderDto dto : dtoList) {
+            // AI 추천 발주 수량이 없거나 0개 이하인 자재는 장부에 넣지 않고 패스
+            if (dto.getSuggestedQty() == null || dto.getSuggestedQty() <= 0) {
+                continue;
+            }
+
+            if (dto.getIngredientId() == null) {
+                throw new IllegalArgumentException("자재 ID(ingredientId)는 필수 항목입니다.");
+            }
+
+            VendorIngredientEntity preferredVendorIngredient = vendorIngredientRepository
+                    .findFirstByIngredient_IngredientIdOrderByPriorityRankAsc(dto.getIngredientId())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "해당 식자재의 거래처 매핑을 찾을 수 없습니다. 자재 ID: " + dto.getIngredientId()));
+
+            // 엔티티 조립 및 PENDING(대기) 상태 일괄 저장
+            PurchaseOrderEntity orderEntity = PurchaseOrderEntity.builder()
+                    .vendorIngredient(preferredVendorIngredient)
+                    .orderDateKey(dateKey)
+                    .suggestedQty(dto.getSuggestedQty())
+                    .finalQty(dto.getSuggestedQty()) // 초기 검토 수량은 AI 제안 수량으로 동기화
+                    .status("PENDING")
+                    .expirationDate(dto.getExpirationDate())
+                    .build();
+
+            purchaseOrderRepository.save(orderEntity);
+        }
+    }
 }

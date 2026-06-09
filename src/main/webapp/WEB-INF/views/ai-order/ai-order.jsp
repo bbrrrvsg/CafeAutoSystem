@@ -4,6 +4,7 @@
 <c:set var="menu" value="ai-order" scope="request" />
 <jsp:include page="../layout/header.jsp" />
 
+<%-- ⚠AI 에러 락 오버레이 및 경고 바 --%>
 <c:if test="${aiStatus eq 'AI_ERROR'}">
     <div style="background-color: #fff5f5; border-left: 4px solid #e74a3b; padding: 16px; margin-bottom: 24px; border-radius: 8px;">
         <strong style="color: #e74a3b; font-size: 15px;">⚠️ AI 시스템 안전 동결 발령</strong>
@@ -13,6 +14,7 @@
     </div>
 </c:if>
 
+<%-- 대시보드 상단 히어로 섹션 --%>
 <section class="hero">
     <div class="hero-text">
         <div class="hero-meta">AI ORDER · 실시간 시계열 분석</div>
@@ -27,6 +29,7 @@
     </div>
 </section>
 
+<%-- 상단 툴바 조작 영역 --%>
 <div class="toolbar">
     <div class="form-row" style="border:none; padding:0; grid-template-columns: auto auto auto auto; gap:12px; align-items:center;">
         <label style="font-size:12px; color:var(--text-muted); font-weight:600;">발주 예정일</label>
@@ -35,9 +38,10 @@
         <input type="text" value="2026-06-01 ~ 2026-06-08 (총 50스텝 누적)" style="padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px; width: 260px;" readonly>
     </div>
     <div class="toolbar-spacer"></div>
-    <button class="btn btn-primary btn-sm">AI 재분석 API 호출</button>
+    <button id="btn-ai-reanalyze" class="btn btn-primary btn-sm">AI 재분석</button>
 </div>
 
+<%--  AI 상태 요약 알림창 --%>
 <div class="ai-box" style="margin-bottom: 24px;">
     <div class="ai-label">🤖 PyTorch LSTM 신경망 분석 요약</div>
     <div class="ai-msg">
@@ -47,6 +51,7 @@
     </div>
 </div>
 
+<%--  메인 AI 추천 발주 리스트 테이블 --%>
 <div class="card flush">
     <table class="data-table">
         <thead>
@@ -62,7 +67,7 @@
         </thead>
         <tbody>
         <c:forEach var="item" items="${orderList}">
-            <tr>
+            <tr class="ai-order-row" data-ingredient-id="${item.ingredientId}" data-suggested-qty="${item.orderQty}">
                 <td><strong>${item.ingredientName}</strong></td>
                 <td class="num">${item.predictedRequiredQty}</td>
                 <td class="num">${item.currentStock}</td>
@@ -79,6 +84,7 @@
             </tr>
         </c:forEach>
 
+        <%-- 합계 로우 --%>
         <tr style="background: #FAFAF9;">
             <td colspan="5" class="text-right" style="font-weight:600; color:var(--text-secondary);">총 예상 발주 금액</td>
             <td class="text-right num" style="font-size:16px; font-weight:700; color:var(--primary);">${totalOrderPrice}원</td>
@@ -88,9 +94,12 @@
     </table>
 </div>
 
+<%-- 하단 마스터 액션 버튼 영역 --%>
 <div style="display:flex; gap:8px; margin-top:20px; justify-content:flex-end;">
     <button class="btn btn-secondary">초안 저장</button>
-    <button class="btn btn-primary">승인 및 발주전송</button>
+    <button id="btn-submit-bulk-order" class="btn btn-primary">승인 및 발주생성</button>
 </div>
+
+<script src="<c:url value='/js/purchase.js'/>"></script>
 
 <jsp:include page="../layout/footer.jsp" />

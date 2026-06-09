@@ -1,8 +1,10 @@
 package com.example.CafeAutoSystem.purchase.controller;
 
+import com.example.CafeAutoSystem.ai_rpa.service.AiSchedulerService;
 import com.example.CafeAutoSystem.purchase.dto.PurchaseOrderDto;
 import com.example.CafeAutoSystem.purchase.service.PurchaseOrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,7 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,6 +25,7 @@ import java.util.List;
 public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;
+    private final AiSchedulerService aiSchedulerService;
 
     // -----------------------------------------------------
     // [GET] /api/order/pending     — 승인 대기
@@ -93,5 +98,31 @@ public class PurchaseOrderController {
     public PurchaseOrderDto reject(@PathVariable Integer id,
                                    @RequestParam String password) {
         return purchaseOrderService.reject(id, password);
+    }
+
+    // URL: POST /api/order/bulk-ai
+    @PostMapping("/bulk-ai")
+    public ResponseEntity<Map<String, Object>> createBulkOrdersFromAi(@RequestBody List<PurchaseOrderDto> dtoList) {
+
+        // 1. 서비스 단의 일괄 저장 로직 호출 (우선순위 1순위 거래처 매핑 가동)
+        purchaseOrderService.createBulkOrdersFromAi(dtoList);
+
+        // 2. 리액트 프론트엔드가 성공을 인지하고 화면을 갱신할 수 있도록 응답 맵 구성
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "SUCCESS");
+        response.put("message", "AI 추천 데이터 기반 발주 초안(PENDING)이 정상적으로 일괄 적재되었습니다.");
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/reanalyze")
+    public ResponseEntity<Map<String, Object>> reanalyzeAiModel() {
+        aiSchedulerService.runDailyAiStockAnalysis();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "SUCCESS");
+        response.put("message", "PyTorch LSTM 모델이 최신 재고 로그를 기반으로 실시간 예측 분석 및 데이터 갱신을 완료했습니다.");
+
+        return ResponseEntity.ok(response);
     }
 }

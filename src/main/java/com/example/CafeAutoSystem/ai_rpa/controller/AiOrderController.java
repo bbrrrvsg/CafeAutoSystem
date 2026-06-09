@@ -50,7 +50,7 @@ public class AiOrderController {
 
                 int safetyStock = ingredient.getSafetyStock();
 
-                // 2. 최신 AI 예측 발주량 데이터 수거 (파이썬이 이미 '팩/봉' 단위로 변환해 둔 최종 수량)
+                // 2. 최신 AI 예측 발주량 데이터 수거
                 List<HistoricalStockLogEntity> aiLogs =
                         historicalStockLogRepository.findLatestAiLogs(ingredientId);
 
@@ -75,17 +75,14 @@ public class AiOrderController {
                     factor = ingredient.unitPerOrderOrDefault();
                 }
 
-                // 4. 🔓 [하드코딩 방어벽 걷어내기]
-                // 파이썬 단에서 이미 완벽하게 환산되어 저장되므로 자바는 그대로 수용합니다.
+                // 4. [하드코딩 방어벽 걷어내기]
                 int displayOrderQty = aiSuggestedStockQty;
 
                 // 5. 현재고와 안전재고를 화면 규격(팩, 봉)으로 분할 환산
                 int calculatedCurrentStock = (int) Math.round((double) currentStock / factor);
                 int calculatedSafetyStock = (int) Math.round((double) safetyStock / factor);
 
-                // 6. 🌟 [기획 변경 동기화] 예상 필요량 칸에 '3일간의 순수 소모 예측량' 역산 대입
-                // 파이썬 최종 공식: suggested = predicted(예측량) + safety_stock + buffer(20%) - current_stock
-                // 역산 공식: predicted + buffer = suggested - safety_stock + current_stock
+                // 6. 예상 필요량 칸에 '3일간의 순수 소모 예측량' 역산 대입
                 int calculatedPredictedRequiredQty = displayOrderQty - calculatedSafetyStock + calculatedCurrentStock;
                 if (calculatedPredictedRequiredQty < 0) {
                     calculatedPredictedRequiredQty = 0;
@@ -94,9 +91,10 @@ public class AiOrderController {
                 int totalPrice = displayOrderQty * unitPrice;
 
                 OrderItemDto dto = OrderItemDto.builder()
+                        .ingredientId(ingredientId)
                         .ingredientName(ingredient.getIngredientName())
                         .orderQty(displayOrderQty)
-                        .predictedRequiredQty(calculatedPredictedRequiredQty) // AI가 3일간 예측한 총 필요 소모량 안착
+                        .predictedRequiredQty(calculatedPredictedRequiredQty)
                         .currentStock(calculatedCurrentStock)
                         .unitPrice(unitPrice)
                         .totalPrice(totalPrice)
