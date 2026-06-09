@@ -52,7 +52,6 @@ public class QrCodeService {
                         .bucket(bucket)
                         .key(s3Key)
                         .contentType("image/png")
-                        .acl(ObjectCannedACL.PUBLIC_READ)
                         .build();
                 s3Client.putObject(putRequest, RequestBody.fromBytes(imageBytes));
 

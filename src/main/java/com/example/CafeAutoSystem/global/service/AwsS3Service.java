@@ -49,7 +49,6 @@ public class AwsS3Service {
                     .bucket(bucket)
                     .key(objectKey)
                     .contentType(file.getContentType())
-                    .acl(ObjectCannedACL.PUBLIC_READ)
                     .build();
 
             s3Client.putObject(putRequest,

@@ -39,7 +39,6 @@ public class FileUtil {
                     .bucket(bucket)
                     .key(objectKey)
                     .contentType(multipartFile.getContentType())
-                    .acl(ObjectCannedACL.PUBLIC_READ) // 필요시 접근 권한 설정 (Public Read)
                     .build();
             // 파일 업로드 실행 (SDK v2)
             s3Client.putObject(putObjectRequest,
