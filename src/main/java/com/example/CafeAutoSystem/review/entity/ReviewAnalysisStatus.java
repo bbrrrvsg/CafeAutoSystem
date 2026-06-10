@@ -1,4 +1,4 @@
-package com.example.CafeAutoSystem.review.read;
+package com.example.CafeAutoSystem.review.entity;
 
 /**
  * 사장 서버 리뷰 AI 분석 상태.

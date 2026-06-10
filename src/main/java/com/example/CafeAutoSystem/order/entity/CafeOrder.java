@@ -1,4 +1,4 @@
-package com.example.CafeAutoSystem.review.entity;
+package com.example.CafeAutoSystem.order.entity;
 
 import com.example.CafeAutoSystem.common.entity.BaseTime;
 

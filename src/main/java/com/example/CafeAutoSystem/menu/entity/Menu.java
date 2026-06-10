@@ -1,4 +1,4 @@
-package com.example.CafeAutoSystem.review.entity;
+package com.example.CafeAutoSystem.menu.entity;
 
 import com.example.CafeAutoSystem.common.entity.BaseTime;
 import com.example.CafeAutoSystem.menu.dto.MenuDto;

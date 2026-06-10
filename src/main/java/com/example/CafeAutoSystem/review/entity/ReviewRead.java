@@ -1,4 +1,4 @@
-package com.example.CafeAutoSystem.review.read;
+package com.example.CafeAutoSystem.review.entity;
 
 import com.example.CafeAutoSystem.common.entity.BaseTime;
 import jakarta.persistence.*;

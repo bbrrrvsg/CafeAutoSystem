@@ -1,7 +1,7 @@
 package com.example.CafeAutoSystem.review.dto;
 
-import com.example.CafeAutoSystem.review.read.ReviewAnalysisStatus;
-import com.example.CafeAutoSystem.review.read.ReviewRead;
+import com.example.CafeAutoSystem.review.entity.ReviewAnalysisStatus;
+import com.example.CafeAutoSystem.review.entity.ReviewRead;
 import lombok.Builder;
 import lombok.Data;
 

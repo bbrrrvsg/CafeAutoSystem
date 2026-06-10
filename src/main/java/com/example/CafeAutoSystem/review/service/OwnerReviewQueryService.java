@@ -2,8 +2,8 @@ package com.example.CafeAutoSystem.review.service;
 
 import com.example.CafeAutoSystem.review.dto.OwnerReviewListItemDto;
 import com.example.CafeAutoSystem.review.dto.OwnerReviewPageResponseDto;
-import com.example.CafeAutoSystem.review.read.ReviewRead;
-import com.example.CafeAutoSystem.review.read.ReviewReadRepository;
+import com.example.CafeAutoSystem.review.entity.ReviewRead;
+import com.example.CafeAutoSystem.review.repository.ReviewReadRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
