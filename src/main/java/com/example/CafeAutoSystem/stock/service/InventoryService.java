@@ -41,9 +41,9 @@ public class InventoryService {
 
             String status = calcStatus(currentStock, ingredient.getSafetyStock());
 
-            int maxStock = ingredient.getSafetyStock() * 2;
-            int percent = maxStock > 0
-                    ? Math.min((int) ((double) currentStock / maxStock * 100), 100)
+            int safetyStockVal = ingredient.getSafetyStock();
+            int percent = safetyStockVal > 0
+                    ? Math.min((int) ((double) currentStock / safetyStockVal * 100), 100)
                     : 0;
 
             return InventoryResponse.builder()
