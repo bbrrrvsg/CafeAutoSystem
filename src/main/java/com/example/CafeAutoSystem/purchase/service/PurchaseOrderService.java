@@ -1,5 +1,8 @@
 package com.example.CafeAutoSystem.purchase.service;
 
+import com.example.CafeAutoSystem.ai_rpa.dto.OrderItemDto;
+import com.example.CafeAutoSystem.ai_rpa.service.RpaExcelService;
+import com.example.CafeAutoSystem.ai_rpa.service.RpaMailService;
 import com.example.CafeAutoSystem.common.entity.CurrentStockLogEntity;
 import com.example.CafeAutoSystem.common.entity.IngredientEntity;
 import com.example.CafeAutoSystem.common.entity.PurchaseOrderEntity;
@@ -10,12 +13,14 @@ import com.example.CafeAutoSystem.common.repository.VendorIngredientRepository;
 import com.example.CafeAutoSystem.purchase.dto.PurchaseOrderDto;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+@Slf4j
 
 @Service
 @Transactional
@@ -25,6 +30,8 @@ public class PurchaseOrderService {
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final VendorIngredientRepository vendorIngredientRepository;
     private final CurrentStockLogRepository currentStockLogRepository;
+    private final RpaExcelService rpaExcelService;
+    private final RpaMailService rpaMailService;
 
 
     @Value("${cafe.manager.password}")
@@ -102,13 +109,13 @@ public class PurchaseOrderService {
         return order.toDto();
     }
 
-    // 승인 (PENDING → COMPLETED)
+    // 승인 (PENDING -> COMPLETED)
     public PurchaseOrderDto approve(Integer orderItemId, String password) {
         verifyManagerPassword(password);
         PurchaseOrderEntity order = getPendingOrderOrThrow(orderItemId);
         order.setStatus("COMPLETED");
-        // 승인시 로그 작성을 위해 발주 엔티티 전달
-        if(order.getStatus().equals("COMPLETED")){
+
+        if (order.getStatus().equals("COMPLETED")) {
             purchaseLog(order);
         }
         return order.toDto();
@@ -169,5 +176,42 @@ public class PurchaseOrderService {
                 .message("[반려] " + ing.getIngredientName() + " 발주 반려")
                 .userId("SYSTEM")
                 .build());
+    }
+
+    public void createBulkOrdersFromAi(List<PurchaseOrderDto> dtoList) {
+        if (dtoList == null || dtoList.isEmpty()) {
+            throw new IllegalArgumentException("발주할 항목이 존재하지 않습니다.");
+        }
+
+        // 오늘 날짜 기준 발주 공통 키 생성 (예: PO-20260609)
+        String dateKey = "PO-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+
+        for (PurchaseOrderDto dto : dtoList) {
+            // AI 추천 발주 수량이 없거나 0개 이하인 자재는 장부에 넣지 않고 패스
+            if (dto.getSuggestedQty() == null || dto.getSuggestedQty() <= 0) {
+                continue;
+            }
+
+            if (dto.getIngredientId() == null) {
+                throw new IllegalArgumentException("자재 ID(ingredientId)는 필수 항목입니다.");
+            }
+
+            VendorIngredientEntity preferredVendorIngredient = vendorIngredientRepository
+                    .findFirstByIngredient_IngredientIdOrderByPriorityRankAsc(dto.getIngredientId())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "해당 식자재의 거래처 매핑을 찾을 수 없습니다. 자재 ID: " + dto.getIngredientId()));
+
+            // 엔티티 조립 및 PENDING(대기) 상태 일괄 저장
+            PurchaseOrderEntity orderEntity = PurchaseOrderEntity.builder()
+                    .vendorIngredient(preferredVendorIngredient)
+                    .orderDateKey(dateKey)
+                    .suggestedQty(dto.getSuggestedQty())
+                    .finalQty(dto.getSuggestedQty()) // 초기 검토 수량은 AI 제안 수량으로 동기화
+                    .status("PENDING")
+                    .expirationDate(dto.getExpirationDate())
+                    .build();
+
+            purchaseOrderRepository.save(orderEntity);
+        }
     }
 }

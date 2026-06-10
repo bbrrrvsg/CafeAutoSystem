@@ -1,20 +1,43 @@
-function sendRpaMail(targetEmail) {
-    alert("RPA 자동화 엔진 가동: [" + targetEmail + "] 계정으로 발주서를 전송합니다.");
+function sendRpaMail(targetEmail, orderId) {
+    console.log("[RPA 엔진 가동] 수신 테스트 메일: " + targetEmail + " | 발주 ID: " + orderId);
 
-    // 백엔드 메일 전송 API 호출
-    fetch('/api/jms-rpa/send-test?to=' + targetEmail)
+    const loadingOverlay = document.getElementById("rpaLoading");
+    if (loadingOverlay) {
+        loadingOverlay.style.display = "flex";
+    }
+
+    fetch('/api/jms-rpa/send-test?to=' + encodeURIComponent(targetEmail) + '&orderItemId=' + orderId)
         .then(response => {
-            if(response.ok) return response.text();
-            throw new Error("메일 엔진 연동 실패");
-        })
-        .then(data => {
-            alert("🎉 발주 승인 및 이메일 전송 성공!\n" + data);
-            // 만약 모달창이 열려있으면 닫기 (메서드가 존재할 때만 실행)
-            if (typeof closeOrderModal === 'function') {
-                closeOrderModal();
+            if (loadingOverlay) {
+                loadingOverlay.style.display = "none";
+            }
+
+            if (response.ok) {
+                const toast = document.getElementById("rpaToast");
+                if (toast) {
+                    toast.style.display = "block";
+                    toast.style.opacity = "1";
+                    setTimeout(() => {
+                        toast.style.opacity = "0";
+                        setTimeout(() => {
+                            toast.style.display = "none";
+                            toast.style.opacity = "1";
+                        }, 500);
+                    }, 3000);
+                }
+
+                if (typeof closeOrderModal === 'function') {
+                    closeOrderModal();
+                }
+            } else {
+                throw new Error("RPA 메일 엔진 연동 실패 (서버 에러)");
             }
         })
         .catch(error => {
-            alert("❌ RPA 메일 전송 중 장애 발생: " + error.message);
+            if (loadingOverlay) {
+                loadingOverlay.style.display = "none";
+            }
+            console.error("RPA 장애 발생:", error);
+            alert("RPA 메일 전송 중 장애 발생: " + error.message);
         });
 }

@@ -54,4 +54,6 @@ public interface CurrentStockLogRepository extends JpaRepository<CurrentStockLog
     @Query("SELECT COALESCE(SUM(c.amount), 0) FROM CurrentStockLogEntity c WHERE c.ingredient.ingredientId = :ingredientId")
     int convertToCurrentStock(@Param("ingredientId") Integer ingredientId);
 
+    List<CurrentStockLogEntity>
+    findByIngredient_IngredientIdOrderByCreatedAtAsc(Integer ingredientId);
 }

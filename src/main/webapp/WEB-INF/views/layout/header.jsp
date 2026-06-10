@@ -67,6 +67,15 @@
             <li class="${menu == 'vendor' ? 'active' : ''}">
                 <a href="/vendor"><span class="menu-icon"><i class="bi bi-people"></i></span><span class="menu-label">거래처 관리</span></a>
             </li>
+            <li class="${menu == 'vendor-ingredient' ? 'active' : ''}">
+                <a href="/vendor-ingredient"><span class="menu-icon"><i class="bi bi-link-45deg"></i></span><span class="menu-label">거래처-식자재</span></a>
+            </li>
+            <li class="${menu == 'ingredient' ? 'active' : ''}">
+                <a href="/ingredient"><span class="menu-icon"><i class="bi bi-basket3"></i></span><span class="menu-label">식자재 관리</span></a>
+            </li>
+            <li class="${menu == 'menu' ? 'active' : ''}">
+                <a href="/menu"><span class="menu-icon"><i class="bi bi-cup-straw"></i></span><span class="menu-label">메뉴 &amp; 레시피</span></a>
+            </li>
             <li class="${menu == 'review-manage' ? 'active' : ''}">
                 <a href="/review/manage"><span class="menu-icon"><i class="bi bi-chat-left-text"></i></span><span class="menu-label">리뷰 관리</span></a>
             </li>

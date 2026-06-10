@@ -278,16 +278,15 @@
 
     loadInventory();
 
-    // SSE 연결 - 주문 발생 시 서버가 푸시하면 재고 자동 갱신
-    const evtSource = new EventSource('/api/sse/stock');
-    evtSource.addEventListener('stockUpdate', function(e) {
-        console.log('[SSE] 재고 변경 감지 - 화면 갱신');
-        loadInventory();
-    });
-    evtSource.onerror = function() {
-        console.warn('[SSE] 연결 끊김 - 자동 재연결 시도 중...');
-    };
-
+    // ===== 실시간 재고 갱신 (SSE) =====
+    // POS 판매 등으로 재고가 차감되면 서버가 'stockUpdate' 이벤트를 푸시 → 화면 자동 새로고침
+    (function connectSSE(){
+        try {
+            const es = new EventSource('/api/sse/stock');
+            es.addEventListener('stockUpdate', () => loadInventory());
+            es.onerror = () => { es.close(); setTimeout(connectSSE, 3000); }; // 끊기면 3초 후 재연결
+        } catch (e) { /* SSE 미지원 브라우저는 무시 (수동 새로고침으로 동작) */ }
+    })();
 </script>
 
 <jsp:include page="../layout/footer.jsp" />

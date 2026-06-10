@@ -279,14 +279,17 @@
         const password = document.getElementById('pwInput').value;
         if (!password) { alert('비밀번호를 입력하세요.'); return; }
         if (!pendingAction) return;
+
+        const loadingOverlay = document.getElementById("rpaLoading");
+        const toast = document.getElementById("rpaToast");
+
         try {
             if (pendingAction.action === 'approve') {
                 await approveOrder(pendingAction.orderId, password);
-                // 승인 성공 → 장민서 RPA 메일 발송 연동
                 if (typeof sendRpaMail === 'function') {
-                    sendRpaMail(RPA_TARGET_EMAIL);
+                    sendRpaMail(RPA_TARGET_EMAIL, pendingAction.orderId);
                 } else {
-                    alert('승인 완료!');
+                    alert('승인 완료되었습니다.');
                 }
             } else if (pendingAction.action === 'reject') {
                 await rejectOrder(pendingAction.orderId, password);
@@ -295,12 +298,16 @@
                 await updateOrder(pendingAction.orderId, password);
                 alert('수정 저장됨!');
             }
+
             closePwModal();
             closeOrderModal();
             await Promise.all([loadOrders('pending'), loadOrders('completed'), loadOrders('rejected')]);
             updateCounts();
             renderTable();
-        } catch (e) { alert(e.message); }
+        } catch (e) {
+            if (loadingOverlay) loadingOverlay.style.display = "none";
+            alert(e.message);
+        }
     }
 
     async function approveOrder(id, password) {
@@ -336,5 +343,34 @@
     window.addEventListener('DOMContentLoaded', init);
 </script>
 <script src="/js/rpa.js"></script>
+<style>
+    /* 화면 전체를 흐리게 덮는 로딩 레이어 */
+    .rpa-loading-overlay {
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.6); z-index: 99999; justify-content: center; align-items: center; flex-direction: column; color: white;
+    }
+    /* 초록색  스피너 */
+    .rpa-spinner {
+        width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.3); border-radius: 50%;
+        border-top-color: #1cc88a; animation: rpaSpin 1s ease-in-out infinite; margin-bottom: 15px;
+    }
+    @keyframes rpaSpin { to { transform: rotate(360deg); } }
 
+    /* 알림 토스트창 */
+    .rpa-toast {
+        display: none; position: fixed; top: 30px; right: 30px; background: #1cc88a; color: white;
+        padding: 16px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 100000;
+        font-weight: 600; font-size: 14px; transition: opacity 0.5s ease;
+    }
+</style>
+
+<div id="rpaLoading" class="rpa-loading-overlay">
+    <div class="rpa-spinner"></div>
+    <h3 style="margin:0; font-weight:600;">🤖 RPA 자동 발주 엔진 가동 중...</h3>
+    <p style="margin:5px 0 0 0; font-size:13px; color:#ddd;">점장 승인이 확인되어, 엑셀 명세서를 생성하고 거래처로 이메일을 발송하고 있습니다.</p>
+</div>
+
+<div id="rpaToast" class="rpa-toast">
+    🚀 [RPA 완료] 거래처로 발주 명세서 메일 발송이 완벽하게 성공했습니다!
+</div>
 <jsp:include page="../layout/footer.jsp" />
