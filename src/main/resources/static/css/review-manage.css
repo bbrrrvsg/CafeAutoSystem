@@ -550,3 +550,46 @@
     font-size: 12px;
     line-height: 1.45;
 }
+.ai-analysis-result {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.ai-risk-line {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1px;
+}
+
+.ai-risk-high {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: #FFF1F2;
+    color: #E11D48;
+    border: 1px solid #FECDD3;
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+    line-height: 1.2;
+}
+
+/* 테이블 안에서는 너무 커지지 않게 조정 */
+.review-table .ai-analysis-result {
+    gap: 4px;
+}
+
+.review-table .ai-risk-high {
+    padding: 3px 8px;
+    font-size: 11px;
+}
+
+/* 상세 패널에서는 살짝 강조 */
+.ai-analysis-box .ai-risk-high {
+    padding: 5px 10px;
+    font-size: 12px;
+}

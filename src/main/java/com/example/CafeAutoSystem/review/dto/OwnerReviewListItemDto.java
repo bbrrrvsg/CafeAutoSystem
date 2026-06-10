@@ -15,10 +15,6 @@ public class OwnerReviewListItemDto {
 
     private String reviewContent;
 
-    /**
-     * 프론트에는 문자열로 내려준다.
-     * PENDING / PROCESSING / COMPLETED / FAILED
-     */
     private String analysisStatus;
 
     private Boolean analysisCompleted;
@@ -29,10 +25,9 @@ public class OwnerReviewListItemDto {
 
     private String createdAt;
 
-    /**
-     * 기존 프론트 호환용 상태값.
-     */
     private String status;
+
+
 
     public static OwnerReviewListItemDto from(ReviewRead reviewRead) {
         ReviewAnalysisStatus analysisStatus = reviewRead.getAnalysisStatus();

@@ -10,7 +10,4 @@ public interface ReviewReadRepository extends JpaRepository<ReviewRead, Long> {
 
     Page<ReviewRead> findAllByOrderByReviewIdDesc(Pageable pageable);
 
-    List<ReviewRead> findTop10ByAnalysisStatusOrderByReviewIdAsc(
-            ReviewAnalysisStatus analysisStatus
-    );
 }

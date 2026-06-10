@@ -194,7 +194,7 @@ function renderAnalysisCell(review) {
     }
 
     if (review.analysisStatus === 'COMPLETED') {
-        return renderCategoryBadges(review.analysisResultJson, true);
+        return renderAnalysisSummary(review.analysisResultJson, true);
     }
 
     return '<span class="ai-status pending">대기</span>';
@@ -301,10 +301,7 @@ function renderDetailAnalysis(review) {
     if (review.analysisStatus === 'COMPLETED') {
         statusEl.textContent = '분석 완료';
         statusEl.className = 'ai-analysis-status completed';
-        box.innerHTML =
-            '<div class="ai-category-list">' +
-            renderCategoryBadges(review.analysisResultJson, false) +
-            '</div>';
+        box.innerHTML = renderAnalysisSummary(review.analysisResultJson, false);
         return;
     }
 
@@ -326,18 +323,49 @@ function parseAnalysis(analysisResultJson) {
     }
 }
 
-function renderCategoryBadges(analysisResultJson, compact) {
+/**
+ * AI 분석 결과 렌더링
+ *
+ * 정책:
+ * - overallSentiment는 화면에 표시하지 않는다.
+ * - riskLevel이 HIGH일 때만 "🚨 빠른 대응 필요"를 표시한다.
+ * - 카테고리 태그는 기존처럼 그대로 표시한다.
+ * - riskLevel이 HIGH이고 categories가 비어 있어도 "빠른 대응 필요"는 표시한다.
+ */
+function renderAnalysisSummary(analysisResultJson, compact) {
     var analysis = parseAnalysis(analysisResultJson);
 
-    if (!analysis || !Array.isArray(analysis.categories) || analysis.categories.length === 0) {
+    if (!analysis) {
         return '<span class="ai-status pending">분석 결과 없음</span>';
     }
 
-    var categories = compact
-        ? analysis.categories.slice(0, 2)
-        : analysis.categories;
+    var html = [];
 
-    var html = categories.map(function (item) {
+    if (analysis.riskLevel === 'HIGH') {
+        html.push(
+            '<div class="ai-risk-line">' +
+            '<span class="ai-risk-high">🚨 빠른 대응 필요</span>' +
+            '</div>'
+        );
+    }
+
+    var categories = Array.isArray(analysis.categories)
+        ? analysis.categories
+        : [];
+
+    if (categories.length === 0) {
+        if (analysis.riskLevel === 'HIGH') {
+            return '<div class="ai-analysis-result">' + html.join('') + '</div>';
+        }
+
+        return '<span class="ai-status pending">분석 결과 없음</span>';
+    }
+
+    var visibleCategories = compact
+        ? categories.slice(0, 2)
+        : categories;
+
+    var categoryHtml = visibleCategories.map(function (item) {
         var categoryName = toKoreanCategory(item.category);
         var sentimentName = toKoreanSentiment(item.sentiment);
         var sentimentClass = String(item.sentiment || 'NEUTRAL').toLowerCase();
@@ -347,11 +375,17 @@ function renderCategoryBadges(analysisResultJson, compact) {
             '</span>';
     }).join('');
 
-    if (compact && analysis.categories.length > 2) {
-        html += '<span class="category-badge more">+' + (analysis.categories.length - 2) + '</span>';
+    if (compact && categories.length > 2) {
+        categoryHtml += '<span class="category-badge more">+' + (categories.length - 2) + '</span>';
     }
 
-    return html;
+    html.push(
+        '<div class="ai-category-list">' +
+        categoryHtml +
+        '</div>'
+    );
+
+    return '<div class="ai-analysis-result">' + html.join('') + '</div>';
 }
 
 function toKoreanCategory(category) {

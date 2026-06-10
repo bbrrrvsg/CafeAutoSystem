@@ -11,9 +11,9 @@ public enum ReviewAnalysisStatus {
     PROCESSING,
     //분석완료
     COMPLETED,
-
     //분석실패
     FAILED;
+
 
     public boolean isCompleted() {
         return this == COMPLETED;
