@@ -15,6 +15,7 @@ java {
 
 repositories {
 	mavenCentral()
+	maven { url 'https://repo.spring.io/milestone' }
 }
 
 dependencies {
@@ -53,6 +54,8 @@ dependencies {
 
 	// WebClient (Ollama LLM / 파이썬 예측서버 등 외부 API 호출용)
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+
 
 }
 

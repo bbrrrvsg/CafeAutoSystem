@@ -7,7 +7,7 @@ import com.example.CafeAutoSystem.reply.dto.ReviewReplyResponseDto;
 import com.example.CafeAutoSystem.reply.entity.ReplyStatus;
 import com.example.CafeAutoSystem.reply.entity.ReviewReply;
 import com.example.CafeAutoSystem.reply.repository.ReviewReplyRepository;
-import com.example.CafeAutoSystem.review.repository.CafeOrderRepository;
+import com.example.CafeAutoSystem.order.repository.CafeOrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

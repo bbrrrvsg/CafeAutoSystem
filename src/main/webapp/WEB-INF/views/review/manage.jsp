@@ -1,9 +1,12 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+
 <c:set var="pageTitle" value="리뷰 관리" scope="request" />
 <c:set var="menu" value="review-manage" scope="request" />
 <c:set var="breadcrumb" value="관리 / 리뷰 관리" scope="request" />
+
 <jsp:include page="../layout/header.jsp" />
+
 <link rel="stylesheet" href="/css/review-manage.css">
 
 <!-- 페이지 헤더 -->
@@ -44,6 +47,7 @@
                 <button onclick="switchTab('done', this)">답글 완료</button>
             </div>
         </div>
+
         <table class="review-table">
             <thead>
             <tr>
@@ -51,13 +55,17 @@
                 <th>주문번호</th>
                 <th>리뷰 내용</th>
                 <th>작성일</th>
-                <th>상태</th>
+                <th>AI 분석</th>
+                <th>답글 상태</th>
             </tr>
             </thead>
             <tbody id="reviewTableBody">
-            <tr><td colspan="5" class="table-empty">로딩 중...</td></tr>
+            <tr>
+                <td colspan="6" class="table-empty">로딩 중...</td>
+            </tr>
             </tbody>
         </table>
+
         <div class="review-pagination">
             <button id="btnPrev" class="page-btn" onclick="prevPage()" disabled>← 이전</button>
             <span id="pageInfo">1 / 1 페이지</span>
@@ -76,9 +84,18 @@
         </div>
 
         <div class="panel-meta">
-            <div class="panel-meta-row"><span>리뷰번호</span><strong id="detailReviewId">-</strong></div>
-            <div class="panel-meta-row"><span>주문번호</span><strong id="detailOrderId">-</strong></div>
-            <div class="panel-meta-row"><span>작성일</span><strong id="detailCreatedAt">-</strong></div>
+            <div class="panel-meta-row">
+                <span>리뷰번호</span>
+                <strong id="detailReviewId">-</strong>
+            </div>
+            <div class="panel-meta-row">
+                <span>주문번호</span>
+                <strong id="detailOrderId">-</strong>
+            </div>
+            <div class="panel-meta-row">
+                <span>작성일</span>
+                <strong id="detailCreatedAt">-</strong>
+            </div>
         </div>
 
         <div class="panel-section">
@@ -86,21 +103,40 @@
             <div class="review-body" id="detailContent">-</div>
         </div>
 
+        <!-- AI 분석 결과 -->
+        <div class="panel-section">
+            <div class="ai-analysis-head">
+                <h3 style="margin:0;">AI 리뷰 분석</h3>
+                <em class="ai-analysis-status" id="detailAnalysisStatus">분석 대기</em>
+            </div>
+
+            <div id="detailAnalysisBox" class="ai-analysis-box">
+                <span class="ai-status pending">AI 분석 대기중</span>
+            </div>
+        </div>
+
         <div class="panel-section">
             <div class="reply-head">
                 <h3 style="margin:0;">사장님 답글</h3>
                 <em class="reply-status" id="replyStatus">답글 대기</em>
             </div>
+
             <textarea class="reply-textarea" id="replyTextarea"
-                      placeholder="고객에게 답글을 남겨주세요. (최대 500자)" maxlength="500"></textarea>
-            <div class="reply-counter"><span id="replyCharCount">0</span> / 500</div>
+                      placeholder="고객에게 답글을 남겨주세요. (최대 500자)"
+                      maxlength="500"></textarea>
+
+            <div class="reply-counter">
+                <span id="replyCharCount">0</span> / 500
+            </div>
+
             <div id="replyMsg" class="reply-msg"></div>
 
-            <!-- 답글 없을 때: 등록만 -->
+            <!-- 답글 없을 때 -->
             <div class="reply-actions no-reply" id="actionsNoReply">
                 <button class="reply-btn primary" onclick="createReply()">답글 등록</button>
             </div>
-            <!-- 답글 있을 때: 수정 + 삭제 -->
+
+            <!-- 답글 있을 때 -->
             <div class="reply-actions has-reply" id="actionsHasReply" style="display:none;">
                 <button class="reply-btn" onclick="updateReply()">답글 수정</button>
                 <button class="reply-btn danger" onclick="deleteReply()">답글 삭제</button>
@@ -112,4 +148,5 @@
 </div>
 
 <script src="/js/review-manage.js"></script>
+
 <jsp:include page="../layout/footer.jsp" />

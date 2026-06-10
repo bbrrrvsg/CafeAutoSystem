@@ -1,6 +1,7 @@
-package com.example.CafeAutoSystem.review.entity;
+package com.example.CafeAutoSystem.order.entity;
 
 import com.example.CafeAutoSystem.common.entity.BaseTime;
+import com.example.CafeAutoSystem.menu.entity.Menu;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

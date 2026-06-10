@@ -1,7 +1,7 @@
 package com.example.CafeAutoSystem.order.dto;
 
-import com.example.CafeAutoSystem.review.entity.CafeOrder;
-import com.example.CafeAutoSystem.review.entity.OrderDetail;
+import com.example.CafeAutoSystem.order.entity.CafeOrder;
+import com.example.CafeAutoSystem.order.entity.OrderDetail;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
