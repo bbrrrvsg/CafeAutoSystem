@@ -231,7 +231,7 @@
                         '<div class="stock-bar">' +
                             '<div class="fill ' + s.cls + '" style="width:' + item.stockPercent + '%;"></div>' +
                         '</div>' +
-                        '<span class="stock-text">' + item.currentStock.toLocaleString() + ' / ' + (item.safetyStock * 2).toLocaleString() + '</span>' +
+                        '<span class="stock-text">' + item.currentStock.toLocaleString() + ' / ' + item.safetyStock.toLocaleString() + '</span>' +
                     '</div>' +
                 '</td>' +
                 '<td>' + item.unit + '</td>' +
