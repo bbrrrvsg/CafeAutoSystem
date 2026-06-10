@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping;
  *   /WEB-INF/views/pos/pos.jsp
  *   /WEB-INF/views/inventory/inventory.jsp
  *   /WEB-INF/views/ai-order/ai-order.jsp
- *   /WEB-INF/views/ai-check/ai-check.jsp
  *   /WEB-INF/views/approval/approval.jsp
  *   /WEB-INF/views/order/order.jsp
  *   /WEB-INF/views/order-history/order-history.jsp
@@ -35,7 +34,6 @@ public class JspController {
 
     // 발주 · AI
     //@GetMapping("/ai-order")      public String aiOrder()         { return "ai-order/ai-order"; }
-    @GetMapping("/ai-check")      public String aiCheck()         { return "ai-check/ai-check"; }
     @GetMapping("/approval")      public String approval()        { return "approval/approval"; }
     @GetMapping("/order")         public String order()           { return "order/order"; }
     @GetMapping("/order-history") public String orderHistory()    { return "order-history/order-history"; }

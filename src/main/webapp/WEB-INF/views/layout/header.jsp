@@ -47,9 +47,6 @@
             <li class="${menu == 'ai-order' ? 'active' : ''}">
                 <a href="/ai-order"><span class="menu-icon"><i class="bi bi-robot"></i></span><span class="menu-label">AI 발주 관리</span></a>
             </li>
-            <li class="${menu == 'ai-check' ? 'active' : ''}">
-                <a href="/ai-check"><span class="menu-icon"><i class="bi bi-shield-check"></i></span><span class="menu-label">AI 오발주 검사</span></a>
-            </li>
             <li class="${menu == 'approval' ? 'active' : ''}">
                 <a href="/approval"><span class="menu-icon"><i class="bi bi-check2-square"></i></span><span class="menu-label">발주 승인</span></a>
             </li>

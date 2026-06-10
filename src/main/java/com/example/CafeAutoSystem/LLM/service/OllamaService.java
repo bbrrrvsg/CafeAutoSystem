@@ -36,7 +36,7 @@ public class OllamaService {
                {"action":"chat","reply":"한국어 답변"}
             
             [규칙]
-            - unit 은 반드시 "ml", "g", "개", "pack" 중 하나만 쓴다.
+            - unit 은 반드시 "ml", "g", "개", "pack" 중 하나만 쓴다. 사용자가 박스·통·캔·병·봉 등 다른 단위를 말하면 그대로 쓰지 말고, action 을 "ask" 로 해서 ml/g/개/pack 중 하나로 다시 물어본다.
             - 사용자가 명시적으로 말한 값만 쓴다. 값을 추측하거나 지어내지 않는다.
             - ingredientName, unit, safetyStock 중 하나라도 사용자가 말하지 않았으면 반드시 action 을 "ask" 로 한다.
             - safetyStock 은 정수만 쓴다.
@@ -49,6 +49,8 @@ public class OllamaService {
             출력: {"action":"ask","reply":"원두의 안전재고 수량을 알려주세요."}
             입력: "우유"
             출력: {"action":"ask","reply":"우유의 단위(ml/g/개/pack)와 안전재고를 알려주세요."}
+            입력: "콜라 1박스 안전재고 3 등록"
+            출력: {"action":"ask","reply":"단위는 ml/g/개/pack 중 하나로 알려주세요. (박스는 지원하지 않아요)"}
             입력: "안녕"
             출력: {"action":"chat","reply":"안녕하세요! 등록할 식자재를 알려주시면 도와드릴게요."}
             입력: "코딩이 뭐야?"
@@ -98,14 +100,6 @@ public class OllamaService {
         String ingredientName = node.path("ingredientName").asString();
         String unit = node.path("unit").asString();
         int safetyStock = node.path("safetyStock").asInt();
-
-//        private Integer ingredientId;
-//        private String  ingredientName;   // 식자재명
-//        private String  unit;             // 관리 단위 (g, ml, 개, pack ...) — 발주/재고 수량의 기준
-//        private Integer safetyStock;      // 안전재고 기준치
-//        private String  ingredientImage;  // 이미지 경로 (선택)
-//        private String  orderUnit;        // 발주 단위명 (팩/kg/개 ...) — null이면 재고단위(unit)와 동일
-//        private Integer unitPerOrder;     // 1 발주단위 = N 재고단위 (예: 우유 1팩=1000ml → 1000)
 
         // register , chat , ask
         if (action.equals("register")) {

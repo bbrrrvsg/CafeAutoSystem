@@ -38,8 +38,6 @@ public class IngredientService {
                 .unit(dto.getUnit())
                 .safetyStock(dto.getSafetyStock())
                 .ingredientImage(dto.getIngredientImage())
-                .orderUnit(dto.getOrderUnit())
-                .unitPerOrder(dto.getUnitPerOrder())
                 .build();
         return ingredientRepository.save(entity).toDto();
     }
@@ -51,8 +49,6 @@ public class IngredientService {
         if (dto.getUnit() != null)           entity.setUnit(dto.getUnit());
         if (dto.getSafetyStock() != null)    entity.setSafetyStock(dto.getSafetyStock());
         if (dto.getIngredientImage() != null) entity.setIngredientImage(dto.getIngredientImage());
-        if (dto.getOrderUnit() != null)      entity.setOrderUnit(dto.getOrderUnit());
-        if (dto.getUnitPerOrder() != null)   entity.setUnitPerOrder(dto.getUnitPerOrder());
         return entity.toDto(); // @Transactional → dirty checking 으로 자동 UPDATE
     }
 
@@ -76,6 +72,9 @@ public class IngredientService {
         }
         if (dto.getUnit() == null || dto.getUnit().isBlank()) {
             throw new IllegalArgumentException("단위(unit)는 필수입니다.");
+        }
+        if (!java.util.Set.of("ml", "g", "개", "pack").contains(dto.getUnit())) {
+            throw new IllegalArgumentException("단위(unit)는 ml, g, 개, pack 중 하나여야 합니다.");
         }
         if (dto.getSafetyStock() == null || dto.getSafetyStock() < 0) {
             throw new IllegalArgumentException("안전재고(safetyStock)는 0 이상이어야 합니다.");

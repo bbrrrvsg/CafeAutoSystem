@@ -60,27 +60,22 @@ public class AiOrderController {
                     aiSuggestedStockQty = aiLogs.get(0).getAmount(); // 최신 1개
                 }
 
-                // 3. 거래처 정보 및 환산 계수(factor) 추출
+                // 3. 거래처 단가 추출 (단위 통일로 환산계수 제거)
                 int unitPrice = 0;
-                int factor = 1;
 
                 List<VendorIngredientEntity> mappingDetails =
                         vendorIngredientRepository.findByIngredient_IngredientIdOrderByPriorityRankAsc(ingredientId);
 
                 if (mappingDetails != null && !mappingDetails.isEmpty()) {
-                    VendorIngredientEntity mainVendorIngredient = mappingDetails.get(0);
-                    unitPrice = mainVendorIngredient.getUnitPrice();
-                    factor = mainVendorIngredient.getIngredient().unitPerOrderOrDefault();
-                } else {
-                    factor = ingredient.unitPerOrderOrDefault();
+                    unitPrice = mappingDetails.get(0).getUnitPrice();
                 }
 
                 // 4. [하드코딩 방어벽 걷어내기]
                 int displayOrderQty = aiSuggestedStockQty;
 
-                // 5. 현재고와 안전재고를 화면 규격(팩, 봉)으로 분할 환산
-                int calculatedCurrentStock = (int) Math.round((double) currentStock / factor);
-                int calculatedSafetyStock = (int) Math.round((double) safetyStock / factor);
+                // 5. 단위 통일: 현재고·안전재고 그대로 사용 (환산 없음)
+                int calculatedCurrentStock = currentStock;
+                int calculatedSafetyStock = safetyStock;
 
                 // 6. 예상 필요량 칸에 '3일간의 순수 소모 예측량' 역산 대입
                 int calculatedPredictedRequiredQty = displayOrderQty - calculatedSafetyStock + calculatedCurrentStock;

@@ -148,19 +148,17 @@ public class PurchaseOrderService {
         }
     }
 
-    // 발주 로그 — 발주량(발주단위)을 재고단위로 환산해 STOCK_IN 기록
+    // 발주 로그 — 승인된 발주량을 STOCK_IN 으로 기록 (단위 통일: 발주량 = 재고단위)
     public void purchaseLog(PurchaseOrderEntity order) {
         IngredientEntity ing = order.getVendorIngredient().getIngredient();
-        int factor = ing.unitPerOrderOrDefault();      // 1 발주단위 = factor 재고단위
-        int amount = order.getFinalQty() * factor;      // 예: 우유 15팩 × 1000 = 15000ml
+        int amount = order.getFinalQty();               // 발주량 그대로 입고 (환산 없음)
         currentStockLogRepository.save(CurrentStockLogEntity.builder()
                 .ingredient(ing)                       // @ManyToOne → 엔티티 그대로
                 .orderItemId(order.getOrderItemId())
                 .logType("STOCK_IN")
                 .amount(amount)                        // 재고단위(ml/g/개)로 저장 → recipe/재고와 일관
                 .reason("정기 발주 입고")
-                .message("[입고] " + ing.getIngredientName() + " " + order.getFinalQty() + ing.orderUnitOrDefault()
-                        + " 입고 (" + amount + ing.getUnit() + ")")
+                .message("[입고] " + ing.getIngredientName() + " " + amount + ing.getUnit() + " 입고")
                 .userId("SYSTEM")
                 .build());
     }
