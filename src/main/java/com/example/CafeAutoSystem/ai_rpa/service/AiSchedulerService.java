@@ -35,6 +35,7 @@ public class AiSchedulerService {
             String todayDayOfWeek = LocalDate.now().getDayOfWeek().toString();
 
             RestTemplate restTemplate = new RestTemplate();
+            // "http://cafe-ai-system-env.eba-ppyuzfmm.ap-northeast-2.elasticbeanstalk.com/order/predict" 배포 서버 링크
             String pythonServerUrl = "http://127.0.0.1:8000/order/predict";
 
             for (IngredientEntity ingredient : allIngredients) {
