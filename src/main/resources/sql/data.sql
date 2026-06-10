@@ -26,11 +26,11 @@ INSERT INTO vendor (vendor_id, vendor_name, manager_email, manager_phone, create
 -- =====================================================================================
 -- 3. INGREDIENT (식자재 마스터)
 -- =====================================================================================
-INSERT INTO ingredient (ingredient_id, ingredient_name, unit, safety_stock, unit_per_order, ingredient_image) VALUES
-                                                                                                                  (1, '하우스 블렌드 원두', 'g', 5000, 1000, '/images/ingredients/house_blend.jpg'),
-                                                                                                                  (2, '파우더 및 시럽', '개', 10, 1, '/images/ingredients/powder_syrup.jpg'),
-                                                                                                                  (3, '냉동 딸기 블렌드', 'pack', 5, 1, '/images/ingredients/frozen_strawberry.jpg'),
-                                                                                                                  (4, '신선한 우유(1L)', 'ml', 5000, 1000, '/images/ingredients/fresh_milk_1l.jpg');
+INSERT INTO ingredient (ingredient_id, ingredient_name, unit, safety_stock, ingredient_image) VALUES
+                                                                                                                  (1, '하우스 블렌드 원두', 'g', 5000, '/images/ingredients/house_blend.jpg'),
+                                                                                                                  (2, '파우더 및 시럽', '개', 10, '/images/ingredients/powder_syrup.jpg'),
+                                                                                                                  (3, '냉동 딸기 블렌드', 'pack', 5, '/images/ingredients/frozen_strawberry.jpg'),
+                                                                                                                  (4, '신선한 우유(1L)', 'ml', 5000, '/images/ingredients/fresh_milk_1l.jpg');
 
 -- =====================================================================================
 -- 4. VENDOR_INGREDIENT (거래처-식자재 매핑)

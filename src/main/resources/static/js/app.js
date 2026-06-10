@@ -10,7 +10,6 @@ const MENU_ITEMS = [
     { group: '운영',     icon: 'bi-cart3',          label: 'POS 주문',         url: '/pos' },
     { group: '운영',     icon: 'bi-box-seam',       label: '재고 관리',         url: '/inventory' },
     { group: '발주 · AI', icon: 'bi-robot',          label: 'AI 발주 관리',     url: '/ai-order' },
-    { group: '발주 · AI', icon: 'bi-shield-check',   label: 'AI 오발주 검사',   url: '/ai-check' },
     { group: '발주 · AI', icon: 'bi-check2-square',  label: '발주 승인',         url: '/approval' },
     { group: '발주 · AI', icon: 'bi-pencil-square',  label: '발주 작성',         url: '/order' },
     { group: '발주 · AI', icon: 'bi-clock-history',  label: '발주 이력',         url: '/order-history' },

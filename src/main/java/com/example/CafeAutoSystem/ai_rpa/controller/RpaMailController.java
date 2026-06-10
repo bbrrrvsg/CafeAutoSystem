@@ -35,7 +35,7 @@ public class RpaMailController {
 
             String vendorName = order.getVendorIngredient().getVendor().getVendorName();
             String ingredientName = order.getVendorIngredient().getIngredient().getIngredientName();
-            String orderUnit = order.getVendorIngredient().getIngredient().orderUnitOrDefault();
+            String orderUnit = order.getVendorIngredient().getIngredient().getUnit();
             int finalQty = order.getFinalQty();
 
             // 동적 수집된 데이터를 RPA 포맷 DTO 리스트에 결합

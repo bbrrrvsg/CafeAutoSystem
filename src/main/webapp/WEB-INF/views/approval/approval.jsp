@@ -191,7 +191,7 @@
                 + '<td class="num">' + fmtDate(o.createdAt) + '</td>'
                 + '<td>' + vendorLabel + '</td>'
                 + '<td>' + (o.ingredientName || '-') + '</td>'
-                + '<td class="text-right num font-bold">' + o.finalQty + ' ' + (o.orderUnit || '') + '</td>'
+                + '<td class="text-right num font-bold">' + o.finalQty + ' ' + (o.ingredientUnit || '') + '</td>'
                 + '<td class="text-right num">' + (o.finalQty * (o.unitPrice || 0)).toLocaleString() + '원</td>'
                 + '<td class="num">' + (fmtDate(o.expirationDate) || '-') + '</td>'
                 + '<td>' + statusBadge(o.status) + '</td>'

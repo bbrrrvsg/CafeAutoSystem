@@ -73,7 +73,7 @@ function render(){
             '<td class="num">'+esc(day)+'</td>'+
             '<td>'+esc(o.vendorName||'—')+'</td>'+
             '<td>'+esc(o.ingredientName||'—')+'</td>'+
-            '<td class="num">'+(o.finalQty!=null?o.finalQty.toLocaleString():'')+' '+esc(o.orderUnit||'')+'</td>'+
+            '<td class="num">'+(o.finalQty!=null?o.finalQty.toLocaleString():'')+' '+esc(o.ingredientUnit||'')+'</td>'+
             '<td class="text-right num font-bold">'+amt.toLocaleString()+'원</td>'+
             '<td><span class="status '+s.cls+'"><span class="dot"></span>'+s.label+'</span></td></tr>';
     }).join('');

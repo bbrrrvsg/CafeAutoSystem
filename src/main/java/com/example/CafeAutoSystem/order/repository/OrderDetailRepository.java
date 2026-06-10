@@ -1,7 +1,7 @@
-package com.example.CafeAutoSystem.review.repository;
+package com.example.CafeAutoSystem.order.repository;
 
-import com.example.CafeAutoSystem.review.entity.CafeOrder;
-import com.example.CafeAutoSystem.review.entity.OrderDetail;
+import com.example.CafeAutoSystem.order.entity.CafeOrder;
+import com.example.CafeAutoSystem.order.entity.OrderDetail;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

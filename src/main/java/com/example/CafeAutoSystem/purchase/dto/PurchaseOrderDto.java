@@ -30,8 +30,7 @@ public class PurchaseOrderDto {
     private String  vendorName;       // vendor.vendor_name
     private Integer ingredientId;
     private String  ingredientName;   // ingredient.ingredient_name
-    private String  ingredientUnit;   // ingredient.unit (재고 단위 ml/g/개)
-    private String  orderUnit;        // ingredient.order_unit (발주 단위 팩/kg) — 발주량·단가의 기준
-    private Integer unitPrice;        // vendor_ingredient.unit_price (발주 단위당 단가)
+    private String  ingredientUnit;   // ingredient.unit (단위 ml/g/개)
+    private Integer unitPrice;        // vendor_ingredient.unit_price (단가)
     private Integer priorityRank;     // vendor_ingredient.priority_rank
 }
