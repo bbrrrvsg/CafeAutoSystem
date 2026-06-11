@@ -40,7 +40,7 @@ public class RpaMailService {
                     .append("================ [발주 품목 상세 리스트] ================\n");
 
             for (OrderItemDto item : orderList) {
-                String unitStr = (item.getOrderUnit() != null) ? item.getOrderUnit() : "개";
+                String unitStr = (item.getIngredientUnit() != null) ? item.getIngredientUnit() : "개";
                 itemDetails.append("■ 품목명: ").append(item.getIngredientName())
                         .append("  |  수량: ").append(item.getOrderQty()).append(" ").append(unitStr).append("\n");
             }
