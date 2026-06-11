@@ -5,17 +5,22 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 구매 서버가 사장 서버에 돌려주는 답글 명령 처리 결과.
+ */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReviewReplyResponseDto {
+public class ReviewReplyCommandResultEvent {
 
-    private Long customerReviewId;
+    private String requestId;
+
+    private String commandType;
+
+    private Long reviewId;
 
     private Long orderId;
-
-    private Boolean hasReply;
 
     private String replyContent;
 
@@ -24,6 +29,8 @@ public class ReviewReplyResponseDto {
     private String repliedAt;
 
     private String replyUpdatedAt;
+
+    private Boolean success;
 
     private String message;
 }

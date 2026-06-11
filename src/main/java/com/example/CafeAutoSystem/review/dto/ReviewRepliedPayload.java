@@ -1,21 +1,27 @@
-package com.example.CafeAutoSystem.reply.dto;
+package com.example.CafeAutoSystem.review.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 구매 서버에서 답글 저장/수정/삭제 완료 후 발행하는 이벤트 payload.
+ *
+ * topics:
+ * - review.replied
+ * - review.reply.updated
+ * - review.reply.deleted
+ */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReviewReplyResponseDto {
+public class ReviewRepliedPayload {
 
-    private Long customerReviewId;
+    private Long reviewId;
 
     private Long orderId;
-
-    private Boolean hasReply;
 
     private String replyContent;
 
@@ -24,6 +30,4 @@ public class ReviewReplyResponseDto {
     private String repliedAt;
 
     private String replyUpdatedAt;
-
-    private String message;
 }
