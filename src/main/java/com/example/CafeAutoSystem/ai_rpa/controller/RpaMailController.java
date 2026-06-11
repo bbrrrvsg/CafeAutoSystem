@@ -44,7 +44,7 @@ public class RpaMailController {
                     .ingredientId(order.getVendorIngredient().getIngredient().getIngredientId())
                     .ingredientName(ingredientName)
                     .orderQty(finalQty)
-                    .orderUnit(orderUnit) // 팩/봉 단위 동적 바인딩
+                    .ingredientUnit(order.getVendorIngredient().getIngredient().getUnit())
                     .build());
 
             //  실제 승인 자재 기반 동적 엑셀 명세서 빌드

@@ -1,5 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+
 <c:set var="pageTitle" value="AI 발주 관리" scope="request" />
 <c:set var="menu" value="ai-order" scope="request" />
 <jsp:include page="../layout/header.jsp" />
@@ -42,87 +44,85 @@
     <button id="btn-ai-reanalyze" class="btn btn-primary btn-sm">AI 재분석</button>
 </div>
 
-<%-- 메인 AI 추천 발주 리스트 테이블 --%>
-<div class="card flush">
-    <table class="data-table">
-        <thead>
-        <tr>
-            <th>품목명</th>
-            <th>예상 필요량</th>
-            <th>현재고</th>
-            <th>발주 제안량</th>
-            <th>계약 단가</th>
-            <th class="text-right">예상 금액</th>
-            <th>상태</th>
-        </tr>
-        </thead>
-        <tbody>
-        <c:forEach var="item" items="${orderList}">
-            <tr class="ai-order-row" data-ingredient-id="${item.ingredientId}" data-suggested-qty="${item.orderQty}">
-                <td><strong>${item.ingredientName}</strong></td>
-                <td class="num">${item.predictedRequiredQty}</td>
-                <td class="num">${item.currentStock}</td>
-                <td class="num font-bold" style="color: var(--primary);">${item.orderQty}</td>
-                <td class="num">${item.unitPrice}원</td>
-                <td class="text-right num font-bold">${item.totalPrice}원</td>
-                <td>
-                    <span class="badge badge-info">AI 검토 완료</span>
-                    <div class="row-actions" style="margin-top:4px;">
-                        <button>수정</button>
-                        <button class="danger">제외</button>
-                    </div>
-                </td>
-            </tr>
-        </c:forEach>
+<c:choose>
+    <%--  데이터가 없을 때 (EMPTY) --%>
+    <c:when test="${aiStatus eq 'EMPTY'}">
+        <div class="card" style="padding: 80px 40px; text-align: center; border: 1px dashed var(--border); border-radius: 12px; background: #fafafa; margin-top: 20px;">
+            <div style="font-size: 54px; margin-bottom: 20px; filter: grayscale(0.2);">📥</div>
+            <strong style="font-size: 18px; color: var(--text-primary); display: block; margin-bottom: 8px;">
+                조회 가능한 AI 추천 발주 데이터가 없습니다.
+            </strong>
+            <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.6;">
+                매일 오후 10시 마감 배치가 가동되거나, 백그라운드 정기 가중치 학습이 완수되어야 장부가 활성화됩니다.<br>
+                새로운 예측 스냅샷을 생성하려면 우측 상단의 <strong>[AI 재분석]</strong> 버튼을 가동해 주세요.
+            </p>
+        </div>
+    </c:when>
 
-        <%-- 합계 로우 --%>
-        <tr style="background: #FAFAF9;">
-            <td colspan="5" class="text-right" style="font-weight:600; color:var(--text-secondary);">총 예상 발주 금액</td>
-            <td class="text-right num" style="font-size:16px; font-weight:700; color:var(--primary);">${totalOrderPrice}원</td>
-            <td></td>
-        </tr>
-        </tbody>
-    </table>
-</div>
+    <%-- 데이터가 정상 존재할 때 --%>
+    <c:otherwise>
+        <div class="card flush" style="margin-top: 20px;">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>품목명</th>
+                    <th>예상 필요량</th>
+                    <th>현재고</th>
+                    <th>안전재고</th>
+                    <th>발주 제안량</th>
+                    <th>계약 단가</th>
+                    <th style="text-align: right; padding-right: 20px;">예상 금액</th>
+                    <th>상태</th>
+                </tr>
+                </thead>
+                <tbody>
+                <c:forEach var="item" items="${orderList}">
+                    <tr class="ai-order-row" data-ingredient-id="${item.ingredientId}" data-suggested-qty="${item.orderQty}">
+                        <td><strong>${item.ingredientName}</strong></td>
+                        <td class="num">
+                            <fmt:formatNumber value="${item.predictedRequiredQty}" type="number"/> ${item.ingredientUnit}
+                        </td>
+                        <td class="num">
+                            <fmt:formatNumber value="${item.currentStock}" type="number"/> ${item.ingredientUnit}
+                        </td>
+                        <td class="num" style="color: var(--text-muted);">
+                            <fmt:formatNumber value="${item.safetyStock}" type="number"/> ${item.ingredientUnit}
+                        </td>
+                        <td class="num font-bold" style="color: var(--primary);">
+                            <fmt:formatNumber value="${item.orderQty}" type="number"/> ${item.ingredientUnit}
+                        </td>
+                        <td class="num">${item.unitPrice}원</td>
 
-<%-- 하단 마스터 액션 버튼 영역 --%>
-<div style="display:flex; gap:8px; margin-top:20px; justify-content:flex-end;">
-    <button class="btn btn-secondary">초안 저장</button>
-    <button id="btn-submit-bulk-order" class="btn btn-primary">승인 및 발주생성</button>
-</div>
+                        <td class="num font-bold" style="text-align: right; padding-right: 20px;">
+                            <fmt:formatNumber value="${item.totalPrice}" type="number"/>원
+                        </td>
+                        <td>
+                            <span class="badge badge-info">AI 검토 완료</span>
+                            <div class="row-actions" style="margin-top:4px;">
+                                <button>수정</button>
+                                <button class="danger">제외</button>
+                            </div>
+                        </td>
+                    </tr>
+                </c:forEach>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        function getFormattedDate(date) {
-            const yyyy = date.getFullYear();
-            const mm = String(date.getMonth() + 1).padStart(2, '0');
-            const dd = String(date.getDate()).padStart(2, '0');
-            return yyyy + '-' + mm + '-' + dd;
-        }
+                    <%-- 합계 로우 --%>
+                <tr style="background: #FAFAF9;">
+                    <td colspan="6" class="text-right" style="font-weight:600; color:var(--text-secondary);">총 예상 발주 금액</td>
+                    <td class="text-right num font-bold" style="text-align: right; padding-right: 20px; font-size:16px; color:var(--primary);">${totalOrderPrice}원</td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
 
-        const today = new Date();
-
-        // 1. 예측 스냅샷 동적 바인딩 (오늘 날짜)
-        const snapshotTarget = document.getElementById('predictSnapshot');
-        if (snapshotTarget) {
-            snapshotTarget.textContent = getFormattedDate(today) + ' (현재)';
-        }
-
-        // 2. 발주 예정일 동적 바인딩 (내일 날짜 자동 세팅)
-        const tomorrow = new Date(today);
-        tomorrow.setDate(today.getDate() + 1);
-        const orderDateInput = document.getElementById('orderTargetDate');
-        if (orderDateInput) {
-            orderDateInput.value = getFormattedDate(tomorrow);
-        }
-
-        // 3. 학습 로그 범위 동적 변환 (전체 로그 전수 조사 반영)
-        const rangeInput = document.getElementById('learningLogRange');
-        if (rangeInput) {
-            rangeInput.value = "누적 원장 데이터 전수 분석 (실시간 반영)";
-        }
-    });
-</script>
+        <%-- 하단 마스터 액션 버튼 영역 --%>
+        <div style="display:flex; gap:8px; margin-top:20px; justify-content:flex-end;">
+            <button class="btn btn-secondary">초안 저장</button>
+            <button id="btn-submit-bulk-order" class="btn btn-primary">승인 및 발주생성</button>
+        </div>
+    </c:otherwise>
+</c:choose>
 
 <script src="<c:url value='/js/purchase.js'/>"></script>
 
