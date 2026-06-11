@@ -4,8 +4,11 @@ import com.example.CafeAutoSystem.common.entity.HistoricalStockLogEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -27,7 +30,7 @@ public interface HistoricalStockLogRepository extends JpaRepository<HistoricalSt
         SELECT ingredient_id, order_item_id, log_type, message, amount, reason, user_id, created_at, updated_at
         FROM current_stock_log
         """, nativeQuery = true)
-    int backup(); // 영향받은 행수 반환
+    int backup();
 
     @Query("""
     SELECT h FROM HistoricalStockLogEntity h
@@ -35,5 +38,18 @@ public interface HistoricalStockLogRepository extends JpaRepository<HistoricalSt
     AND h.logType = 'AI_PREDICT'
     ORDER BY h.createdAt DESC
     """)
-        List<HistoricalStockLogEntity> findLatestAiLogs(Integer ingredientId);
+    List<HistoricalStockLogEntity> findLatestAiLogs(Integer ingredientId);
+
+
+    @Query("""
+        SELECT h FROM HistoricalStockLogEntity h
+        WHERE h.ingredientId = :ingredientId
+        AND h.logType = 'AI_PREDICT'
+        AND FUNCTION('DATE', h.createdAt) = :logDate
+        ORDER BY h.createdAt DESC
+    """)
+    List<HistoricalStockLogEntity> findByIngredientIdAndLogDate(
+            @Param("ingredientId") Integer ingredientId,
+            @Param("logDate") LocalDate logDate
+    );
 }

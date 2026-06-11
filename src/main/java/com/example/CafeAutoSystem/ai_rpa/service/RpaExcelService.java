@@ -24,7 +24,7 @@ public class RpaExcelService {
         sheet.setColumnWidth(0, 4000);
         sheet.setColumnWidth(1, 6000);
         sheet.setColumnWidth(2, 6000);
-        sheet.setColumnWidth(3, 4000); // 너비 살짝 확장
+        sheet.setColumnWidth(3, 4000);
 
         Font headerFont = workbook.createFont();
         headerFont.setBold(true);
@@ -54,7 +54,8 @@ public class RpaExcelService {
             dataRow.createCell(1).setCellValue(vendorName);
             dataRow.createCell(2).setCellValue(item.getIngredientName());
 
-            String qtyWithUnit = item.getOrderQty() + " " + (item.getOrderUnit() != null ? item.getOrderUnit() : "개");
+            // 변경: 기존 orderUnit 대신 데이터 정합성이 완료된 ingredientUnit 필드를 수거하도록 교정합니다.
+            String qtyWithUnit = item.getOrderQty() + " " + (item.getIngredientUnit() != null ? item.getIngredientUnit() : "개");
             dataRow.createCell(3).setCellValue(qtyWithUnit);
         }
 
