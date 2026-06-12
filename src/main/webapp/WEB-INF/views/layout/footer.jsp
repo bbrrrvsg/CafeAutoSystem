@@ -85,6 +85,7 @@
     <button class="ai-chip" data-fill="우유 ml 안전재고 30 등록">🥛 식자재 등록</button>
     <button class="ai-chip" data-fill="거래처 서울유통 이메일 a@b.com 연락처 010-1234-5678 등록">🏢 거래처 등록</button>
     <button class="ai-chip" data-fill="우유 재고 얼마야?">📦 재고 조회</button>
+    <button class="ai-chip" data-fill="재고 부족한 거 뭐야?">📋 부족 재고</button>
   </div>
   <div id="aiChatFoot">
     <input id="aiChatInput" type="text" placeholder="메시지를 입력하세요..." autocomplete="off">
