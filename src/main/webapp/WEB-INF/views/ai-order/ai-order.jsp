@@ -6,7 +6,6 @@
 <c:set var="menu" value="ai-order" scope="request" />
 <jsp:include page="../layout/header.jsp" />
 
-<%-- AI 에러 락 오버레이 및 경고 바 --%>
 <c:if test="${aiStatus eq 'AI_ERROR'}">
     <div style="background-color: #fff5f5; border-left: 4px solid #e74a3b; padding: 16px; margin-bottom: 24px; border-radius: 8px;">
         <strong style="color: #e74a3b; font-size: 15px;">AI 시스템 안전 동결</strong>
@@ -16,7 +15,6 @@
     </div>
 </c:if>
 
-<%-- 대시보드 상단 히어로 섹션 --%>
 <section class="hero">
     <div class="hero-text">
         <div class="hero-meta">AI ORDER · 실시간 시계열 분석</div>
@@ -31,7 +29,6 @@
     </div>
 </section>
 
-<%-- 상단 툴바 조작 영역 --%>
 <div class="toolbar">
     <div class="form-row" style="border:none; padding:0; grid-template-columns: auto auto auto auto; gap:12px; align-items:center;">
         <label style="font-size:12px; color:var(--text-muted); font-weight:600;">발주 예정일</label>
@@ -45,7 +42,6 @@
 </div>
 
 <c:choose>
-    <%--  데이터가 없을 때 (EMPTY) --%>
     <c:when test="${aiStatus eq 'EMPTY'}">
         <div class="card" style="padding: 80px 40px; text-align: center; border: 1px dashed var(--border); border-radius: 12px; background: #fafafa; margin-top: 20px;">
             <div style="font-size: 54px; margin-bottom: 20px; filter: grayscale(0.2);">📥</div>
@@ -59,7 +55,6 @@
         </div>
     </c:when>
 
-    <%-- 데이터가 정상 존재할 때 --%>
     <c:otherwise>
         <div class="card flush" style="margin-top: 20px;">
             <table class="data-table">
@@ -71,6 +66,7 @@
                     <th>안전재고</th>
                     <th>발주 제안량</th>
                     <th>계약 단가</th>
+                    <th>유통기한 *</th>
                     <th style="text-align: right; padding-right: 20px;">예상 금액</th>
                     <th>상태</th>
                 </tr>
@@ -93,6 +89,10 @@
                         </td>
                         <td class="num">${item.unitPrice}원</td>
 
+                        <td>
+                            <input type="date" class="order-exp-date" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: var(--bg-content);">
+                        </td>
+
                         <td class="num font-bold" style="text-align: right; padding-right: 20px;">
                             <fmt:formatNumber value="${item.totalPrice}" type="number"/>원
                         </td>
@@ -106,9 +106,8 @@
                     </tr>
                 </c:forEach>
 
-                    <%-- 합계 로우 --%>
                 <tr style="background: #FAFAF9;">
-                    <td colspan="6" class="text-right" style="font-weight:600; color:var(--text-secondary);">총 예상 발주 금액</td>
+                    <td colspan="7" class="text-right" style="font-weight:600; color:var(--text-secondary);">총 예상 발주 금액</td>
                     <td class="text-right num font-bold" style="text-align: right; padding-right: 20px; font-size:16px; color:var(--primary);">${totalOrderPrice}원</td>
                     <td></td>
                 </tr>
@@ -116,9 +115,7 @@
             </table>
         </div>
 
-        <%-- 하단 마스터 액션 버튼 영역 --%>
         <div style="display:flex; gap:8px; margin-top:20px; justify-content:flex-end;">
-            <button class="btn btn-secondary">초안 저장</button>
             <button id="btn-submit-bulk-order" class="btn btn-primary">승인 및 발주생성</button>
         </div>
     </c:otherwise>
