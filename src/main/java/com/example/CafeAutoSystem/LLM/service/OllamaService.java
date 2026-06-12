@@ -33,6 +33,10 @@ public class OllamaService {
     @Value("${ollama.model:qwen3:4b}")
     private String model;
 
+    // 응답 타임아웃(초). 테스트 시 짧게(예: 1) 주면 LLM이 그 안에 응답 못 할 때 정형으로 빨리 fallback
+    @Value("${ollama.timeout-seconds:120}")
+    private long timeoutSeconds;
+
     private static final String SYSTEM_PROMPT = """
             너는 카페 재고관리 시스템의 비서다.
             사용자의 말을 분석해서 아래 JSON 하나만 출력한다. JSON 외의 설명·인사·코드블록은 절대 쓰지 않는다.
@@ -40,7 +44,11 @@ public class OllamaService {
             [출력 형식 — 다섯 중 하나]
             1) 식자재 등록: {"action":"register","target":"ingredient","ingredientName":"이름","unit":"단위","safetyStock":정수}
             2) 거래처 등록: {"action":"register","target":"vendor","vendorName":"이름","managerEmail":"이메일","managerPhone":"연락처"}
-            3) 재고 조회:   {"action":"query","target":"stock","ingredientName":"이름"}
+            3) 조회:
+               · 특정 식자재 재고: {"action":"query","target":"stock","ingredientName":"이름"}
+               · 부족한 재고 목록: {"action":"query","target":"lowstock"}
+               · 거래처 목록:     {"action":"query","target":"vendors"}
+               · 식자재 목록:     {"action":"query","target":"ingredients"}
             4) 정보 부족:   {"action":"ask","reply":"무엇이 더 필요한지 한국어 질문"}
             5) 일반 대화:   {"action":"chat","reply":"한국어 답변"}
 
@@ -61,6 +69,12 @@ public class OllamaService {
             출력: {"action":"register","target":"vendor","vendorName":"서울유통","managerEmail":"a@b.com","managerPhone":"010-1111-2222"}
             입력: "우유 재고 얼마야?"
             출력: {"action":"query","target":"stock","ingredientName":"우유"}
+            입력: "재고 부족한 거 뭐야?"
+            출력: {"action":"query","target":"lowstock"}
+            입력: "거래처 목록 보여줘"
+            출력: {"action":"query","target":"vendors"}
+            입력: "식자재 뭐 있어?"
+            출력: {"action":"query","target":"ingredients"}
             입력: "거래처 등록해줘"
             출력: {"action":"ask","reply":"거래처명, 담당자 이메일, 연락처를 알려주세요."}
             입력: "우유"
@@ -96,10 +110,10 @@ public class OllamaService {
                     .bodyValue(requestBody)
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
-                    .block(Duration.ofSeconds(120));
+                    .block(Duration.ofSeconds(timeoutSeconds));
         } catch (Exception e) {
-            // Ollama 미실행/연결실패/타임아웃 → 500 대신 안내
-            return "AI 서버에 연결할 수 없어요. Ollama가 켜져 있는지 확인해주세요. (" + e.getClass().getSimpleName() + ")";
+            // Ollama 미실행/연결실패/타임아웃 → 전용 예외 → ChatbotService 가 정형 챗봇으로 fallback
+            throw new LlmUnavailableException(e);
         }
 
         if (response == null) return "LLM 응답이 없어요.";
@@ -116,7 +130,12 @@ public class OllamaService {
                 return "vendor".equals(target) ? registerVendor(node) : registerIngredient(node);
             }
             if ("query".equals(action)) {
-                return queryStock(node.path("ingredientName").asString());
+                return switch (target) {
+                    case "lowstock"    -> queryLowStock();
+                    case "vendors"     -> queryVendors();
+                    case "ingredients" -> queryIngredients();
+                    default            -> queryStock(node.path("ingredientName").asString());
+                };
             }
             // ask, chat
             return node.path("reply").asString();
@@ -164,5 +183,44 @@ public class OllamaService {
             }
         }
         return "'" + name + "' 식자재를 찾지 못했어요.";
+    }
+
+    private String queryLowStock() {
+        StringBuilder sb = new StringBuilder();
+        int n = 0;
+        for (InventoryResponse i : inventoryService.getInventoryList()) {
+            if ("LOW".equals(i.getStatus())) {
+                sb.append("· ").append(i.getIngredientName()).append(" ")
+                  .append(i.getCurrentStock()).append(i.getUnit())
+                  .append(" (안전 ").append(i.getSafetyStock()).append(i.getUnit()).append(")\n");
+                n++;
+            }
+        }
+        if (n == 0) return "부족한 재고는 없어요. 👍";
+        return "재고 부족 품목 " + n + "개:\n" + sb.toString().trim();
+    }
+
+    private String queryVendors() {
+        var vendors = vendorService.getAll();
+        if (vendors.isEmpty()) return "등록된 거래처가 없어요.";
+        StringBuilder sb = new StringBuilder("거래처 " + vendors.size() + "곳:\n");
+        for (VendorDto v : vendors) {
+            sb.append("· ").append(v.getVendorName());
+            if (v.getManagerPhone() != null && !v.getManagerPhone().isBlank()) {
+                sb.append(" (").append(v.getManagerPhone()).append(")");
+            }
+            sb.append("\n");
+        }
+        return sb.toString().trim();
+    }
+
+    private String queryIngredients() {
+        var ings = ingredientService.getAll();
+        if (ings.isEmpty()) return "등록된 식자재가 없어요.";
+        StringBuilder sb = new StringBuilder("식자재 " + ings.size() + "개:\n");
+        for (IngredientDto i : ings) {
+            sb.append("· ").append(i.getIngredientName()).append(" (").append(i.getUnit()).append(")\n");
+        }
+        return sb.toString().trim();
     }
 }

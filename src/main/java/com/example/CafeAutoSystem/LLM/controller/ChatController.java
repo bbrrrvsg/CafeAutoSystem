@@ -2,7 +2,8 @@ package com.example.CafeAutoSystem.LLM.controller;
 
 import com.example.CafeAutoSystem.LLM.dto.ChatRequest;
 import com.example.CafeAutoSystem.LLM.dto.ChatResponse;
-import com.example.CafeAutoSystem.LLM.service.OllamaService;
+import com.example.CafeAutoSystem.LLM.service.ChatbotService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,13 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ChatController {
 
-    private final OllamaService ollamaService;
+    private final ChatbotService chatbotService;
 
     @PostMapping
-    public ChatResponse chat(@RequestBody ChatRequest request) {
-        String answer = ollamaService.chat(request.getMessage());
-        return ChatResponse.builder()
-                .answer(answer)
-                .build();
+    public ChatResponse chat(@RequestBody ChatRequest request, HttpSession session) {
+        String answer = chatbotService.chat(request.getMessage(), session);
+        return ChatResponse.builder().answer(answer).build();
     }
 }
