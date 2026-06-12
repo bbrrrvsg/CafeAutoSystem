@@ -92,12 +92,7 @@ public class AiOrderController {
                     calculatedPredictedRequiredQty = 0;
                 }
 
-                int totalPrice = 0;
-                if (ingredientId == 1 || ingredientId == 4) {
-                    totalPrice = (displayOrderQty / 1000) * unitPrice;
-                } else {
-                    totalPrice = displayOrderQty * unitPrice;
-                }
+                int totalPrice = displayOrderQty * unitPrice;
 
                 OrderItemDto dto = OrderItemDto.builder()
                         .ingredientId(ingredientId)

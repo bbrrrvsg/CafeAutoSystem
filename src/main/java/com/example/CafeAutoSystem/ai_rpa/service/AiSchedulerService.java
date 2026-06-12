@@ -26,9 +26,9 @@ public class AiSchedulerService {
     private final IngredientRepository ingredientRepository;
 
     // 파이썬 AI 배포 서버 기본 베이스 URL 주소
-    // "http://cafe-ai-system-env.eba-ppyuzfmm.ap-northeast-2.elasticbeanstalk.com/order/predict" 배포 서버 링크
-    private final String pythonServerBaseUrl = "http://127.0.0.1:8000/order";
-
+    // "http://cafe-ai-system-env.eba-ppyuzfmm.ap-northeast-2.elasticbeanstalk.com/order" 배포 서버 링크
+    //private final String pythonServerBaseUrl = "http://127.0.0.1:8000/order";
+    private final String pythonServerBaseUrl = "http://cafe-ai-system-env.eba-ppyuzfmm.ap-northeast-2.elasticbeanstalk.com/order";
 
     @Scheduled(cron = "0 0 22 * * *")
     public void runDailyAiStockAnalysis() {
