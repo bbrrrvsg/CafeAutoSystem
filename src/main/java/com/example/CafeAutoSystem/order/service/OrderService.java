@@ -1,20 +1,21 @@
 package com.example.CafeAutoSystem.order.service;
 
 import com.example.CafeAutoSystem.global.outbox.OutboxService;
+import com.example.CafeAutoSystem.menu.entity.Menu;
+import com.example.CafeAutoSystem.menu.repository.MenuRepository;
 import com.example.CafeAutoSystem.order.dto.OrderCreateRequestEvent;
 import com.example.CafeAutoSystem.order.dto.OrderCreateResultEvent;
 import com.example.CafeAutoSystem.order.dto.OrderCreatedPayload;
 import com.example.CafeAutoSystem.order.dto.OrderItemEvent;
 import com.example.CafeAutoSystem.order.dto.OrderResponseDto;
 import com.example.CafeAutoSystem.order.entity.CafeOrder;
-import com.example.CafeAutoSystem.menu.entity.Menu;
 import com.example.CafeAutoSystem.order.entity.OrderDetail;
 import com.example.CafeAutoSystem.order.repository.CafeOrderRepository;
-import com.example.CafeAutoSystem.menu.repository.MenuRepository;
 import com.example.CafeAutoSystem.order.repository.OrderDetailRepository;
 import com.example.CafeAutoSystem.stock.dto.OrderRequest;
 import com.example.CafeAutoSystem.stock.service.StockService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
@@ -22,13 +23,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
-/**
- * 주문 서비스.
- *
- * 현재 주문 생성 요청 자체는 기존 Kafka request/reply 흐름을 유지한다.
- * 다만 주문 저장 성공 후 order.created 이벤트를 outbox에 저장해서
- * 구매 서버 reviewable_order_read 동기화에 사용한다.
- */
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -44,7 +39,17 @@ public class OrderService {
     private final OutboxService outboxService;
     private final ObjectMapper objectMapper;
 
-    // 구매 서버가 Kafka로 보낸 주문 생성 요청을 받아 사장 서버 DB에 주문/주문상세를 저장한다.
+    /**
+     * 구매 서버가 Kafka로 보낸 주문 생성 요청을 받아
+     * 사장 서버 DB에 주문/주문상세를 저장하고,
+     * 메뉴 레시피 기준 재고를 차감한다.
+     *
+     * 정책:
+     * - 메뉴가 없으면 실패
+     * - 레시피가 없으면 실패
+     * - 재고가 부족하면 실패
+     * - 성공하면 주문/상세 저장 + 재고 차감 + order.created outbox 저장
+     */
     public OrderCreateResultEvent createOrderFromEvent(OrderCreateRequestEvent event) {
         validateOrderEvent(event);
 
@@ -54,16 +59,15 @@ public class OrderService {
                 CafeOrder.create(totalPrice)
         );
 
-        saveOrderDetails(savedOrder, event);
+        saveOrderDetailsAndDecreaseStock(savedOrder, event);
 
-        /*
-         * 주문 저장 + 주문상세 저장 + 재고 처리 + outbox 저장이
-         * 하나의 @Transactional 안에서 처리된다.
-         *
-         * 이후 OutboxRelay가 order.created를 Kafka로 발행하고,
-         * 구매 서버는 reviewable_order_read를 갱신한다.
-         */
         publishOrderCreatedEvent(savedOrder);
+
+        log.info("주문 생성 성공 requestId={}, orderId={}, orderPrice={}",
+                event.getRequestId(),
+                savedOrder.getOrderId(),
+                savedOrder.getOrderPrice()
+        );
 
         return OrderCreateResultEvent.builder()
                 .requestId(event.getRequestId())
@@ -71,10 +75,10 @@ public class OrderService {
                 .orderPrice(savedOrder.getOrderPrice())
                 .createdAt(savedOrder.getCreatedAt() == null ? null : savedOrder.getCreatedAt().toString())
                 .success(true)
+                .message("주문 생성 성공")
                 .build();
     }
 
-    // 사장 서버에서 주문 상세 조회용 API에 사용한다.
     @Transactional(readOnly = true)
     public OrderResponseDto getOrder(Long orderId) {
         CafeOrder order = cafeOrderRepository.findById(orderId)
@@ -83,30 +87,6 @@ public class OrderService {
         List<OrderDetail> details = orderDetailRepository.findByCafeOrder(order);
 
         return OrderResponseDto.from(order, details);
-    }
-
-    private void publishOrderCreatedEvent(CafeOrder order) {
-        OrderCreatedPayload payload = OrderCreatedPayload.builder()
-                .orderId(order.getOrderId())
-                .orderPrice(order.getOrderPrice())
-                .createdAt(order.getCreatedAt() == null ? null : order.getCreatedAt().toString())
-                .build();
-
-        JsonNode payloadNode = objectMapper.valueToTree(payload);
-
-        /*
-         * aggregateId / kafkaKey는 orderId로 잡는다.
-         * 이유:
-         * - 구매 서버 reviewable_order_read의 PK가 order_id
-         * - 같은 주문 관련 이벤트 순서를 같은 파티션에서 보장하기 위함
-         */
-        outboxService.saveEvent(
-                "order.created",
-                "order.created",
-                ORDER_AGGREGATE_TYPE,
-                String.valueOf(order.getOrderId()),
-                payloadNode
-        );
     }
 
     private int calculateTotalPrice(OrderCreateRequestEvent event) {
@@ -120,7 +100,7 @@ public class OrderService {
         return totalPrice;
     }
 
-    private void saveOrderDetails(CafeOrder savedOrder, OrderCreateRequestEvent event) {
+    private void saveOrderDetailsAndDecreaseStock(CafeOrder savedOrder, OrderCreateRequestEvent event) {
         for (OrderItemEvent item : event.getItems()) {
             Menu menu = findMenu(item.getMenuId());
 
@@ -132,8 +112,34 @@ public class OrderService {
 
             orderDetailRepository.save(orderDetail);
 
-            stockService.processOrder(new OrderRequest(menu.getMenuName(), item.getQuantity()));
+            /*
+             * 중요:
+             * 주문 성공 조건에 재고 차감을 포함한다.
+             * StockService 내부에서 MENU_RECIPE가 없거나 재고가 부족하면 예외가 발생한다.
+             * 이 예외가 발생하면 @Transactional에 의해 주문 저장도 같이 롤백된다.
+             */
+            stockService.processOrder(
+                    new OrderRequest(menu.getMenuName(), item.getQuantity())
+            );
         }
+    }
+
+    private void publishOrderCreatedEvent(CafeOrder order) {
+        OrderCreatedPayload payload = OrderCreatedPayload.builder()
+                .orderId(order.getOrderId())
+                .orderPrice(order.getOrderPrice())
+                .createdAt(order.getCreatedAt() == null ? null : order.getCreatedAt().toString())
+                .build();
+
+        JsonNode payloadNode = objectMapper.valueToTree(payload);
+
+        outboxService.saveEvent(
+                "order.created",
+                "order.created",
+                ORDER_AGGREGATE_TYPE,
+                String.valueOf(order.getOrderId()),
+                payloadNode
+        );
     }
 
     private Menu findMenu(Long menuId) {
@@ -142,6 +148,10 @@ public class OrderService {
     }
 
     private void validateOrderEvent(OrderCreateRequestEvent event) {
+        if (event == null) {
+            throw new RuntimeException("주문 요청 이벤트가 비어 있습니다.");
+        }
+
         if (event.getRequestId() == null || event.getRequestId().isBlank()) {
             throw new RuntimeException("requestId는 필수입니다.");
         }
@@ -151,6 +161,10 @@ public class OrderService {
         }
 
         for (OrderItemEvent item : event.getItems()) {
+            if (item == null) {
+                throw new RuntimeException("주문 항목이 비어 있습니다.");
+            }
+
             if (item.getMenuId() == null) {
                 throw new RuntimeException("menuId는 필수입니다.");
             }

@@ -24,24 +24,42 @@ public class OrderCreateRequestConsumer {
     )
     public void consume(String message) {
         OrderCreateRequestEvent event = null;
+
         try {
-            log.info("📩 주문 생성 요청 수신: {}", message);
+            log.info("주문 생성 요청 수신 message={}", message);
 
             event = objectMapper.readValue(message, OrderCreateRequestEvent.class);
 
             OrderCreateResultEvent result = orderService.createOrderFromEvent(event);
+
             orderCreateResultProducer.send(result);
 
-        } catch (Exception e) {
-            log.error("주문 생성 처리 실패 - requestId={}, 사유={}",
-                    event != null ? event.getRequestId() : "unknown", e.getMessage());
+            log.info("주문 생성 결과 발행 완료 requestId={}, orderId={}",
+                    result.getRequestId(),
+                    result.getOrderId()
+            );
 
-            if (event != null && event.getRequestId() != null) {
+        } catch (Exception e) {
+            String requestId = event != null ? event.getRequestId() : null;
+            String errorMessage = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+
+            log.error("주문 생성 처리 실패 requestId={}, rawMessage={}, error={}",
+                    requestId,
+                    message,
+                    errorMessage,
+                    e
+            );
+
+            if (requestId != null && !requestId.isBlank()) {
                 OrderCreateResultEvent failResult = OrderCreateResultEvent.builder()
-                        .requestId(event.getRequestId())
+                        .requestId(requestId)
+                        .orderId(null)
+                        .orderPrice(null)
+                        .createdAt(null)
                         .success(false)
-                        .message("주문 처리에 실패했습니다.")
+                        .message(errorMessage)
                         .build();
+
                 orderCreateResultProducer.send(failResult);
             }
         }
