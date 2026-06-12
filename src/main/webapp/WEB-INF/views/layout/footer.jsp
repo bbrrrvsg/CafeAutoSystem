@@ -66,6 +66,9 @@
 #aiChatInput:focus{border-color:var(--primary,#4f46e5);}
 #aiChatSend{background:var(--primary,#4f46e5);color:#fff;border:none;border-radius:22px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer;}
 #aiChatSend:disabled{opacity:.5;cursor:not-allowed;}
+#aiChatHelp{display:flex;gap:6px;flex-wrap:wrap;padding:8px 10px 0;}
+.ai-chip{background:var(--primary-soft,#eef2ff);border:1px solid var(--border,#e5e7eb);border-radius:14px;padding:5px 11px;font-size:12px;cursor:pointer;color:var(--primary,#4f46e5);white-space:nowrap;}
+.ai-chip:hover{background:var(--primary,#4f46e5);color:#fff;}
 </style>
 
 <button id="aiFab" title="AI 비서">💬</button>
@@ -78,6 +81,12 @@
     </div>
   </div>
   <div id="aiChatBody"></div>
+  <div id="aiChatHelp">
+    <button class="ai-chip" data-fill="우유 ml 안전재고 30 등록">🥛 식자재 등록</button>
+    <button class="ai-chip" data-fill="거래처 서울유통 이메일 a@b.com 연락처 010-1234-5678 등록">🏢 거래처 등록</button>
+    <button class="ai-chip" data-fill="우유 재고 얼마야?">📦 재고 조회</button>
+    <button class="ai-chip" data-fill="재고 부족한 거 뭐야?">📋 부족 재고</button>
+  </div>
   <div id="aiChatFoot">
     <input id="aiChatInput" type="text" placeholder="메시지를 입력하세요..." autocomplete="off">
     <button id="aiChatSend">전송</button>
@@ -99,7 +108,7 @@
 
   function restore(){
     body.innerHTML='';
-    if(LOG.length===0){ LOG.push({t:'안녕하세요! 재고나 발주에 대해 물어보세요. 😊', c:'bot'}); save(); }
+    if(LOG.length===0){ LOG.push({t:'안녕하세요! 등록·조회를 도와드려요 😊\n아래 예시 버튼을 누르면 형식이 채워져요. 값만 바꿔서 보내보세요!\n\n· 식자재/거래처 등록\n· 재고 조회', c:'bot'}); save(); }
     LOG.forEach(function(m){ renderMsg(m.t, m.c); });
   }
   restore();
@@ -110,6 +119,10 @@
   fab.addEventListener('click', function(){ win.classList.contains('open')?closeChat():openChat(); });
   document.getElementById('aiChatClose').addEventListener('click', closeChat);
   document.getElementById('aiChatClear').addEventListener('click', function(){ LOG=[]; save(); restore(); });
+  // 예시 칩: 클릭하면 입력칸에 형식 채워줌 (값만 바꿔서 전송)
+  document.querySelectorAll('#aiChatHelp .ai-chip').forEach(function(c){
+    c.addEventListener('click', function(){ input.value=c.dataset.fill; input.focus(); });
+  });
 
   async function ask(){
     var msg=input.value.trim(); if(!msg) return;

@@ -15,8 +15,10 @@ import java.util.List;
 /**
  * 사장 리뷰관리 화면 조회 서비스.
  *
- * 더 이상 구매 서버에 Kafka request/reply로 리뷰 목록을 요청하지 않는다.
- * 구매 서버 review.created 이벤트로 동기화된 review_read 테이블만 조회한다.
+ * 책임:
+ * - 사장 서버 review_read 테이블 조회
+ * - 구매 서버에 Kafka request/reply로 리뷰 목록을 요청하지 않는다.
+ * - review.created / review.analyzed / review.replied 이벤트로 동기화된 read model만 조회한다.
  */
 @Service
 @RequiredArgsConstructor

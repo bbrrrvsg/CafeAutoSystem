@@ -1,169 +1,161 @@
 package com.example.CafeAutoSystem.reply.service;
 
-import com.example.CafeAutoSystem.global.outbox.OutboxService;
-import com.example.CafeAutoSystem.reply.dto.ReplyEventPayload;
+import com.example.CafeAutoSystem.reply.dto.ReviewReplyCommandRequestEvent;
+import com.example.CafeAutoSystem.reply.dto.ReviewReplyCommandResultEvent;
 import com.example.CafeAutoSystem.reply.dto.ReviewReplyRequestDto;
 import com.example.CafeAutoSystem.reply.dto.ReviewReplyResponseDto;
-import com.example.CafeAutoSystem.reply.entity.ReplyStatus;
-import com.example.CafeAutoSystem.reply.entity.ReviewReply;
-import com.example.CafeAutoSystem.reply.repository.ReviewReplyRepository;
-import com.example.CafeAutoSystem.order.repository.CafeOrderRepository;
+import com.example.CafeAutoSystem.reply.kafka.ReviewReplyKafkaClient;
+import com.example.CafeAutoSystem.review.entity.ReviewRead;
+import com.example.CafeAutoSystem.review.repository.ReviewReadRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 
 /**
- * 사장 답글 서비스.
+ * 사장 답글 명령 서비스.
  *
- * 변경점:
- * - 답글 작성/수정/삭제 시 Kafka를 직접 발행하지 않는다.
- * - 같은 트랜잭션 안에서 outbox에 reply.* 이벤트를 저장한다.
- * - OutboxRelay가 3초마다 Kafka로 발행한다.
+ * 책임:
+ * - 답글 등록/수정/삭제는 구매 서버에 Kafka command로 요청한다.
+ * - 답글 원장은 구매 서버 PostgreSQL review 테이블이다.
+ * - 사장 서버는 review_read를 통해 조회만 한다.
  */
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class ReviewReplyService {
 
-    private static final String REPLY_AGGREGATE_TYPE = "REPLY";
+    private static final String COMMAND_CREATE = "CREATE";
+    private static final String COMMAND_UPDATE = "UPDATE";
+    private static final String COMMAND_DELETE = "DELETE";
 
-    private final ReviewReplyRepository reviewReplyRepository;
-    private final CafeOrderRepository cafeOrderRepository;
-
-    private final OutboxService outboxService;
-    private final ObjectMapper objectMapper;
+    private final ReviewReplyKafkaClient reviewReplyKafkaClient;
+    private final ReviewReadRepository reviewReadRepository;
 
     public ReviewReplyResponseDto createReply(
             Long customerReviewId,
             Long orderId,
             ReviewReplyRequestDto request
     ) {
-        validateCreateRequest(customerReviewId, orderId, request);
+        validateReviewId(customerReviewId);
+        validateOrderId(orderId);
+        validateReplyContent(request);
 
-        if (!cafeOrderRepository.existsById(orderId)) {
-            throw new RuntimeException("주문을 찾을 수 없습니다: " + orderId);
-        }
+        ReviewReplyCommandRequestEvent event =
+                ReviewReplyCommandRequestEvent.builder()
+                        .requestId(reviewReplyKafkaClient.createRequestId())
+                        .commandType(COMMAND_CREATE)
+                        .reviewId(customerReviewId)
+                        .orderId(orderId)
+                        .replyContent(request.getReplyContent())
+                        .requestedAt(LocalDateTime.now().toString())
+                        .build();
 
-        if (reviewReplyRepository.existsByCustomerReviewIdAndReplyStatus(
-                customerReviewId,
-                ReplyStatus.ACTIVE
-        )) {
-            throw new RuntimeException("이미 해당 리뷰에 답글이 존재합니다.");
-        }
+        ReviewReplyCommandResultEvent result =
+                reviewReplyKafkaClient.requestReplyCommand(event);
 
-        ReviewReply reply = ReviewReply.create(
-                customerReviewId,
-                orderId,
-                request.getReplyContent()
-        );
-
-        ReviewReply savedReply = reviewReplyRepository.save(reply);
-
-        // 같은 트랜잭션 안에서 outbox 저장
-        publishReplyEvent("reply.created", savedReply);
-
-        return ReviewReplyResponseDto.from(savedReply, "답글이 작성되었습니다.");
+        return toResponse(result);
     }
 
     public ReviewReplyResponseDto updateReply(
             Long customerReviewId,
             ReviewReplyRequestDto request
     ) {
-        validateCustomerReviewId(customerReviewId);
+        validateReviewId(customerReviewId);
         validateReplyContent(request);
 
-        ReviewReply reply = findActiveReply(customerReviewId);
+        ReviewReplyCommandRequestEvent event =
+                ReviewReplyCommandRequestEvent.builder()
+                        .requestId(reviewReplyKafkaClient.createRequestId())
+                        .commandType(COMMAND_UPDATE)
+                        .reviewId(customerReviewId)
+                        .replyContent(request.getReplyContent())
+                        .requestedAt(LocalDateTime.now().toString())
+                        .build();
 
-        reply.updateReply(request.getReplyContent());
+        ReviewReplyCommandResultEvent result =
+                reviewReplyKafkaClient.requestReplyCommand(event);
 
-        // 같은 트랜잭션 안에서 outbox 저장
-        publishReplyEvent("reply.updated", reply);
-
-        return ReviewReplyResponseDto.from(reply, "답글이 수정되었습니다.");
+        return toResponse(result);
     }
 
     public ReviewReplyResponseDto deleteReply(Long customerReviewId) {
-        validateCustomerReviewId(customerReviewId);
+        validateReviewId(customerReviewId);
 
-        ReviewReply reply = findActiveReply(customerReviewId);
+        ReviewReplyCommandRequestEvent event =
+                ReviewReplyCommandRequestEvent.builder()
+                        .requestId(reviewReplyKafkaClient.createRequestId())
+                        .commandType(COMMAND_DELETE)
+                        .reviewId(customerReviewId)
+                        .requestedAt(LocalDateTime.now().toString())
+                        .build();
 
-        // deleteReply() 호출 전에 payload에 필요한 값을 먼저 이벤트로 저장한다.
-        publishReplyEvent("reply.deleted", reply);
+        ReviewReplyCommandResultEvent result =
+                reviewReplyKafkaClient.requestReplyCommand(event);
 
-        reply.deleteReply();
-
-        return ReviewReplyResponseDto.from(reply, "답글이 삭제되었습니다.");
+        return toResponse(result);
     }
 
+    /**
+     * 답글 조회는 사장 서버 review_read에서 조회한다.
+     *
+     * 주의:
+     * - 답글 등록 직후 command result는 바로 오지만,
+     * - review_read 반영은 review.replied 이벤트를 통해 비동기로 반영된다.
+     */
     @Transactional(readOnly = true)
-    public ReviewReply findActiveReplyOrNull(Long customerReviewId) {
-        if (customerReviewId == null) {
-            return null;
-        }
+    public ReviewReplyResponseDto getReply(Long customerReviewId) {
+        validateReviewId(customerReviewId);
 
-        return reviewReplyRepository
-                .findByCustomerReviewIdAndReplyStatus(
-                        customerReviewId,
-                        ReplyStatus.ACTIVE
-                )
-                .orElse(null);
-    }
+        ReviewRead reviewRead = reviewReadRepository.findById(customerReviewId)
+                .orElseThrow(() -> new RuntimeException(
+                        "review_read를 찾을 수 없습니다. reviewId=" + customerReviewId
+                ));
 
-    private ReviewReply findActiveReply(Long customerReviewId) {
-        return reviewReplyRepository
-                .findByCustomerReviewIdAndReplyStatus(
-                        customerReviewId,
-                        ReplyStatus.ACTIVE
-                )
-                .orElseThrow(() -> new RuntimeException("답글을 찾을 수 없습니다."));
-    }
+        boolean hasReply =
+                "ACTIVE".equals(reviewRead.getReplyStatus())
+                        && reviewRead.getReplyContent() != null
+                        && !reviewRead.getReplyContent().isBlank();
 
-    private void publishReplyEvent(String eventType, ReviewReply reply) {
-        ReplyEventPayload payload = ReplyEventPayload.builder()
-                .customerReviewId(reply.getCustomerReviewId())
-                .orderId(reply.getOrderId())
-                .replyContent(reply.getReplyContent())
-                .repliedAt(LocalDateTime.now().toString())
+        return ReviewReplyResponseDto.builder()
+                .customerReviewId(reviewRead.getReviewId())
+                .orderId(reviewRead.getOrderId())
+                .hasReply(hasReply)
+                .replyContent(hasReply ? reviewRead.getReplyContent() : null)
+                .replyStatus(reviewRead.getReplyStatus())
+                .repliedAt(reviewRead.getRepliedAt())
+                .replyUpdatedAt(reviewRead.getReplyUpdatedAt())
+                .message(hasReply ? "답글 조회 성공" : "아직 등록된 답글이 없습니다.")
                 .build();
-
-        JsonNode payloadNode = objectMapper.valueToTree(payload);
-
-        /*
-         * aggregateId / kafkaKey는 customerReviewId로 잡는다.
-         * 이유:
-         * - 구매 서버 reply_read의 PK가 customer_review_id
-         * - 같은 리뷰의 답글 created/updated/deleted 순서를 같은 파티션에서 보장하기 위함
-         */
-        outboxService.saveEvent(
-                eventType,
-                eventType,
-                REPLY_AGGREGATE_TYPE,
-                String.valueOf(reply.getCustomerReviewId()),
-                payloadNode
-        );
     }
 
-    private void validateCreateRequest(
-            Long customerReviewId,
-            Long orderId,
-            ReviewReplyRequestDto request
-    ) {
-        validateCustomerReviewId(customerReviewId);
+    private ReviewReplyResponseDto toResponse(ReviewReplyCommandResultEvent result) {
+        boolean hasReply =
+                "ACTIVE".equals(result.getReplyStatus())
+                        && result.getReplyContent() != null
+                        && !result.getReplyContent().isBlank();
 
+        return ReviewReplyResponseDto.builder()
+                .customerReviewId(result.getReviewId())
+                .orderId(result.getOrderId())
+                .hasReply(hasReply)
+                .replyContent(hasReply ? result.getReplyContent() : null)
+                .replyStatus(result.getReplyStatus())
+                .repliedAt(result.getRepliedAt())
+                .replyUpdatedAt(result.getReplyUpdatedAt())
+                .message(result.getMessage())
+                .build();
+    }
+
+    private void validateReviewId(Long customerReviewId) {
+        if (customerReviewId == null) {
+            throw new RuntimeException("리뷰 ID는 필수입니다.");
+        }
+    }
+
+    private void validateOrderId(Long orderId) {
         if (orderId == null) {
             throw new RuntimeException("주문 ID는 필수입니다.");
-        }
-
-        validateReplyContent(request);
-    }
-
-    private void validateCustomerReviewId(Long customerReviewId) {
-        if (customerReviewId == null) {
-            throw new RuntimeException("고객 리뷰 ID는 필수입니다.");
         }
     }
 

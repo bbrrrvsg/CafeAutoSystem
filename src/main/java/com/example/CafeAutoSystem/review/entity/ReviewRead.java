@@ -36,11 +36,9 @@ public class ReviewRead extends BaseTime {
     @Column(name = "order_id")
     private Long orderId;
 
-    @Lob
     @Column(name = "review_content", columnDefinition = "TEXT")
     private String reviewContent;
 
-    @Lob
     @Column(name = "analysis_result_json", columnDefinition = "LONGTEXT")
     private String analysisResultJson;
 
@@ -57,6 +55,20 @@ public class ReviewRead extends BaseTime {
     @Column(name = "customer_created_at")
     private String customerCreatedAt;
 
+    @Column(name = "reply_content", columnDefinition = "TEXT")
+    private String replyContent;
+
+    @Column(name = "reply_status", length = 30)
+    private String replyStatus;
+
+    @Column(name = "replied_at")
+    private String repliedAt;
+
+    @Column(name = "reply_updated_at")
+    private String replyUpdatedAt;
+
+
+
     public void applyAnalysisResult(
             ReviewAnalysisStatus analysisStatus,
             String analysisResultJson,
@@ -72,5 +84,26 @@ public class ReviewRead extends BaseTime {
         if (analysisStatus == null) {
             analysisStatus = ReviewAnalysisStatus.PENDING;
         }
+    }
+
+    public void applyReply(
+            String replyContent,
+            String replyStatus,
+            String repliedAt,
+            String replyUpdatedAt
+    ) {
+        this.replyContent = replyContent;
+        this.replyStatus = replyStatus;
+        this.repliedAt = repliedAt;
+        this.replyUpdatedAt = replyUpdatedAt;
+    }
+
+    public void deleteReply(
+            String replyStatus,
+            String replyUpdatedAt
+    ) {
+        this.replyContent = null;
+        this.replyStatus = replyStatus;
+        this.replyUpdatedAt = replyUpdatedAt;
     }
 }

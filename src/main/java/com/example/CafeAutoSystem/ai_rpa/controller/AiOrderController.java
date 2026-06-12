@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,16 +34,21 @@ public class AiOrderController {
     @GetMapping("/ai-order")
     @Transactional(readOnly = true)
     public String aiOrderPage(Model model) {
-        log.info("📊 [AI 대시보드] 정석 데이터 바인딩 및 3일 누적 연산 동기화 주행");
+        log.info("📊 [AI 대시보드] 실시간 재분석 유연 데이터 바인딩 가동");
 
         try {
             List<OrderItemDto> orderList = new ArrayList<>();
             List<IngredientEntity> allIngredients = ingredientRepository.findAll();
 
+            LocalDate todayDate = LocalDate.now();
+            LocalDate yesterdayDate = LocalDate.now().minusDays(1);
+
+            boolean hasPredictData = false;
+
             for (IngredientEntity ingredient : allIngredients) {
                 Integer ingredientId = ingredient.getIngredientId();
 
-                // 1. 실시간 현재고 수거 및 음수 방어
+                // 실시간 현재고 수거 및 음수 방어
                 int currentStock = currentStockLogRepository.convertToCurrentStock(ingredientId);
                 if (currentStock < 0) {
                     currentStock = 0;
@@ -50,19 +56,22 @@ public class AiOrderController {
 
                 int safetyStock = ingredient.getSafetyStock();
 
-                // 2. 최신 AI 예측 발주량 데이터 수거
+                // 1순위로 오늘 실시간 재분석한 데이터(todayDate)가 있는지 먼저 찾습니다.
                 List<HistoricalStockLogEntity> aiLogs =
-                        historicalStockLogRepository.findLatestAiLogs(ingredientId);
+                        historicalStockLogRepository.findByIngredientIdAndLogDate(ingredientId, todayDate);
 
-                int aiSuggestedStockQty = 0;
-
-                if (aiLogs != null && !aiLogs.isEmpty()) {
-                    aiSuggestedStockQty = aiLogs.get(0).getAmount(); // 최신 1개
+                // 2순위: 만약 오늘 재분석한 데이터가 없다면, 어제 오후 10시에 돌았던 배치 데이터(yesterdayDate)를 가져옵니다.
+                if (aiLogs == null || aiLogs.isEmpty()) {
+                    aiLogs = historicalStockLogRepository.findByIngredientIdAndLogDate(ingredientId, yesterdayDate);
                 }
 
-                // 3. 거래처 단가 추출 (단위 통일로 환산계수 제거)
-                int unitPrice = 0;
+                int aiSuggestedStockQty = 0;
+                if (aiLogs != null && !aiLogs.isEmpty()) {
+                    aiSuggestedStockQty = aiLogs.get(0).getAmount();
+                    hasPredictData = true; // 데이터가 존재하므로 화면 락 해제
+                }
 
+                int unitPrice = 0;
                 List<VendorIngredientEntity> mappingDetails =
                         vendorIngredientRepository.findByIngredient_IngredientIdOrderByPriorityRankAsc(ingredientId);
 
@@ -70,14 +79,14 @@ public class AiOrderController {
                     unitPrice = mappingDetails.get(0).getUnitPrice();
                 }
 
-                // 4. [하드코딩 방어벽 걷어내기]
                 int displayOrderQty = aiSuggestedStockQty;
+                if ("g".equals(ingredient.getUnit()) || "ml".equals(ingredient.getUnit())) {
+                    displayOrderQty = (int) Math.ceil(displayOrderQty / 1000.0) * 1000;
+                }
 
-                // 5. 단위 통일: 현재고·안전재고 그대로 사용 (환산 없음)
                 int calculatedCurrentStock = currentStock;
                 int calculatedSafetyStock = safetyStock;
 
-                // 6. 예상 필요량 칸에 '3일간의 순수 소모 예측량' 역산 대입
                 int calculatedPredictedRequiredQty = displayOrderQty - calculatedSafetyStock + calculatedCurrentStock;
                 if (calculatedPredictedRequiredQty < 0) {
                     calculatedPredictedRequiredQty = 0;
@@ -91,8 +100,10 @@ public class AiOrderController {
                         .orderQty(displayOrderQty)
                         .predictedRequiredQty(calculatedPredictedRequiredQty)
                         .currentStock(calculatedCurrentStock)
+                        .safetyStock(safetyStock)
                         .unitPrice(unitPrice)
                         .totalPrice(totalPrice)
+                        .ingredientUnit(ingredient.getUnit())
                         .build();
 
                 orderList.add(dto);
@@ -105,10 +116,16 @@ public class AiOrderController {
 
             model.addAttribute("orderList", orderList);
             model.addAttribute("totalOrderPrice", String.format("%,d", totalOrderPrice));
-            model.addAttribute("aiStatus", "NORMAL");
+
+            if (!hasPredictData) {
+                model.addAttribute("aiStatus", "EMPTY");
+            } else {
+                model.addAttribute("aiStatus", "NORMAL");
+            }
 
         } catch (Exception e) {
             log.error("❌ AI 대시보드 데이터 바인딩 중 크리티컬 장애 발생: {}", e.getMessage());
+            model.addAttribute("aiStatus", "AI_ERROR");
         }
 
         return "ai-order/ai-order";
