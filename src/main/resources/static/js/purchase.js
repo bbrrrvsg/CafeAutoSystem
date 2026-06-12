@@ -132,12 +132,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const unitPrice = parseInt(row.querySelector('td:nth-child(6)').textContent.replace(/[^0-9]/g, ''), 10);
             let newTotalPrice = 0;
 
-            if (ingredientId === 1 || ingredientId === 4) {
-                let packQty = Math.ceil(newQty / 1000.0);
-                newTotalPrice = packQty * unitPrice;
-            } else {
-                newTotalPrice = newQty * unitPrice;
-            }
+            newTotalPrice = newQty * unitPrice;
 
             row.querySelector('td:nth-child(8)').textContent = newTotalPrice.toLocaleString() + '원';
 
