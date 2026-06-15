@@ -118,7 +118,11 @@
   function closeChat(){ win.classList.remove('open'); sessionStorage.setItem('aiChatOpen','0'); }
   fab.addEventListener('click', function(){ win.classList.contains('open')?closeChat():openChat(); });
   document.getElementById('aiChatClose').addEventListener('click', closeChat);
-  document.getElementById('aiChatClear').addEventListener('click', function(){ LOG=[]; save(); restore(); });
+  document.getElementById('aiChatClear').addEventListener('click', function(){
+    LOG=[]; save(); restore();
+    // 서버 세션의 진행 중 정형 흐름도 같이 폐기 (지우기 했는데 슬롯 답변 계속 묻는 문제 방지)
+    fetch('/api/chat', { method:'DELETE' }).catch(function(){});
+  });
   // 예시 칩: 클릭하면 입력칸에 형식 채워줌 (값만 바꿔서 전송)
   document.querySelectorAll('#aiChatHelp .ai-chip').forEach(function(c){
     c.addEventListener('click', function(){ input.value=c.dataset.fill; input.focus(); });
