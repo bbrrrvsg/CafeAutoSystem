@@ -19,21 +19,24 @@ public class ChatbotService {
     private final OllamaService ollamaService;
     private final RuleChatService ruleChatService;
 
+    private static final String RULE_BANNER = "📋 [간편 모드]  ·  중단: '취소' 입력\n";
+
     public String chat(String message, HttpSession session) {
         // 진행 중인 정형 대화가 있으면 끊지 않고 계속
         if (session.getAttribute(RuleChatService.SESSION_KEY) != null) {
             log.info("[챗봇] 정형 대화 진행 중 → 정형 모드 유지");
-            return ruleChatService.handle(message, session);
+            return RULE_BANNER + ruleChatService.handle(message, session);
         }
         // LLM 우선 → '연결 실패'일 때만 정형 챗봇으로 fallback
         try {
             String answer = ollamaService.chat(message);
             log.info("[챗봇] LLM(Ollama) 모드로 응답");
-            return answer;
+            return "🤖 [AI 모드]\n" + answer;
         } catch (LlmUnavailableException e) {
             log.warn("[챗봇] ⚠️ LLM 연결 실패 → 정형 챗봇으로 fallback (사유: {})",
                     e.getCause() != null ? e.getCause().getClass().getSimpleName() : "unknown");
-            return ruleChatService.handle(message, session);
+            return RULE_BANNER + "(AI 서버 미연결 — 단계별 안내로 진행해요)\n\n"
+                    + ruleChatService.handle(message, session);
         }
     }
 }
