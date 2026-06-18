@@ -11,6 +11,7 @@ import com.example.CafeAutoSystem.common.repository.CurrentStockLogRepository;
 import com.example.CafeAutoSystem.common.repository.PurchaseOrderRepository;
 import com.example.CafeAutoSystem.common.repository.VendorIngredientRepository;
 import com.example.CafeAutoSystem.purchase.dto.PurchaseOrderDto;
+import com.example.CafeAutoSystem.stock.service.StockBatchService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,7 @@ public class PurchaseOrderService {
     private final CurrentStockLogRepository currentStockLogRepository;
     private final RpaExcelService rpaExcelService;
     private final RpaMailService rpaMailService;
+    private final StockBatchService stockBatchService;
 
 
     @Value("${cafe.manager.password}")
@@ -115,9 +117,18 @@ public class PurchaseOrderService {
         PurchaseOrderEntity order = getPendingOrderOrThrow(orderItemId);
         order.setStatus("COMPLETED");
 
-        if (order.getStatus().equals("COMPLETED")) {
-            purchaseLog(order);
-        }
+        // STOCK_IN 로그 기록 (기존)
+        purchaseLog(order);
+
+        // FEFO 배치 생성 (신규) - 유통기한과 함께 배치 등록
+        IngredientEntity ing = order.getVendorIngredient().getIngredient();
+        stockBatchService.createBatch(
+                ing,
+                order.getOrderItemId(),
+                order.getFinalQty(),
+                order.getExpirationDate()   // null이면 배치에 expiry_date = null
+        );
+
         return order.toDto();
     }
 

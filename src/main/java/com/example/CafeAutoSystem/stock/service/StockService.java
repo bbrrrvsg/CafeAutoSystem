@@ -29,6 +29,7 @@ public class StockService {
     private final IngredientRepository ingredientRepository;
     private final SseEmitterManager sseEmitterManager;
     private final HistoricalStockLogRepository historicalStockLogRepository;
+    private final StockBatchService stockBatchService;
 
     @Transactional
     public StockOutResult processOrder(OrderRequest request) {
@@ -58,7 +59,7 @@ public class StockService {
             String message = String.format("[판매] %s %d잔 판매",
                     request.getMenuName(), request.getQuantity());
 
-            // STOCK_OUT 로그 INSERT
+            // STOCK_OUT 로그 INSERT (이벤트 감사 로그)
             CurrentStockLogEntity stockLog = CurrentStockLogEntity.builder()
                     .ingredient(ingredient)
                     .orderItemId(null)
@@ -70,6 +71,9 @@ public class StockService {
                     .build();
 
             currentStockLogRepository.save(stockLog);
+
+            // FEFO 배치 차감: 유통기한 임박 배치부터 순서대로 remaining_qty 감소
+            stockBatchService.deductFefo(ingredient, totalQty);
 
             log.info("[STOCK_OUT] 재료={} 차감량={}{}",
                     ingredient.getIngredientName(), totalQty, ingredient.getUnit());

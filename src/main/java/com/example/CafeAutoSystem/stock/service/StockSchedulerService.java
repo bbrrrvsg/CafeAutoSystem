@@ -22,47 +22,19 @@ public class StockSchedulerService {
     private final CurrentStockLogRepository currentStockLogRepository;
     private final HistoricalStockLogRepository historicalStockLogRepository;
     private final IngredientRepository ingredientRepository;
+    private final StockBatchService stockBatchService;
 
+    /**
+     * 유통기한 만료 자재 자동 폐기 (StockDiscardScheduler → 23:00 호출)
+     *
+     * FEFO 도입 후: stock_batch 기반으로 만료 배치 조회 및 폐기.
+     * 기존 current_stock_log JOIN 방식은 stock_batch 방식으로 대체.
+     */
     @Transactional
     public void discardExpiredIngredients() {
-        LocalDateTime now = LocalDateTime.now();
-
-        List<CurrentStockLogEntity> expiredStocks = currentStockLogRepository.findExpiredStocks(now);
-
-        if (expiredStocks.isEmpty()) {
-            log.info("만료된 자재가 없습니다.");
-            return;
-        }
-
-        for (CurrentStockLogEntity stockBatch : expiredStocks) {
-
-            // ingredient 객체에서 직접 꺼내서 비관적 락 획득
-            IngredientEntity ingredient = ingredientRepository
-                    .findByIdForUpdate(stockBatch.getIngredient().getIngredientId())
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "존재하지 않는 자재 ID: " + stockBatch.getIngredient().getIngredientId()));
-
-            int discardAmount = stockBatch.getAmount();
-            if (discardAmount <= 0) continue;
-
-            // HISTORICAL_STOCK_LOG에 영구 폐기 기록
-            HistoricalStockLogEntity discardLog = HistoricalStockLogEntity.builder()
-                    .ingredientId(ingredient.getIngredientId())
-                    .logType("STOCK_DISCARD")
-                    .message(String.format("[자동폐기] 유통기한 경과 %s %d%s 폐기 처리",
-                            ingredient.getIngredientName(), discardAmount, ingredient.getUnit()))
-                    .amount(-discardAmount)
-                    .reason("EXPIRED")
-                    .userId("SYSTEM")
-                    .build();
-            historicalStockLogRepository.save(discardLog);
-
-            // CURRENT_STOCK_LOG 해당 배치 amount → 0
-            stockBatch.setAmount(0);
-            currentStockLogRepository.save(stockBatch);
-
-            log.info("[자동폐기 완료] 자재={} 폐기수량={}{}",
-                    ingredient.getIngredientName(), discardAmount, ingredient.getUnit());
-        }
+        log.info("[폐기 스케줄러] FEFO 기반 만료 배치 폐기 시작");
+        // StockBatchService가 만료 배치 조회 → remaining_qty=0 처리 → STOCK_DISCARD 로그 기록
+        stockBatchService.discardExpiredBatches();
+        log.info("[폐기 스케줄러] 완료");
     }
 }
