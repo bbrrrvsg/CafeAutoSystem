@@ -78,20 +78,6 @@ const MENU_ITEMS = [
     const list = overlay.querySelector('#cmdkList');
     let activeIdx = 0;
     let filtered = [];       // 페이지 이동용 (키보드 네비게이션)
-    let searchDebounce = null;
-
-    // 카테고리별 아이콘
-    const CATEGORY_ICON = {
-        '메뉴':         'bi-cup-straw',
-        '레시피 식자재': 'bi-cup-hot',
-        '레시피 재고이력': 'bi-journal-text',
-        '원자재':       'bi-basket3',
-        '거래처':   'bi-people',
-        '발주이력': 'bi-clock-history',
-        '재고로그': 'bi-journal-text',
-    };
-    // 발주이력 상태 뱃지 색
-    const STATUS_COLOR = { PENDING: '#f59e0b', COMPLETED: '#10b981', REJECTED: '#ef4444' };
 
     function renderNavItems(q) {
         filtered = q
@@ -114,35 +100,6 @@ const MENU_ITEMS = [
         return html;
     }
 
-    function renderDbSection(data) {
-        if (!data || !data.results || data.total === 0) return '';
-        let html = '';
-        for (const [category, items] of Object.entries(data.results)) {
-            if (!items.length) continue;
-            html += `<div class="cmdk-group-label"><i class="bi ${CATEGORY_ICON[category] || 'bi-search'}" style="margin-right:5px;"></i>${category} <span style="font-weight:400;color:var(--text-muted)">(${items.length})</span></div>`;
-            items.forEach(item => {
-                const badge = item.status
-                    ? `<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:${STATUS_COLOR[item.status] || '#9ca3af'}22;color:${STATUS_COLOR[item.status] || '#9ca3af'};font-weight:600;margin-left:6px;">${item.status}</span>`
-                    : '';
-                const sub = item.subtitle ? `<span style="font-size:11px;color:var(--text-muted);margin-left:6px;">${item.subtitle}</span>` : '';
-                html += `
-                    <div class="cmdk-item cmdk-db-item" style="cursor:default;">
-                        <i class="bi ${CATEGORY_ICON[category] || 'bi-circle'}" style="font-size:13px;color:var(--text-muted);"></i>
-                        <span>${item.title}${badge}${sub}</span>
-                    </div>`;
-            });
-        }
-        return html;
-    }
-
-    async function fetchDbSearch(q) {
-        try {
-            const res = await fetch(`/api/search?keyword=${encodeURIComponent(q)}`);
-            if (!res.ok) return null;
-            return await res.json();
-        } catch { return null; }
-    }
-
     const escHtml = s => (s == null ? '' : String(s)).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
     // "'키워드' 전체 검색 결과 보기" → 전용 검색 페이지로 이동
@@ -162,11 +119,11 @@ const MENU_ITEMS = [
         if (el) el.addEventListener('click', gotoSearchPage);
     }
 
-    async function render(query = '') {
+    function render(query = '') {
         const q = query.trim().toLowerCase();
         const rawQ = query.trim();
 
-        // 페이지 네비 항목 렌더 (즉시)
+        // 페이지 네비 항목 렌더
         const navHtml = renderNavItems(q);
 
         if (!q) {
@@ -175,27 +132,14 @@ const MENU_ITEMS = [
             return;
         }
 
-        const head = seeAllRow(rawQ);
-
-        // 로딩 표시 (DB 결과 자리)
-        list.innerHTML = head + navHtml + `<div class="cmdk-group-label">데이터 검색 중...</div>`;
+        // 데이터(메뉴/재고/로그 등)는 전용 검색 페이지에서. 팔레트는 "전체 결과 보기"로 안내.
+        list.innerHTML = seeAllRow(rawQ) + navHtml;
         bindNavEvents();
         bindSeeAll();
-
-        // DB 검색 디바운스 300ms
-        clearTimeout(searchDebounce);
-        searchDebounce = setTimeout(async () => {
-            const dbData = await fetchDbSearch(q);
-            const dbHtml = renderDbSection(dbData);
-            const separator = dbHtml ? `<div style="border-top:1px solid var(--border-light);margin:6px 0;"></div>` : '';
-            list.innerHTML = head + (navHtml || '') + separator + (dbHtml || (navHtml ? '' : `<div style="padding:30px;text-align:center;color:#9CA3AF;font-size:13px;">검색 결과 없음</div>`));
-            bindNavEvents();
-            bindSeeAll();
-        }, 300);
     }
 
     function bindNavEvents() {
-        list.querySelectorAll('.cmdk-item:not(.cmdk-db-item)').forEach(el => {
+        list.querySelectorAll('.cmdk-item[data-url]').forEach(el => {
             el.addEventListener('click', () => { window.location.href = el.dataset.url; });
             el.addEventListener('mouseenter', () => {
                 activeIdx = parseInt(el.dataset.idx);
@@ -205,7 +149,7 @@ const MENU_ITEMS = [
     }
 
     function updateActive() {
-        list.querySelectorAll('.cmdk-item:not(.cmdk-db-item)').forEach((el, i) => {
+        list.querySelectorAll('.cmdk-item[data-url]').forEach((el, i) => {
             el.classList.toggle('active', i === activeIdx);
         });
         const activeEl = list.querySelector('.cmdk-item.active');
