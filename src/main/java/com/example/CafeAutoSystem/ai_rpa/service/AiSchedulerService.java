@@ -72,16 +72,13 @@ public class AiSchedulerService {
                     String message = (String) response.get("message");
                     String code = (String) response.get("code");
 
-                    // 1. 기존 분석 로그 적재 (유지)
                     aiPredictService.saveAiAnalysisLog(targetIngredientId, status, suggestedQty, message, code);
                     log.info("자재 ID {}번 AI 실시간 제안량 장부 적재 완료", targetIngredientId);
 
-                    // 🌟 2. [정합성 파이프라인 연동]
-                    // PurchaseOrderService 규격에 맞춰 DTO를 조립하여 리스트에 누적합니다.
                     aiOrderDtoList.add(PurchaseOrderDto.builder()
                             .ingredientId(targetIngredientId)
                             .suggestedQty(suggestedQty)
-                            .finalQty(suggestedQty) // 검토 전 초기 수량은 AI 제안량과 동기화
+                            .finalQty(suggestedQty)
                             .build());
 
                     successCount++;
