@@ -31,8 +31,9 @@ public class StockMigrationService {
 
 
     // 현재 로그 과거 로그에 복붙 후 집계하고 변수에 저장 그리고 테이블 비우고 집계한 수량 반영
-    //@Scheduled(cron = "0 * * * * * ")//초 분 시 일 월 요일  모든 시간에서 0초 1분 마다 실행(테스트용)
-    @Scheduled(cron = "0 0 23 * * *")
+    // 발표 데모용: cron 비활성화 + 수동 실행. /api/admin/migrate 호출 시 마감 트리거됨.
+    // 원래 운영용 cron: "0 0 0 1 * *" (매월 1일 0시)
+    // @Scheduled(cron = "0 */5 * * * *")
     @Transactional
     public void backup(){
         // 1) 백업
