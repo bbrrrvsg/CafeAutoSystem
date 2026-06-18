@@ -47,6 +47,9 @@ public class JspController {
     @GetMapping("/vendor-ingredient") public String vendorIngredient()  { return "vendor-ingredient/vendor-ingredient"; }
     @GetMapping("/log")             public String log()            { return "log/log"; }
 
+    // 통합 검색 결과 페이지 (?keyword= 는 JSP/JS에서 읽음)
+    @GetMapping("/search")         public String search()         { return "search/search"; }
+
     // 리뷰 · 영수증
     @GetMapping("/receipt")        public String receipt()        { return "receipt/receipt"; }
     @GetMapping("/review/write")   public String reviewWrite()    { return "review/write"; }

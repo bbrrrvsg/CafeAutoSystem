@@ -143,8 +143,28 @@ const MENU_ITEMS = [
         } catch { return null; }
     }
 
+    const escHtml = s => (s == null ? '' : String(s)).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+    // "'키워드' 전체 검색 결과 보기" → 전용 검색 페이지로 이동
+    function seeAllRow(rawQ) {
+        return `<div class="cmdk-item cmdk-seeall" style="cursor:pointer;color:var(--primary);font-weight:600;">
+            <i class="bi bi-search"></i>
+            <span>'${escHtml(rawQ)}' 전체 검색 결과 보기</span>
+            <kbd class="kbd" style="margin-left:auto;">↵</kbd>
+        </div>`;
+    }
+    function gotoSearchPage() {
+        const q = input.value.trim();
+        if (q) window.location.href = `/search?keyword=${encodeURIComponent(q)}`;
+    }
+    function bindSeeAll() {
+        const el = list.querySelector('.cmdk-seeall');
+        if (el) el.addEventListener('click', gotoSearchPage);
+    }
+
     async function render(query = '') {
         const q = query.trim().toLowerCase();
+        const rawQ = query.trim();
 
         // 페이지 네비 항목 렌더 (즉시)
         const navHtml = renderNavItems(q);
@@ -155,9 +175,12 @@ const MENU_ITEMS = [
             return;
         }
 
+        const head = seeAllRow(rawQ);
+
         // 로딩 표시 (DB 결과 자리)
-        list.innerHTML = navHtml + `<div class="cmdk-group-label">데이터 검색 중...</div>`;
+        list.innerHTML = head + navHtml + `<div class="cmdk-group-label">데이터 검색 중...</div>`;
         bindNavEvents();
+        bindSeeAll();
 
         // DB 검색 디바운스 300ms
         clearTimeout(searchDebounce);
@@ -165,8 +188,9 @@ const MENU_ITEMS = [
             const dbData = await fetchDbSearch(q);
             const dbHtml = renderDbSection(dbData);
             const separator = dbHtml ? `<div style="border-top:1px solid var(--border-light);margin:6px 0;"></div>` : '';
-            list.innerHTML = (navHtml || '') + separator + (dbHtml || (navHtml ? '' : `<div style="padding:30px;text-align:center;color:#9CA3AF;font-size:13px;">검색 결과 없음</div>`));
+            list.innerHTML = head + (navHtml || '') + separator + (dbHtml || (navHtml ? '' : `<div style="padding:30px;text-align:center;color:#9CA3AF;font-size:13px;">검색 결과 없음</div>`));
             bindNavEvents();
+            bindSeeAll();
         }, 300);
     }
 
@@ -222,7 +246,10 @@ const MENU_ITEMS = [
         }
         else if (e.key === 'Enter') {
             e.preventDefault();
-            if (filtered[activeIdx]) window.location.href = filtered[activeIdx].url;
+            // 네비 메뉴가 선택돼 있으면 그 페이지로, 아니면 전체 검색 결과 페이지로
+            if (input.value.trim() && filtered.length === 0) gotoSearchPage();
+            else if (filtered[activeIdx]) window.location.href = filtered[activeIdx].url;
+            else gotoSearchPage();
         }
     });
 })();
