@@ -4,7 +4,7 @@
 document.addEventListener("DOMContentLoaded", function() {
 
     // =================================================================
-    // 1. 날짜 설정 및 초기화
+    // 날짜 설정 및 초기화
     // =================================================================
     function getFormattedDate(date) {
         const yyyy = date.getFullYear();
@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
     // =================================================================
-    // 2. AI 재분석 API 호출
+    // AI 재분석 API 호출
     // =================================================================
     const reanalyzeBtn = document.getElementById("btn-ai-reanalyze");
 
@@ -49,7 +49,8 @@ document.addEventListener("DOMContentLoaded", function() {
             reanalyzeBtn.disabled = true;
             reanalyzeBtn.innerText = "AI 분석 데이터 수거 중...";
 
-            fetch("/api/order/reanalyze", {
+            // 🌟 주소 수정: 백엔드 AiPredictController의 실제 맵핑 엔드포인트 경로로 일치
+            fetch("/api/jms-ai/reanalyze", {
                 method: "POST"
             })
                 .then(response => {
@@ -57,9 +58,10 @@ document.addEventListener("DOMContentLoaded", function() {
                     return response.json();
                 })
                 .then(data => {
-                    if (data.status === "SUCCESS") {
-                        alert("최신 재고 기준으로 AI 추천 수량이 갱신되었습니다.");
-                        location.reload();
+                    // 🌟 응답 스키마 수정: ResponseEntity.ok(Map.of("success", true)) 포맷 매핑
+                    if (data.success === true) {
+                        alert(data.message || "최신 재고 기준으로 AI 추천 수량이 갱신되었습니다.");
+                        location.reload(); // 뷰 컨트롤러(AiOrderController)를 다시 찌르기 위한 강제 새로고침
                     } else {
                         alert("AI 재분석 실패: " + data.message);
                         resetReanalyzeButton();
@@ -82,9 +84,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
     // =================================================================
-    // 3. 테이블 동적 이벤트 (수정 / 제외) 및 합계 계산기
+    // 테이블 동적 이벤트 (수정 / 제외) 및 합계 계산기
     // =================================================================
-
     function recalculateTotalOrderPrice() {
         let grandTotal = 0;
         document.querySelectorAll('.ai-order-row').forEach(row => {
@@ -102,8 +103,6 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     document.querySelectorAll('.ai-order-row').forEach(row => {
-        const ingredientId = parseInt(row.dataset.ingredientId, 10);
-
         row.querySelector('.danger').addEventListener('click', function() {
             if (confirm(`'${row.querySelector('strong').textContent}' 품목을 이번 발주에서 제외하시겠습니까?`)) {
                 row.remove();
@@ -130,9 +129,7 @@ document.addEventListener("DOMContentLoaded", function() {
             qtyTd.textContent = newQty.toLocaleString() + ' ' + unitStr;
 
             const unitPrice = parseInt(row.querySelector('td:nth-child(6)').textContent.replace(/[^0-9]/g, ''), 10);
-            let newTotalPrice = 0;
-
-            newTotalPrice = newQty * unitPrice;
+            let newTotalPrice = newQty * unitPrice;
 
             row.querySelector('td:nth-child(8)').textContent = newTotalPrice.toLocaleString() + '원';
 
@@ -142,7 +139,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
     // =================================================================
-    // 4. 승인 및 발주 전송
+    //  승인 및 발주 전송
     // =================================================================
     const submitBtn = document.getElementById("btn-submit-bulk-order");
 
@@ -155,11 +152,9 @@ document.addEventListener("DOMContentLoaded", function() {
             rows.forEach(row => {
                 const ingredientId = row.dataset.ingredientId;
                 const suggestedQty = parseInt(row.dataset.suggestedQty, 10);
-                // 입력 필드에서 유통기한 값 추출
                 const expDate = row.querySelector('.order-exp-date').value;
 
                 if (ingredientId && suggestedQty > 0) {
-                    // 수량이 존재하지만 유통기한이 누락된 경우 전송 차단 규칙 적용
                     if (!expDate) {
                         const name = row.querySelector('strong').textContent;
                         alert(`'${name}' 품목의 유통기한을 지정해 주세요.`);

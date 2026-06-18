@@ -48,7 +48,6 @@ public class AiOrderController {
             for (IngredientEntity ingredient : allIngredients) {
                 Integer ingredientId = ingredient.getIngredientId();
 
-                // 실시간 현재고 수거 및 음수 방어
                 int currentStock = currentStockLogRepository.convertToCurrentStock(ingredientId);
                 if (currentStock < 0) {
                     currentStock = 0;
@@ -56,11 +55,9 @@ public class AiOrderController {
 
                 int safetyStock = ingredient.getSafetyStock();
 
-                // 1순위로 오늘 실시간 재분석한 데이터(todayDate)가 있는지 먼저 찾습니다.
                 List<HistoricalStockLogEntity> aiLogs =
                         historicalStockLogRepository.findByIngredientIdAndLogDate(ingredientId, todayDate);
 
-                // 2순위: 만약 오늘 재분석한 데이터가 없다면, 어제 오후 10시에 돌았던 배치 데이터(yesterdayDate)를 가져옵니다.
                 if (aiLogs == null || aiLogs.isEmpty()) {
                     aiLogs = historicalStockLogRepository.findByIngredientIdAndLogDate(ingredientId, yesterdayDate);
                 }
@@ -68,7 +65,7 @@ public class AiOrderController {
                 int aiSuggestedStockQty = 0;
                 if (aiLogs != null && !aiLogs.isEmpty()) {
                     aiSuggestedStockQty = aiLogs.get(0).getAmount();
-                    hasPredictData = true; // 데이터가 존재하므로 화면 락 해제
+                    hasPredictData = true;
                 }
 
                 int unitPrice = 0;
@@ -85,9 +82,8 @@ public class AiOrderController {
                 }
 
                 int calculatedCurrentStock = currentStock;
-                int calculatedSafetyStock = safetyStock;
 
-                int calculatedPredictedRequiredQty = displayOrderQty - calculatedSafetyStock + calculatedCurrentStock;
+                int calculatedPredictedRequiredQty = displayOrderQty - safetyStock + calculatedCurrentStock;
                 if (calculatedPredictedRequiredQty < 0) {
                     calculatedPredictedRequiredQty = 0;
                 }

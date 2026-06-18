@@ -22,11 +22,18 @@ function sendRpaMail(targetEmail, orderId) {
                         setTimeout(() => {
                             toast.style.display = "none";
                             toast.style.opacity = "1";
+                            location.reload();
                         }, 500);
                     }, 3000);
+                } else {
+                    // 만약 토스트 엘리먼트가 없다면 모달을 닫고 바로 리로드 처리
+                    if (typeof closeOrderModal === 'function') {
+                        closeOrderModal();
+                    }
+                    location.reload();
                 }
 
-                if (typeof closeOrderModal === 'function') {
+                if (toast && typeof closeOrderModal === 'function') {
                     closeOrderModal();
                 }
             } else {

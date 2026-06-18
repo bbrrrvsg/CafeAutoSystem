@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -54,5 +55,10 @@ public class AiPredictService {
         return ingredientRepository.findById(ingredientId)
                 .map(IngredientEntity::getSafetyStock)
                 .orElse(0); // 혹시 식자재가 없으면 방어코드로 0 반환
+    }
+
+    @Transactional
+    public void clearExistingTodayPendingOrders() {
+        purchaseOrderRepository.deleteByStatusAndCreatedAtAfter("PENDING", LocalDate.now().atStartOfDay());
     }
 }

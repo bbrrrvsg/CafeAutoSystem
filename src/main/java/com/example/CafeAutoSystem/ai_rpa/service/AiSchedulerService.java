@@ -29,17 +29,22 @@ public class AiSchedulerService {
     private final PurchaseOrderService purchaseOrderService;
     private final RpaMailService rpaMailService;
 
-    // 파이썬 AI 배포 서버 기본 베이스 URL 주소
     private final String pythonServerBaseUrl = "http://cafe-ai-system-env.eba-ppyuzfmm.ap-northeast-2.elasticbeanstalk.com/order";
-
 
     @Scheduled(cron = "0 0 22 * * *")
     public void runDailyAiStockAnalysis() {
         log.info("[AI 스케줄러] 전 자재 대상 PyTorch 딥러닝 기반 실시간 초고속 발주 제안 연산 시작");
+        processAiStockAnalysisWorkflow(true);
+    }
 
+    public void runManualAiReanalysisFromWeb() {
+        log.info("[AI 컴포넌트] 웹 화면 사장님 트리거 기반 실시간 AI 자재 수요 재분석 프로세스 가동");
+        processAiStockAnalysisWorkflow(false);
+    }
+
+    private void processAiStockAnalysisWorkflow(boolean sendEmail) {
         int successCount = 0;
         StringBuilder orderItemRows = new StringBuilder();
-
         List<PurchaseOrderDto> aiOrderDtoList = new ArrayList<>();
 
         try {
@@ -83,7 +88,6 @@ public class AiSchedulerService {
 
                     successCount++;
 
-                    // 예측 성공한 품목의 이름, 현재고, AI 제안 수량을 관리자 메일용 HTML 테이블 행으로 적재
                     String unit = ingredient.getUnit() != null ? ingredient.getUnit() : "개";
                     orderItemRows.append("<tr>")
                             .append("<td style='padding:10px; border:1px solid #cbd5e1;'>").append(ingredient.getIngredientName()).append("</td>")
@@ -91,21 +95,17 @@ public class AiSchedulerService {
                             .append("<td style='padding:10px; border:1px solid #cbd5e1; text-align:right; color:#10b981; font-weight:bold;'>").append(suggestedQty).append(" ").append(unit).append("</td>")
                             .append("</tr>");
                 }
-            } // [For 루프 마감]
+            }
 
-            // 🌟 3. [발주 테이블 대기상태 일괄 등록 트리거]
-            // 수집된 AI 예측 결과 리스트가 존재한다면 비즈니스 서비스 레이어를 호출하여 PENDING 원장을 일괄 빌드합니다.
             if (!aiOrderDtoList.isEmpty()) {
                 purchaseOrderService.createBulkOrdersFromAi(aiOrderDtoList);
                 log.info("🎯 [정합성 연동 완료] AI 최신 제안 수량 기반 PENDING 발주 원장 일괄 데이터베이스 영속화 성공!");
             }
 
-            // 4. 모든 품목 예측 및 원장 생성이 정상 완료된 후 관리자 컨펌 메일 발송 파트
-            if (successCount > 0) {
-                String adminEmail = "wkdalstj0522@gmail.com"; // 관리자 수신 이메일 주소
+            if (sendEmail && successCount > 0) {
+                String adminEmail = "wkdalstj0522@gmail.com";
                 String approvalLink = "http://localhost:8080/api/jms-rpa/approve-from-mail";
 
-                // 누적된 orderItemRows를 깔끔한 HTML 스타일 테이블로 감싸서 본문 구성
                 String emailContent = "<h3>[CafeAutoSystem] 금일 AI 발주 예측 결과 분석 완료</h3>"
                         + "<p>PyTorch 신경망 모델 분석 결과, 아래 품목에 대한 발주가 제안되었습니다.</p>"
                         + "<p>내역을 확인하신 후 하단의 <strong>일괄 승인</strong> 버튼을 누르시면 거래처별 명세서 분할 전송이 실행됩니다.</p>"
@@ -119,14 +119,14 @@ public class AiSchedulerService {
                         + "    </tr>"
                         + "  </thead>"
                         + "  <tbody>"
-                        + orderItemRows.toString() // 누적된 자재 리스트 꽂아넣기
+                        + orderItemRows.toString()
                         + "  </tbody>"
                         + "</table>"
                         + "<a href='" + approvalLink + "' style='display:inline-block; background:#10b981; color:white; padding:12px 24px; text-decoration:none; border-radius:6px; font-weight:bold;'>위 내역으로 최종 발주 일괄 승인하기</a>"
                         + "<br><br><p style='color:#94a3b8; font-size:12px;'>본 메일은 시스템 스케줄러에 의해 자동 발송되었습니다.</p>";
 
                 rpaMailService.sendAdminNotificationEmail(adminEmail, "[AI 발주 알림] 금일 분석 완료건에 대한 승인 요청", emailContent);
-                log.info("📢 [스케줄러 완료] 관리자 최종 승인 요청 메일(품목 리스트 포함) 발송 완료 -> 수신: {}", adminEmail);
+                log.info("📢 [스케줄러 완료] 관리자 최종 승인 요청 메일 발송 완료 -> 수신: {}", adminEmail);
             }
 
         } catch (Exception e) {
