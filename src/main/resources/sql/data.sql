@@ -28,12 +28,12 @@ INSERT INTO menu (menu_name, menu_price, created_at, updated_at) VALUES
 -- 2. VENDOR (거래처 마스터)
 -- =====================================================================================
 INSERT INTO vendor (vendor_id, vendor_name, manager_email, manager_phone, created_at, updated_at) VALUES
-                                                                                                      (1, '서울원두유통', 'seoul_bean@naver.com', '010-1234-5678', NOW(), NOW()),
-                                                                                                      (2, '매일유통 대리점', 'maeil_milk@gmail.com', '010-9876-5432', NOW(), NOW()),
-                                                                                                      (3, '대박부자재마트', 'daebak_pack@daum.net', '02-111-2222', NOW(), NOW()),
-                                                                                                      (4, '한국제과재료', 'kbakery@naver.com', '031-222-3344', NOW(), NOW()),
-                                                                                                      (5, '청정과일농장', 'fresh_fruit@gmail.com', '010-2222-1111', NOW(), NOW()),
-                                                                                                      (6, '프리미엄시럽', 'premium_syrup@daum.net', '02-555-7788', NOW(), NOW());
+                                                                                                      (1, '서울원두유통', 'wkdalstj0522+1@gmail.com', '010-1234-5678', NOW(), NOW()),
+                                                                                                      (2, '매일유통 대리점', 'wkdalstj0522+2@gmail.com', '010-9876-5432', NOW(), NOW()),
+                                                                                                      (3, '대박부자재마트', 'wkdalstj0522+3@gmail.com', '02-111-2222', NOW(), NOW()),
+                                                                                                      (4, '한국제과재료', 'wkdalstj0522+4@gmail.com', '031-222-3344', NOW(), NOW()),
+                                                                                                      (5, '청정과일농장', 'wkdalstj0522+5@gmail.com', '010-2222-1111', NOW(), NOW()),
+                                                                                                      (6, '프리미엄시럽', 'wkdalstj0522+6@gmail.com', '02-555-7788', NOW(), NOW());
 
 -- =====================================================================================
 -- 3. INGREDIENT (식자재 마스터)

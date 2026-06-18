@@ -65,4 +65,22 @@ public class RpaMailService {
             throw new RuntimeException(e);
         }
     }
+
+    public void sendAdminNotificationEmail(String toEmail, String subject, String htmlContent) {
+        log.info("📢 [RPA 알림 엔진] 관리자 계정({})으로 AI 발주 승인 요청 메일을 발송합니다.", toEmail);
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true); // HTML 태그 링크 허용
+
+            javaMailSender.send(mimeMessage);
+            log.info("🎉 [RPA 알림 엔진 완료] 관리자 알림 메일 전송 성공!");
+        } catch (Exception e) {
+            log.error("❌ [RPA 알림 엔진 오류] 관리자 메일 발송 실패: {}", e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
 }
