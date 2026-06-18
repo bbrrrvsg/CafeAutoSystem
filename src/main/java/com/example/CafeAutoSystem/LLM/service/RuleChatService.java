@@ -49,9 +49,15 @@ public class RuleChatService {
 
         // 진행 중인 대화 없음 → 의도 감지
         if (conv == null) {
-            if (msg.contains("식자재") && msg.contains("등록")) return startFlow("ingredient", session);
-            if (msg.contains("거래처") && msg.contains("등록")) return startFlow("vendor", session);
+            // 등록 의도 최우선: "등록"/"안전재고" 키워드 또는 단위 토큰이 있으면 등록 흐름
+            boolean isRegister = msg.contains("등록") || msg.contains("안전재고")
+                    || msg.matches(".*\\b(ml|g|개|pack)\\b.*");
+            if (isRegister) {
+                if (msg.contains("거래처")) return startFlow("vendor", session);
+                return startFlow("ingredient", session);
+            }
             if (msg.contains("부족")) return queryLowStock();
+            // "재고" 단독 키워드만 조회로 (안전재고/등록 단어는 위에서 이미 가려냄)
             if (msg.contains("재고")) return queryStock(msg);
             return help();
         }
@@ -74,7 +80,7 @@ public class RuleChatService {
         conv.put("__intent", intent);
         session.setAttribute(SESSION_KEY, conv);
         String head = "ingredient".equals(intent) ? "식자재 등록을 시작할게요.\n" : "거래처 등록을 시작할게요.\n";
-        return head + ask(FIELDS.get(intent)[0]) + "\n(중단하려면 '취소')";
+        return head + ask(FIELDS.get(intent)[0]);
     }
 
     private String nextMissing(Map<String, String> conv) {
