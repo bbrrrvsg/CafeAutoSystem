@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface IngredientRepository extends JpaRepository<IngredientEntity,Integer> {
@@ -14,4 +15,7 @@ public interface IngredientRepository extends JpaRepository<IngredientEntity,Int
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT i FROM IngredientEntity i WHERE i.ingredientId = :id")
     Optional<IngredientEntity> findByIdForUpdate(@Param("id") Integer id);
+
+    @Query("SELECT i FROM IngredientEntity i WHERE i.ingredientName LIKE %:keyword%")
+    List<IngredientEntity> searchByKeyword(@Param("keyword") String keyword);
 }

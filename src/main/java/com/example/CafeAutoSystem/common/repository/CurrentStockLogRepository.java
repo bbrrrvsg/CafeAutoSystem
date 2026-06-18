@@ -56,4 +56,15 @@ public interface CurrentStockLogRepository extends JpaRepository<CurrentStockLog
 
     List<CurrentStockLogEntity>
     findByIngredient_IngredientIdOrderByCreatedAtAsc(Integer ingredientId);
+
+    /** 통합 검색용 - 메시지/사유 키워드 검색, 최신 10건 */
+    @Query("""
+        SELECT c FROM CurrentStockLogEntity c
+        WHERE c.message LIKE %:keyword%
+           OR c.reason LIKE %:keyword%
+           OR c.logType LIKE %:keyword%
+        ORDER BY c.createdAt DESC
+    """)
+    List<CurrentStockLogEntity> searchByKeyword(@Param("keyword") String keyword,
+                                                org.springframework.data.domain.Pageable pageable);
 }
