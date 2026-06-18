@@ -82,8 +82,10 @@ const MENU_ITEMS = [
 
     // 카테고리별 아이콘
     const CATEGORY_ICON = {
-        '메뉴':     'bi-cup-straw',
-        '원자재':   'bi-basket3',
+        '메뉴':         'bi-cup-straw',
+        '레시피 식자재': 'bi-cup-hot',
+        '레시피 재고이력': 'bi-journal-text',
+        '원자재':       'bi-basket3',
         '거래처':   'bi-people',
         '발주이력': 'bi-clock-history',
         '재고로그': 'bi-journal-text',
