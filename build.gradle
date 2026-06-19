@@ -28,9 +28,19 @@ repositories {
 	maven { url 'https://repo.spring.io/milestone' }
 }
 
+// =====================================================================
+// 의존성 버전 관리 (한 블록으로 통합)
+//  - Spring AI BOM import
+//  - AWS SDK 버전 고정 (Spring Boot BOM이 덮어쓰지 않도록)
+// =====================================================================
 dependencyManagement {
 	imports {
 		mavenBom 'org.springframework.ai:spring-ai-bom:2.0.0'
+	}
+	dependencies {
+		dependency 'software.amazon.awssdk:s3:2.25.60'
+		dependency 'software.amazon.awssdk:sts:2.25.60'
+		dependency 'software.amazon.awssdk:url-connection-client:2.25.60'
 	}
 }
 
@@ -59,8 +69,9 @@ dependencies {
 	testCompileOnly 'org.projectlombok:lombok'
 	testAnnotationProcessor 'org.projectlombok:lombok'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
 	// JavaMailSender를 사용하기 위한 스프링 메일 스타터 부품
-    implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	// 엑셀 파일 생성을 위한 Apache POI 핵심 라이브러리
 	implementation 'org.apache.poi:poi:5.2.5'
 	// .xlsx 확장자를 다루기 위한 POI XML 확장 라이브러리 (XSSFWorkbook용)
@@ -71,27 +82,15 @@ dependencies {
 	// WebClient (Ollama LLM / 파이썬 예측서버 등 외부 API 호출용)
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
-    // AWS S3 연동 (SDK v2 직접 버전 명시 - Spring Boot 4.x 호환)
-    implementation 'software.amazon.awssdk:s3:2.25.60'
-    implementation 'software.amazon.awssdk:sts:2.25.60'
-    implementation 'software.amazon.awssdk:url-connection-client:2.25.60'
+	// AWS S3 연동 (SDK v2 직접 버전 명시 - Spring Boot 4.x 호환)
+	implementation 'software.amazon.awssdk:s3:2.25.60'
+	implementation 'software.amazon.awssdk:sts:2.25.60'
+	implementation 'software.amazon.awssdk:url-connection-client:2.25.60'
 
-    // Spring AI - Ollama (ChatClient + tool calling). Spring Boot 4 → Spring AI 2.0
+	// Spring AI - Ollama (ChatClient + tool calling). Spring Boot 4 → Spring AI 2.0
 	implementation 'org.springframework.ai:spring-ai-starter-model-ollama'
-
-
-
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
-}
-
-// Spring Boot dependency management가 AWS SDK 버전을 override하지 않도록 설정
-dependencyManagement {
-	dependencies {
-		dependency 'software.amazon.awssdk:s3:2.25.60'
-		dependency 'software.amazon.awssdk:sts:2.25.60'
-		dependency 'software.amazon.awssdk:url-connection-client:2.25.60'
-	}
 }
