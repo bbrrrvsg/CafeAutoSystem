@@ -28,7 +28,7 @@
 
 ### 🛠️ 기술 스택
 
-* **Front-end**: `React Native`, `React`, `Chart.js`, `HTML5/CSS3/JS`
+* **Front-end**: 'JSP' , `React`, `Chart.js`, `HTML5/CSS3/JS`
 * **Back-end**: `Java 17`, `Spring Boot`, `FastAPI (Python)`, `Gradle`
 * **Database**: `MySQL`, `PostgreSQL`
 * **Libraries**: `Spring Data JPA`, `MyBatis`, `Apache POI`, `JavaMailSender`, `Lombok`
