@@ -19,7 +19,7 @@
 | 이름 | 역할                    | 담당 업무 |
 | --- |-----------------------| --- |
 | **심준현** | 팀장 (CI-CD/레시피)        | GitHub Actions + AWS Elastic Beanstalk CI/CD 파이프라인, JOIN FETCH 기반 레시피 자동 재고 차감 엔진 |
-| **유환빈** | 팀원 (MSA/이벤트)          | 도메인별 서버 분리(사장/구매), Kafka + Outbox Pattern 비동기 이벤트 동기화, Gemini API 리뷰 감성 분석 |
+| **유환빈** | 팀원 (MSA/이벤트)          | 도메인별 서버 분리(사장/구매), Kafka + Outbox Pattern 비동기 이벤트 동기화, OPEN API 리뷰 감성 분석 |
 | **이한승** | 팀원 (마감/챗봇)            | 월말 재고 장부 자동 마감 스케줄러, 네이티브 쿼리 기반 이월 로직, Ollama LLM 연동 2단계 폴백 재고관리 챗봇 |
 | **장민서** | **팀원 (AI/RPA 파이프라인)** | PyTorch LSTM 기반 실시간 수요 예측 스케줄러 구축, Apache POI 기반 RPA 발주 명세서 일괄 가공 및 이메일 분할 전송 프로세스 전담, 데이터 단위 파편화 정제 및 정합성 무결성 확보 |
 
@@ -60,7 +60,7 @@
 * **자연어 이해 기반 제어**: `Ollama(qwen3:4b)` 모델을 연동하여 매장 내에서 자연어 대화만으로 식자재·거래처 등록 및 실시간 재고 조회·수정 가능.
 * **2단계 폴백(Fallback) 예외 설계**: AI 서버 미연결 또는 장애 발생 시, 세션을 유지한 채 즉시 규칙 기반(Rule-based) 정형 챗봇 모드로 안전하게 전환되어 서비스 연속성 보장.
 
-#### 5. AI 리뷰 감성 분석 및 자동 답글 생성 (`Gemini API`)
+#### 5. AI 리뷰 감성 분석 및 자동 답글 생성 (`OPEN API`)
 
 * **카테고리별 감정 구조화**: 리뷰 원문을 LLM에 전달하여 전체 긍부정 분석 및 맛·서비스·위생 등 속성별 감정을 JSON 데이터로 명확히 구조화.
 * **매장 브랜딩 및 대응**: 분석된 결과를 바탕으로 사장님 페이지와 연동하여 리스크 수준에 따른 신속한 대응 및 자동 리뷰 답글 작성을 지원.
@@ -79,18 +79,23 @@
 
 ---
 
+아, 마크다운 링크 문법 `[텍스트](URL)` 안쪽에 구글 검색 주소가 숨어 있었네요! 완전히 지워지지 않아 답답하셨을 것 같습니다.
+
+이번에는 숨겨진 구글 주소를 완전히 박멸하고, 실제 연결되는 순수 URL 주소로만 깔끔하게 리팩토링했습니다. 이제 복사해서 사용하시면 바로 해당 사이트와 깃허브로 정상 연결됩니다.
+
+---
+
 ### 🔗 배포 및 시연 정보
 
 * **📺 시스템 통합 시연 영상**: [OrderMatic YouTube 시연 영상](https://www.youtube.com/watch?v=PrIozx2ltO8)
-* **🖥️ 사장님 전용 서버 (Admin)**: [AWS 배포 도메인](https://www.google.com/search?q=http%3A%2F%2Fcafesystem-env.eba-sppmaf8d.ap-northeast-2.elasticbeanstalk.com%2Fvendor-ingredient)
-* **🛒 매장 고객 주문 서버 (POS)**: [AWS 배포 도메인](https://www.google.com/search?q=http%3A%2F%2Fcafeordersystem.ap-northeast-2.elasticbeanstalk.com%2Fpos)
+* **🖥️ 사장님 전용 서버 (Admin)**: [AWS 배포 도메인](http://cafesystem-env.eba-sppmaf8d.ap-northeast-2.elasticbeanstalk.com/vendor-ingredient)
+* **🛒 매장 고객 주문 서버 (POS)**: [AWS 배포 도메인](http://cafeordersystem.ap-northeast-2.elasticbeanstalk.com/pos)
 
 ---
 
 ### ✒️ 프로젝트 저장소(Repository) 링크
 
-* **Core Backend & Admin Storage** ⚙️: [CafeAutoSystem GitHub](https://www.google.com/search?q=https%3A%2F%2Fgithub.com%2Fbbrrrvsg%2FCafeAutoSystem)
-* **AI FastAPI Prediction Engine Storage** 🧠: [cafe-auto-ai GitHub](https://www.google.com/search?q=https%3A%2F%2Fgithub.com%2Fbbrrrvsg%2Fcafe-auto-ai)
-* **Customer POS/Order Storage** 💻: [CafeOrderSystem GitHub](https://www.google.com/search?q=https%3A%2F%2Fgithub.com%2Fhaarooo%2FCafeOrderSystem)
-
+* **Core Backend & Admin Storage** ⚙️: [CafeAutoSystem GitHub](https://github.com/bbrrrvsg/CafeAutoSystem)
+* **AI FastAPI Prediction Engine Storage** 🧠: [cafe-auto-ai GitHub](https://github.com/bbrrrvsg/cafe-auto-ai)
+* **Customer POS/Order Storage** 💻: [CafeOrderSystem GitHub](https://github.com/haarooo/CafeOrderSystem)
 
