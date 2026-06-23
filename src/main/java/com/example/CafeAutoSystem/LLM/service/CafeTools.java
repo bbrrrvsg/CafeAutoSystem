@@ -11,6 +11,7 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -23,6 +24,22 @@ import java.util.Set;
 public class CafeTools {
 
     private static final Set<String> UNITS = Set.of("ml", "g", "개", "pack");
+
+    // 사용자가 자연어로 말하는 단위 표기를 표준 단위(ml/g/개/pack)로 변환. 모르면 null.
+    private static final Map<String, String> UNIT_ALIAS = Map.ofEntries(
+            Map.entry("ml", "ml"), Map.entry("밀리리터", "ml"), Map.entry("미리리터", "ml"), Map.entry("cc", "ml"),
+            Map.entry("g", "g"), Map.entry("그램", "g"), Map.entry("그람", "g"),
+            Map.entry("개", "개"), Map.entry("ea", "개"), Map.entry("낱개", "개"),
+            Map.entry("pack", "pack"), Map.entry("팩", "pack"), Map.entry("팩들이", "pack"), Map.entry("봉지", "pack")
+    );
+
+    private String normalizeUnit(String unit) {
+        if (unit == null) return null;
+        String key = unit.trim();
+        String mapped = UNIT_ALIAS.get(key);
+        if (mapped == null) mapped = UNIT_ALIAS.get(key.toLowerCase());
+        return mapped;
+    }
 
     // 도구가 실제로 실행됐을 때의 결과 메시지를 호출 스레드에 기록해 둠.
     // (작은 모델이 도구 실행 후 마무리 멘트를 빼먹어도 OllamaService 가 이 값을 대신 반환)
@@ -41,18 +58,27 @@ public class CafeTools {
     private final InventoryService inventoryService;
 
     // ===== 등록 =====
-    @Tool(description = "식자재(재료)를 등록한다. unit 은 ml/g/개/pack 중 하나만 허용된다.")
+    @Tool(description = "식자재(재료)를 등록한다. 사용자가 식자재명·단위·안전재고를 모두 명시적으로 말한 경우에만 호출한다. "
+            + "하나라도 모르면 호출하지 말 것. unit 은 ml/g/개/pack 중 하나만 허용된다.")
     public String registerIngredient(
             @ToolParam(description = "식자재명") String name,
-            @ToolParam(description = "단위: ml, g, 개, pack 중 하나") String unit,
-            @ToolParam(description = "안전재고 수량(정수)") int safetyStock) {
-        if (!UNITS.contains(unit)) {
-            return record("단위는 ml/g/개/pack 중 하나여야 해요. (입력값: " + unit + ")");
+            @ToolParam(required = false, description = "단위: ml, g, 개, pack 중 하나. 사용자가 말한 경우에만 채운다.") String unit,
+            @ToolParam(required = false, description = "안전재고 수량(정수). 사용자가 말한 경우에만 채운다.") Integer safetyStock) {
+        // 모델이 값을 지어내 성급히 호출하는 것을 막기 위해, 빠진 값은 도구가 직접 되묻고 등록하지 않는다.
+        if (name == null || name.isBlank()) {
+            return record("어떤 식자재를 등록할까요? 식자재명을 알려주세요.");
+        }
+        String normUnit = normalizeUnit(unit);
+        if (normUnit == null) {
+            return record("'" + name + "'의 단위를 알려주세요. (ml / g / 개 / pack 중 하나, '팩'은 pack 으로 인식해요)");
+        }
+        if (safetyStock == null) {
+            return record("'" + name + "'의 안전재고 수량(숫자)을 알려주세요.");
         }
         try {
             ingredientService.create(IngredientDto.builder()
                     .ingredientName(name)
-                    .unit(unit)
+                    .unit(normUnit)
                     .safetyStock(safetyStock)
                     .build());
             return record(name + " 식자재를 등록했어요!");
@@ -61,11 +87,21 @@ public class CafeTools {
         }
     }
 
-    @Tool(description = "거래처를 등록한다.")
+    @Tool(description = "거래처를 등록한다. 거래처명·담당자 이메일·연락처를 모두 명시적으로 말한 경우에만 호출한다. "
+            + "하나라도 모르면 호출하지 말 것.")
     public String registerVendor(
             @ToolParam(description = "거래처명") String name,
-            @ToolParam(description = "담당자 이메일") String email,
-            @ToolParam(description = "담당자 연락처") String phone) {
+            @ToolParam(required = false, description = "담당자 이메일. 사용자가 말한 경우에만 채운다.") String email,
+            @ToolParam(required = false, description = "담당자 연락처. 사용자가 말한 경우에만 채운다.") String phone) {
+        if (name == null || name.isBlank()) {
+            return record("어떤 거래처를 등록할까요? 거래처명을 알려주세요.");
+        }
+        if (email == null || email.isBlank()) {
+            return record("'" + name + "' 담당자 이메일을 알려주세요.");
+        }
+        if (phone == null || phone.isBlank()) {
+            return record("'" + name + "' 담당자 연락처를 알려주세요.");
+        }
         try {
             vendorService.create(VendorDto.builder()
                     .vendorName(name)
