@@ -51,7 +51,11 @@ public class OllamaService {
             if (toolResult != null) {
                 return toolResult;                   // 도구는 실행됐는데 모델이 멘트를 빼먹음 → 도구 결과로 대체
             }
-            return "죄송해요, 응답을 만들지 못했어요. 다시 한 번 말씀해 주세요.";  // 도구도 안 불리고 빈 응답
+            // 연결은 됐지만 도구도 안 불리고 응답도 비었음 = AI가 쓸모 있는 답을 못 냄
+            // → 정상 응답이 아니므로 실패로 간주해 정형 챗봇으로 폴백시킨다.
+            throw new LlmUnavailableException(new IllegalStateException("LLM 빈 응답(도구 미실행)"));
+        } catch (LlmUnavailableException e) {
+            throw e;                                  // 위에서 의도적으로 던진 폴백 신호는 그대로 전달
         } catch (Exception e) {
             // Ollama 미실행/연결실패/타임아웃 → ChatbotService 가 정형 챗봇으로 fallback
             throw new LlmUnavailableException(e);
